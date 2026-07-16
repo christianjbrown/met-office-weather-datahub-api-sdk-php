@@ -7,16 +7,18 @@ small, uniform, and highly opinionated, so new code should be indistinguishable 
 
 A thin, strongly-typed, read-only PHP 8.5+ client for the Met Office **Weather DataHub** APIs. It is
 structured to host multiple DataHub APIs side by side; its supported APIs are **Site-Specific**
-(Global Spot) and **Observation (Land)**. It builds on the generic `christianjbrown/php-api-client-lib`
+(Global Spot), **Observation (Land)**, and **Atmospheric Models** (Gridded). It builds on the generic `christianjbrown/php-api-client-lib`
 (which wraps Guzzle and normalises transport exceptions) and wires each API's clients + transformer
 chains through a Symfony `ContainerBuilder`.
 
 The top-level entry point is the umbrella `MetOffice` facade (`src/MetOffice.php`): constructed with
 **no arguments**, it is a simple factory whose `siteSpecific(string $apiKey): SiteSpecific\SiteSpecificInterface`
-and `observationLand(string $apiKey): ObservationLand\ObservationLandInterface` methods return the
+`observationLand(string $apiKey): ObservationLand\ObservationLandInterface`, and
+`atmosphericModels(string $apiKey): AtmosphericModels\AtmosphericModelsInterface` methods return the
 per-API clients. Each API's own facade (e.g. `SiteSpecific\SiteSpecific`, `ObservationLand\ObservationLand`,
-constructed with a `string $apiKey`) owns the DI container for that API. New DataHub APIs are added as
-new `siteSpecific()`-style factory methods returning new per-API facades.
+`AtmosphericModels\AtmosphericModels`, constructed with a `string $apiKey`) owns the DI container for
+that API. New DataHub APIs are added as new `siteSpecific()`-style factory methods returning new
+per-API facades.
 
 Site-Specific API essentials: given a latitude/longitude it fetches the hourly, three-hourly, or daily
 point forecast and returns typed model objects instead of raw GeoJSON arrays.
@@ -35,8 +37,8 @@ point forecast and returns typed model objects instead of raw GeoJSON arrays.
 
 Binaries install into `bin/` (Composer `bin-dir`), not `vendor/bin/`. Both `bin/` and `vendor/` are
 gitignored and Composer-installed, so run `composer install` first. The style tooling comes from the
-private `christianjbrown/php-code-quality-scripts` dev dependency (php-cs-fixer + PHP_CodeSniffer,
-**Symfony2 coding standard**); installing it needs SSH/`COMPOSER_AUTH` access to the private repo.
+`christianjbrown/php-code-quality-scripts` dev dependency (php-cs-fixer + PHP_CodeSniffer,
+**Symfony2 coding standard**), pulled from GitHub like the other sibling dependencies.
 
 | Task | Command |
 | --- | --- |
@@ -133,6 +135,42 @@ same `apikey` header.
   wrapped by the collection transformers `NearestLocationsTransformer` and `ObservationsTransformer`
   (indexed `for` over `array_values`). All observations in the array are sparse (often only `datetime`),
   so every non-`datetime` field is optional and skipped when absent or wrong-typed.
+
+### Atmospheric Models (`ChristianBrown\MetOffice\AtmosphericModels\`)
+
+Orders for Atmospheric Model ("Gridded") data. The model data itself is delivered as binary **GRIB**
+files; this library returns typed metadata for the runs/orders/files and returns the **raw GRIB bytes
+as a `string`** for a download — **no GRIB parsing is performed**. Base URL
+`https://data.hub.api.metoffice.gov.uk/atmospheric-models/1.0.0`, same `apikey` header.
+
+- **`AtmosphericModels\AtmosphericModels`** — the facade. Constructed with a `string $apiKey`, it builds
+  a Symfony `ContainerBuilder` and registers the `ApiClient`, **both** the JSON request sender (JSON
+  endpoints) **and** the raw `ApiRequestSenderInterface` (binary download) — via
+  `ApiClient::getJsonApiRequestSender()` / `getApiRequestSender()` — the full transformer chains, and the
+  two API clients (ids are `SERVICE_*` constants on `AtmosphericModelsInterface`, **`met_office.atmospheric_models.`
+  prefix**). Exposes `getRunsApi()` and `getOrdersApi()`.
+- **`AtmosphericModels\Api/`** — `RunsApi` (`GET /runs`, `GET /runs/{modelId}`) with `getRuns()` and
+  `getRunsByModel(string $modelId)` returning `RunInterface[]`; and `OrdersApi` with `getOrders()`
+  (`GET /orders` → `OrderInterface[]`), `getOrderFiles(string $orderId, ?string $detail = null, ?string $runFilter = null)`
+  (`GET /orders/{orderId}/latest`, query built only for supplied params, unwraps `orderDetails.files` →
+  `OrderFileInterface[]`), `getOrderFile(string $orderId, string $fileId)` (`GET /orders/{orderId}/latest/{fileId}`,
+  unwraps `fileDetails` → `OrderFileDetailsInterface`), and `getOrderFileData(string $orderId, string $fileId): string`
+  which uses the **raw `ApiRequestSenderInterface`** with an `Accept: application/x-grib` header,
+  URL-encodes the file id, and returns the raw GRIB body string. Both build the `apikey` header; the
+  JSON wrapper-shape guards live in the API classes and the per-item parsing is delegated to the
+  transformers. `Api\ApiInterface` extends the shared top-level `ApiInterface` and adds the `API_URL_*`,
+  `QUERY_KEY_*`, `HEADER_KEY_ACCEPT`/`HEADER_VALUE_ACCEPT_GRIB`, and JSON wrapper `KEY_*` constants.
+- **`AtmosphericModels\Model/`** — `Run`/`RunDetail`, `Order`, `OrderFile`, `OrderFileDetails`,
+  `ParameterDetail`, and the shared `Region`/`AxisExtent` (a region's `extent.x`/`extent.y` are each an
+  `AxisExtent`). `runDateTime` values are Unix timestamps; `ParameterDetail` exposes `timeCoordinates`
+  (from `extent.t`) and `verticalCoordinates` (from `extent.z`, `float[]`).
+- **`AtmosphericModels\Transformer/`** — one object transformer + one collection transformer per list
+  (`RunsTransformer`/`RunTransformer`, `RunDetailsTransformer`/`RunDetailTransformer`,
+  `OrdersTransformer`/`OrderTransformer`, `OrderFilesTransformer`/`OrderFileTransformer`,
+  `OrderFileDetailsTransformer`, `ParameterDetailsTransformer`/`ParameterDetailTransformer`,
+  `RegionsTransformer`/`RegionTransformer`, `AxisExtentTransformer`), following the same guard/`applyX`
+  idioms as the other APIs. String-array fields are filtered with `array_values(array_filter(..., is_string))`
+  and `extent.z` numbers pass through the sequential-`if` `toFloat()` helper (int-or-float → `float`).
 
 ### Adding a new DataHub API
 

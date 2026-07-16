@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/christianjbrown/php-met-office-weather-datahub-api-lib/actions/workflows/ci.yml/badge.svg)](https://github.com/christianjbrown/php-met-office-weather-datahub-api-lib/actions/workflows/ci.yml)
 
-A strongly-typed, **read-only** PHP client for the [Met Office Weather DataHub](https://datahub.metoffice.gov.uk/) APIs. It returns plain, typed model objects rather than raw GeoJSON arrays. The library is structured to host multiple DataHub APIs side by side; its supported APIs are **Site-Specific** (Global Spot) and **Observation (Land)**.
+A strongly-typed, **read-only** PHP client for the [Met Office Weather DataHub](https://datahub.metoffice.gov.uk/) APIs. It returns plain, typed model objects rather than raw GeoJSON arrays. The library is structured to host multiple DataHub APIs side by side; its supported APIs are **Site-Specific** (Global Spot), **Observation (Land)**, and **Atmospheric Models** (Gridded).
 
 ## :satellite: Supported APIs
 
@@ -10,7 +10,7 @@ A strongly-typed, **read-only** PHP client for the [Met Office Weather DataHub](
 | --- | --- | --- |
 | **Site-Specific** (Global Spot) | `MetOffice::siteSpecific()` | ✅ Supported |
 | **Observation (Land)** | `MetOffice::observationLand()` | ✅ Supported |
-| Atmospheric Models | — | 🔜 Planned |
+| **Atmospheric Models** (Gridded) | `MetOffice::atmosphericModels()` | ✅ Supported |
 | Map Images | — | 🔜 Planned |
 
 ### Site-Specific (Global Spot)
@@ -39,6 +39,23 @@ $observationLand = (new MetOffice())->observationLand('your-observation-land-api
 $nearest = $observationLand->getNearestApi()->getByCoordinates(51.55, -0.18);   // NearestLocationInterface[]
 
 $observations = $observationLand->getObservationApi()->getByGeohash('gcpvj0');   // ObservationInterface[]
+```
+
+### Atmospheric Models (Gridded)
+
+Retrieves orders for Atmospheric Model ("Gridded") data. Unlike the other APIs — which return typed weather values — the model data itself is delivered as binary GRIB files; this client returns typed metadata for the runs, orders and files, and hands you the **raw GRIB bytes** for a file (no GRIB parsing is performed). Base URL `https://data.hub.api.metoffice.gov.uk/atmospheric-models/1.0.0`, same `apikey` header. It exposes two clients:
+
+- **Runs** (`getRunsApi()`) — `getRuns()` lists every available model run (`RunInterface[]`, each with a `modelId` such as `mo-uk`, `mo-global`, `mo-mogrepsg`, and its `completeRuns` — `RunDetailInterface[]` carrying the run hour, the run date-time as a Unix timestamp, and the `runFilter`). `getRunsByModel(string $modelId)` narrows the list to a single model.
+- **Orders** (`getOrdersApi()`) — `getOrders()` lists the orders configured for your organisation (`OrderInterface[]`); `getOrderFiles(string $orderId, ?string $detail = null, ?string $runFilter = null)` lists the latest available files for an order (`OrderFileInterface[]`); `getOrderFile(string $orderId, string $fileId)` returns the detailed metadata for one file (`OrderFileDetailsInterface`, including its `ParameterDetailInterface[]`); and `getOrderFileData(string $orderId, string $fileId)` downloads the file and returns the **raw GRIB bytes as a `string`** (302 redirects are followed and the file id is URL-encoded for you).
+
+```php
+use ChristianBrown\MetOffice\MetOffice;
+
+$atmosphericModels = (new MetOffice())->atmosphericModels('your-atmospheric-models-apikey');
+
+$runs = $atmosphericModels->getRunsApi()->getRuns();                              // RunInterface[]
+
+$grib = $atmosphericModels->getOrdersApi()->getOrderFileData($orderId, $fileId);  // raw GRIB bytes (string)
 ```
 
 
