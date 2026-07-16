@@ -1,0 +1,73 @@
+{
+    "name": "christianjbrown/php-met-office-api-lib",
+    "description": "A strongly-typed, read-only PHP 8.5+ client for the Met Office Weather DataHub Site-Specific API that returns typed forecast model objects instead of raw arrays.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "met-office",
+        "weather",
+        "forecast",
+        "api",
+        "client"
+    ],
+    "authors": [
+        {
+            "name": "Christian Brown"
+        }
+    ],
+    "require": {
+        "php": "^8.5",
+        "christianjbrown/php-api-client-lib": "dev-main",
+        "psr/container": "^2.0",
+        "symfony/dependency-injection": "^7.2"
+    },
+    "require-dev": {
+        "christianjbrown/php-code-quality-scripts": "dev-main",
+        "phpstan/phpstan": "^2.0",
+        "phpunit/phpunit": "^12.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "ChristianBrown\\MetOffice\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "ChristianBrown\\MetOffice\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": [
+            "clear && XDEBUG_MODE=coverage php -d memory_limit=-1 ./bin/phpunit && open ./.phpunit.cache/code-coverage-html/index.html"
+        ],
+        "stan": [
+            "clear && ./bin/phpstan analyse"
+        ],
+        "check-style": [
+            "clear && ./bin/php-cs ./src ./tests"
+        ],
+        "check-style-diff": [
+            "clear && ./bin/php-cs-diff"
+        ],
+        "fix-style": [
+            "clear && ./bin/php-cs-fix ./src ./tests"
+        ],
+        "fix-style-diff": [
+            "clear && ./bin/php-cs-fix-diff"
+        ]
+    },
+    "config": {
+        "bin-dir": "bin"
+    },
+    "repositories": [
+        {
+            "type": "github",
+            "url": "git@github.com:christianjbrown/php-code-quality-scripts.git"
+        },
+        {
+            "type": "github",
+            "url": "git@github.com:christianjbrown/php-api-client-lib.git"
+        }
+    ],
+    "minimum-stability": "dev"
+}
