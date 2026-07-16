@@ -62,11 +62,11 @@
     "repositories": [
         {
             "type": "github",
-            "url": "git@github.com:christianjbrown/php-code-quality-scripts.git"
+            "url": "git@github.com:christianjbrown/php-api-client-lib.git"
         },
         {
             "type": "github",
-            "url": "git@github.com:christianjbrown/php-api-client-lib.git"
+            "url": "git@github.com:christianjbrown/php-code-quality-scripts.git"
         }
     ],
     "minimum-stability": "dev"
