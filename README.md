@@ -2,15 +2,15 @@
 
 [![CI](https://github.com/christianjbrown/php-met-office-api-lib/actions/workflows/ci.yml/badge.svg)](https://github.com/christianjbrown/php-met-office-api-lib/actions/workflows/ci.yml)
 
-A strongly-typed, **read-only** PHP client for the [Met Office Weather DataHub](https://datahub.metoffice.gov.uk/) APIs. It returns plain, typed model objects rather than raw GeoJSON arrays. The library is structured to host multiple DataHub APIs side by side; its first supported API is **Site-Specific** (Global Spot).
+A strongly-typed, **read-only** PHP client for the [Met Office Weather DataHub](https://datahub.metoffice.gov.uk/) APIs. It returns plain, typed model objects rather than raw GeoJSON arrays. The library is structured to host multiple DataHub APIs side by side; its supported APIs are **Site-Specific** (Global Spot) and **Observation (Land)**.
 
 ## :satellite: Supported APIs
 
 | API | Entry point | Status |
 | --- | --- | --- |
 | **Site-Specific** (Global Spot) | `MetOffice::siteSpecific()` | ✅ Supported |
+| **Observation (Land)** | `MetOffice::observationLand()` | ✅ Supported |
 | Atmospheric Models | — | 🔜 Planned |
-| Observations (Land) | — | 🔜 Planned |
 | Map Images | — | 🔜 Planned |
 
 ### Site-Specific (Global Spot)
@@ -22,6 +22,24 @@ Given a latitude and longitude it fetches the hourly, three-hourly, or daily poi
 - **Daily** (`getDailyForecastApi()`) — day/night split steps: midday & midnight wind, visibility, humidity and pressure, day-max/night-min temperature and feels-like (with upper/lower bounds), max UV, day & night weather codes, and day & night precipitation-type probabilities.
 
 Every forecast carries the resolved location name, the model run date (as a Unix timestamp), and its list of time steps.
+
+### Observation (Land)
+
+Fetches recent (past 48 hours) hourly land surface observations. It exposes two clients:
+
+- **Nearest** (`getNearestApi()`) — resolves the nearest observation locations from either a latitude/longitude pair (`getByCoordinates()`, coordinates are rounded to two decimal places for the API) or a geohash (`getByGeohash()`). Each `NearestLocationInterface` carries its `geohash`, `area`, `region`, `country`, and `olsonTimeZone`.
+- **Observation** (`getObservationApi()`) — given a six-character geohash, `getByGeohash()` returns the array of hourly `ObservationInterface` values (datetime as a Unix timestamp, plus optional temperature, humidity, wind speed/gust/direction, weather code, visibility, mean sea-level pressure, and pressure tendency). Results are cached per geohash; pass `true` as the second argument to bypass the cache.
+
+```php
+use ChristianBrown\MetOffice\MetOffice;
+
+$observationLand = (new MetOffice())->observationLand('your-observation-land-apikey');
+
+// London: latitude 51.55, longitude -0.18.
+$nearest = $observationLand->getNearestApi()->getByCoordinates(51.55, -0.18);   // NearestLocationInterface[]
+
+$observations = $observationLand->getObservationApi()->getByGeohash('gcpvj0');   // ObservationInterface[]
+```
 
 
 

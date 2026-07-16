@@ -6,14 +6,15 @@ small, uniform, and highly opinionated, so new code should be indistinguishable 
 ## What this is
 
 A thin, strongly-typed, read-only PHP 8.5+ client for the Met Office **Weather DataHub** APIs. It is
-structured to host multiple DataHub APIs side by side; its first (and currently only) supported API is
-**Site-Specific** (Global Spot). It builds on the generic `christianjbrown/php-api-client-lib` (which
-wraps Guzzle and normalises transport exceptions) and wires each API's clients + transformer chains
-through a Symfony `ContainerBuilder`.
+structured to host multiple DataHub APIs side by side; its supported APIs are **Site-Specific**
+(Global Spot) and **Observation (Land)**. It builds on the generic `christianjbrown/php-api-client-lib`
+(which wraps Guzzle and normalises transport exceptions) and wires each API's clients + transformer
+chains through a Symfony `ContainerBuilder`.
 
 The top-level entry point is the umbrella `MetOffice` facade (`src/MetOffice.php`): constructed with
 **no arguments**, it is a simple factory whose `siteSpecific(string $apiKey): SiteSpecific\SiteSpecificInterface`
-returns the Site-Specific client. Each API's own facade (e.g. `SiteSpecific\SiteSpecific`,
+and `observationLand(string $apiKey): ObservationLand\ObservationLandInterface` methods return the
+per-API clients. Each API's own facade (e.g. `SiteSpecific\SiteSpecific`, `ObservationLand\ObservationLand`,
 constructed with a `string $apiKey`) owns the DI container for that API. New DataHub APIs are added as
 new `siteSpecific()`-style factory methods returning new per-API facades.
 
@@ -102,6 +103,36 @@ Everything lives under the `ChristianBrown\MetOffice\` namespace (`src/`), mirro
   collection wrapping one `ForecastTimeStepTransformerInterface`). The three step transformers each
   implement that interface and narrow their return type to their concrete step interface. These
   reference the shared `Enums\WeatherType` and the shared `Transformer\WeatherTypeTransformer`.
+
+### Observation (Land) (`ChristianBrown\MetOffice\ObservationLand\`)
+
+Recent (past 48h) hourly land surface observations. Base URL `https://data.hub.api.metoffice.gov.uk/observation-land/1`,
+same `apikey` header.
+
+- **`ObservationLand\ObservationLand`** (`src/ObservationLand/ObservationLand.php`) — the facade.
+  Constructed with a `string $apiKey`, it builds a Symfony `ContainerBuilder` and registers the
+  `ApiClient`, the JSON request sender, the `NearestLocationTransformer` + `NearestLocationsTransformer`
+  and `ObservationTransformer` + `ObservationsTransformer` chains, and the two API clients (ids are
+  `SERVICE_*` constants on `ObservationLandInterface`, **`met_office.observation_land.` prefix**).
+  Exposes `getNearestApi()` and `getObservationApi()`.
+- **`ObservationLand\Api/`** — `NearestApi` (`GET /nearest`, query is either `geohash` **or** `lat`+`lon`,
+  each formatted to ≤2 decimal places) with `getByCoordinates(float $latitude, float $longitude)` and
+  `getByGeohash(string $geohash)` returning `NearestLocationInterface[]`; and `ObservationApi`
+  (`GET /{geohash}`, geohash is a path segment) with `getByGeohash(string $geohash, bool $skipCache = false)`
+  returning `ObservationInterface[]`, cached per geohash. Both build the `apikey` header, call the sender,
+  and delegate the response array to their collection transformer. `Api\ApiInterface` extends the shared
+  top-level `ApiInterface` and adds `API_URL_NEAREST`, `API_URL_OBSERVATION_SPRINTF`, and the `QUERY_KEY_*`
+  constants.
+- **`ObservationLand\Model/`** — `NearestLocation` (`geohash` required ctor arg; `area`/`region`/`country`/
+  `olsonTimeZone` optional) and `Observation` (`datetime` Unix ctor arg; optional `temperature`,
+  `humidity`, `windSpeed`, `windGust`, `windDirection` as `?WindDirection`, `weatherCode` as `?WeatherType`,
+  `visibility`, `mslp`, `pressureTendency` raw string).
+- **`ObservationLand\Transformer/`** — object transformers `NearestLocationTransformer` and
+  `ObservationTransformer` (both guard their required field, then apply every optional field via `applyX`
+  helpers with the same int/float and `WeatherType`/`WindDirection` `tryFrom` idioms as Site-Specific),
+  wrapped by the collection transformers `NearestLocationsTransformer` and `ObservationsTransformer`
+  (indexed `for` over `array_values`). All observations in the array are sparse (often only `datetime`),
+  so every non-`datetime` field is optional and skipped when absent or wrong-typed.
 
 ### Adding a new DataHub API
 
