@@ -1,6 +1,6 @@
 # Met Office API Client
 
-[![CI](https://github.com/christianjbrown/php-met-office-api-lib/actions/workflows/ci.yml/badge.svg)](https://github.com/christianjbrown/php-met-office-api-lib/actions/workflows/ci.yml)
+[![CI](https://github.com/christianjbrown/php-met-office-weather-datahub-api-lib/actions/workflows/ci.yml/badge.svg)](https://github.com/christianjbrown/php-met-office-weather-datahub-api-lib/actions/workflows/ci.yml)
 
 A strongly-typed, **read-only** PHP client for the [Met Office Weather DataHub](https://datahub.metoffice.gov.uk/) APIs. It returns plain, typed model objects rather than raw GeoJSON arrays. The library is structured to host multiple DataHub APIs side by side; its supported APIs are **Site-Specific** (Global Spot) and **Observation (Land)**.
 
@@ -58,7 +58,7 @@ $observations = $observationLand->getObservationApi()->getByGeohash('gcpvj0');  
 For your composer-enabled project:
 
 ```bash
-composer require christianjbrown/php-met-office-api-lib
+composer require christianjbrown/php-met-office-weather-datahub-api-lib
 ```
 
 
