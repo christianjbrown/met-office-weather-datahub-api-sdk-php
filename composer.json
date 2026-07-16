@@ -1,6 +1,6 @@
 {
     "name": "christianjbrown/php-met-office-weather-datahub-api-lib",
-    "description": "A strongly-typed PHP client for the Met Office Weather DataHub APIs (currently the Site-Specific / Global Spot forecast, Observation (Land), and Atmospheric Models), returning typed models instead of raw GeoJSON.",
+    "description": "A strongly-typed PHP client for the Met Office Weather DataHub APIs (currently the Site-Specific / Global Spot forecast, Observation (Land), Atmospheric Models, and Map Images), returning typed models instead of raw GeoJSON.",
     "type": "library",
     "license": "MIT",
     "keywords": [
@@ -62,11 +62,11 @@
     "repositories": [
         {
             "type": "github",
-            "url": "git@github.com:christianjbrown/php-api-client-lib.git"
+            "url": "git@github.com:christianjbrown/php-code-quality-scripts.git"
         },
         {
             "type": "github",
-            "url": "git@github.com:christianjbrown/php-code-quality-scripts.git"
+            "url": "git@github.com:christianjbrown/php-api-client-lib.git"
         }
     ],
     "minimum-stability": "dev"

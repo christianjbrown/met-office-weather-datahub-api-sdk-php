@@ -7,16 +7,17 @@ small, uniform, and highly opinionated, so new code should be indistinguishable 
 
 A thin, strongly-typed, read-only PHP 8.5+ client for the Met Office **Weather DataHub** APIs. It is
 structured to host multiple DataHub APIs side by side; its supported APIs are **Site-Specific**
-(Global Spot), **Observation (Land)**, and **Atmospheric Models** (Gridded). It builds on the generic `christianjbrown/php-api-client-lib`
+(Global Spot), **Observation (Land)**, **Atmospheric Models** (Gridded), and **Map Images**. It builds on the generic `christianjbrown/php-api-client-lib`
 (which wraps Guzzle and normalises transport exceptions) and wires each API's clients + transformer
 chains through a Symfony `ContainerBuilder`.
 
 The top-level entry point is the umbrella `MetOffice` facade (`src/MetOffice.php`): constructed with
 **no arguments**, it is a simple factory whose `siteSpecific(string $apiKey): SiteSpecific\SiteSpecificInterface`
-`observationLand(string $apiKey): ObservationLand\ObservationLandInterface`, and
-`atmosphericModels(string $apiKey): AtmosphericModels\AtmosphericModelsInterface` methods return the
+`observationLand(string $apiKey): ObservationLand\ObservationLandInterface`,
+`atmosphericModels(string $apiKey): AtmosphericModels\AtmosphericModelsInterface`, and
+`mapImages(string $apiKey): MapImages\MapImagesInterface` methods return the
 per-API clients. Each API's own facade (e.g. `SiteSpecific\SiteSpecific`, `ObservationLand\ObservationLand`,
-`AtmosphericModels\AtmosphericModels`, constructed with a `string $apiKey`) owns the DI container for
+`AtmosphericModels\AtmosphericModels`, `MapImages\MapImages`, constructed with a `string $apiKey`) owns the DI container for
 that API. New DataHub APIs are added as new `siteSpecific()`-style factory methods returning new
 per-API facades.
 
@@ -171,6 +172,33 @@ as a `string`** for a download — **no GRIB parsing is performed**. Base URL
   `RegionsTransformer`/`RegionTransformer`, `AxisExtentTransformer`), following the same guard/`applyX`
   idioms as the other APIs. String-array fields are filtered with `array_values(array_filter(..., is_string))`
   and `extent.z` numbers pass through the sequential-`if` `toFloat()` helper (int-or-float → `float`).
+
+### Map Images (`ChristianBrown\MetOffice\MapImages\`)
+
+Orders for Map Images data. Structurally almost identical to `AtmosphericModels\` — the schemas
+(`ApiOrderInfo`, `ApiOrderFile`, `ApiRunListForModel`/`ApiRunDetails`, `ApiParameterDetails`,
+`ApiRegionDetails`/`ApiOrderAxes`/`ApiAxisExtent`) are the same, so the `Model/` and `Transformer/`
+layers are a 1:1 copy. The map images themselves are delivered as binary **PNG** files; this library
+returns typed metadata for the runs/orders/files and returns the **raw PNG bytes as a `string`** for a
+download — **no image decoding is performed**. Base URL
+`https://data.hub.api.metoffice.gov.uk/map-images/1.0.0`, same `apikey` header.
+
+- **`MapImages\MapImages`** — the facade. Same wiring as `AtmosphericModels\AtmosphericModels`
+  (registers `ApiClient`, **both** the JSON request sender and the raw `ApiRequestSenderInterface`, the
+  full transformer chains, and the two API clients; `SERVICE_*` ids on `MapImagesInterface`,
+  **`met_office.map_images.` prefix**). Exposes `getRunsApi()` and `getOrdersApi()`.
+- **`MapImages\Api/`** — **two differences from Atmospheric Models.** (1) Map Images has **no
+  `/runs/{modelId}` endpoint**, so `RunsApi` exposes only `getRuns()` (there is no `getRunsByModel()`
+  and no `API_URL_RUNS_BY_MODEL_SPRINTF`). (2) The binary `getOrderFileData()` sends
+  `Accept: image/png` (`HEADER_VALUE_ACCEPT_PNG = 'image/png'`) rather than GRIB, and returns the raw
+  PNG body string (302 redirects followed, file id URL-encoded). `OrdersApi` is otherwise identical
+  (`getOrders()`, `getOrderFiles()`, `getOrderFile()`). **Accept header is mandatory** — the gateway
+  returns `406` without it, so every JSON endpoint sends `Accept: application/json` and the raw
+  download sends `Accept: image/png`. `Api\ApiInterface` extends the shared top-level `ApiInterface`.
+- **`MapImages\Model/`** and **`MapImages\Transformer/`** — identical shapes to the Atmospheric Models
+  models/transformers (`Run`/`RunDetail`, `Order`, `OrderFile`, `OrderFileDetails`, `ParameterDetail`,
+  `Region`/`AxisExtent`; the matching object + collection transformers). Live-verified there is a
+  single model, `mo-uk-mimg`.
 
 ### Adding a new DataHub API
 

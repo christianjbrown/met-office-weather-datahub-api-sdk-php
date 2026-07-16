@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/christianjbrown/php-met-office-weather-datahub-api-lib/actions/workflows/ci.yml/badge.svg)](https://github.com/christianjbrown/php-met-office-weather-datahub-api-lib/actions/workflows/ci.yml)
 
-A strongly-typed, **read-only** PHP client for the [Met Office Weather DataHub](https://datahub.metoffice.gov.uk/) APIs. It returns plain, typed model objects rather than raw GeoJSON arrays. The library is structured to host multiple DataHub APIs side by side; its supported APIs are **Site-Specific** (Global Spot), **Observation (Land)**, and **Atmospheric Models** (Gridded).
+A strongly-typed, **read-only** PHP client for the [Met Office Weather DataHub](https://datahub.metoffice.gov.uk/) APIs. It returns plain, typed model objects rather than raw GeoJSON arrays. The library is structured to host multiple DataHub APIs side by side; its supported APIs are **Site-Specific** (Global Spot), **Observation (Land)**, **Atmospheric Models** (Gridded), and **Map Images**.
 
 ## :satellite: Supported APIs
 
@@ -11,7 +11,7 @@ A strongly-typed, **read-only** PHP client for the [Met Office Weather DataHub](
 | **Site-Specific** (Global Spot) | `MetOffice::siteSpecific()` | ✅ Supported |
 | **Observation (Land)** | `MetOffice::observationLand()` | ✅ Supported |
 | **Atmospheric Models** (Gridded) | `MetOffice::atmosphericModels()` | ✅ Supported |
-| Map Images | — | 🔜 Planned |
+| **Map Images** | `MetOffice::mapImages()` | ✅ Supported |
 
 ### Site-Specific (Global Spot)
 
@@ -56,6 +56,23 @@ $atmosphericModels = (new MetOffice())->atmosphericModels('your-atmospheric-mode
 $runs = $atmosphericModels->getRunsApi()->getRuns();                              // RunInterface[]
 
 $grib = $atmosphericModels->getOrdersApi()->getOrderFileData($orderId, $fileId);  // raw GRIB bytes (string)
+```
+
+### Map Images
+
+Retrieves orders for Map Images data. As with Atmospheric Models, the imagery itself is delivered as binary files — here **PNG** map images — so this client returns typed metadata for the runs, orders and files, and hands you the **raw PNG bytes** for a file (no image decoding is performed). Base URL `https://data.hub.api.metoffice.gov.uk/map-images/1.0.0`, same `apikey` header. It exposes two clients:
+
+- **Runs** (`getRunsApi()`) — `getRuns()` lists every available model run (`RunInterface[]`, each with a `modelId` such as `mo-uk-mimg`, and its `completeRuns` — `RunDetailInterface[]` carrying the run hour, the run date-time as a Unix timestamp, and the `runFilter`). Unlike Atmospheric Models, Map Images has no per-model runs endpoint.
+- **Orders** (`getOrdersApi()`) — `getOrders()` lists the orders configured for your organisation (`OrderInterface[]`); `getOrderFiles(string $orderId, ?string $detail = null, ?string $runFilter = null)` lists the latest available files for an order (`OrderFileInterface[]`); `getOrderFile(string $orderId, string $fileId)` returns the detailed metadata for one file (`OrderFileDetailsInterface`, including its `ParameterDetailInterface[]`); and `getOrderFileData(string $orderId, string $fileId)` downloads the file and returns the **raw PNG bytes as a `string`** (302 redirects are followed and the file id is URL-encoded for you).
+
+```php
+use ChristianBrown\MetOffice\MetOffice;
+
+$mapImages = (new MetOffice())->mapImages('your-map-images-apikey');
+
+$runs = $mapImages->getRunsApi()->getRuns();                              // RunInterface[]
+
+$png = $mapImages->getOrdersApi()->getOrderFileData($orderId, $fileId);   // raw PNG bytes (string)
 ```
 
 

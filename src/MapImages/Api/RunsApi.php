@@ -1,0 +1,64 @@
+<?php
+
+declare(strict_types=1);
+
+namespace ChristianBrown\MetOffice\MapImages\Api;
+
+use ChristianBrown\ApiClient\Exception\Request\RequestExceptionInterface;
+use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
+use ChristianBrown\MetOffice\Exception\UnexpectedResponseException;
+use ChristianBrown\MetOffice\MapImages\Model\RunInterface;
+use ChristianBrown\MetOffice\MapImages\Transformer\RunsTransformerInterface;
+
+use function is_array;
+use function sprintf;
+
+final class RunsApi implements RunsApiInterface
+{
+    private string $apiKey;
+    private JsonApiRequestSenderInterface $requestSender;
+    private RunsTransformerInterface $runsTransformer;
+
+    public function __construct(JsonApiRequestSenderInterface $requestSender, RunsTransformerInterface $runsTransformer, string $apiKey)
+    {
+        $this->requestSender = $requestSender;
+        $this->runsTransformer = $runsTransformer;
+        $this->apiKey = $apiKey;
+    }
+
+    /**
+     * @throws RequestExceptionInterface
+     * @throws UnexpectedResponseException
+     *
+     * @return array<int, RunInterface>
+     */
+    public function getRuns(): array
+    {
+        $headers = [
+            self::HEADER_KEY_API_KEY => $this->apiKey,
+            self::HEADER_KEY_ACCEPT => self::HEADER_VALUE_ACCEPT_JSON,
+        ];
+        $data = $this->requestSender->get(self::API_URL_RUNS, [], $headers);
+
+        return $this->runsTransformer->transform($this->extractRuns($data));
+    }
+
+    /**
+     * @param mixed[] $data
+     *
+     * @throws UnexpectedResponseException
+     *
+     * @return mixed[]
+     */
+    private function extractRuns(array $data): array
+    {
+        if (!isset($data[self::KEY_RUNS])) {
+            throw new UnexpectedResponseException(sprintf(self::UNEXPECTED_RESPONSE_SPRINTF, self::KEY_RUNS));
+        }
+        if (!is_array($data[self::KEY_RUNS])) {
+            throw new UnexpectedResponseException(sprintf(self::UNEXPECTED_RESPONSE_SPRINTF, self::KEY_RUNS));
+        }
+
+        return $data[self::KEY_RUNS];
+    }
+}

@@ -1,0 +1,81 @@
+<?php
+
+declare(strict_types=1);
+
+namespace ChristianBrown\MetOffice\Tests\MapImages\Api;
+
+use ChristianBrown\ApiClient\Exception\Request\RequestExceptionInterface;
+use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
+use ChristianBrown\MetOffice\Exception\UnexpectedResponseException;
+use ChristianBrown\MetOffice\MapImages\Api\RunsApi;
+use ChristianBrown\MetOffice\MapImages\Api\RunsApiInterface;
+use ChristianBrown\MetOffice\MapImages\Model\RunInterface;
+use ChristianBrown\MetOffice\MapImages\Transformer\RunsTransformerInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\TestWith;
+use PHPUnit\Framework\MockObject\Exception;
+use PHPUnit\Framework\TestCase;
+
+use function sprintf;
+
+#[CoversClass(RunsApi::class)]
+final class RunsApiTest extends TestCase
+{
+    /**
+     * @throws RequestExceptionInterface
+     * @throws Exception
+     */
+    public function testGetRuns(): void
+    {
+        $runsData = [['test-run']];
+        $data = [RunsApiInterface::KEY_RUNS => $runsData];
+
+        $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
+        $requestSender->method('get')
+            ->with(
+                RunsApiInterface::API_URL_RUNS,
+                [],
+                [
+                    RunsApiInterface::HEADER_KEY_API_KEY => 'test-api-key',
+                    RunsApiInterface::HEADER_KEY_ACCEPT => RunsApiInterface::HEADER_VALUE_ACCEPT_JSON,
+                ]
+            )
+            ->willReturn($data);
+
+        $run = self::createStub(RunInterface::class);
+        $runs = [$run];
+
+        $transformer = self::createMock(RunsTransformerInterface::class);
+        $transformer->method('transform')
+            ->with($runsData)
+            ->willReturn($runs);
+
+        $api = new RunsApi($requestSender, $transformer, 'test-api-key');
+
+        self::assertSame($runs, $api->getRuns());
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     *
+     * @throws RequestExceptionInterface
+     * @throws Exception
+     */
+    #[TestWith([[]])]
+    #[TestWith([[RunsApiInterface::KEY_RUNS => 'not-an-array']])]
+    public function testGetRunsThrowsOnUnexpectedResponse(array $data): void
+    {
+        $requestSender = self::createStub(JsonApiRequestSenderInterface::class);
+        $requestSender->method('get')->willReturn($data);
+
+        $transformer = self::createMock(RunsTransformerInterface::class);
+        $transformer->expects(self::never())->method('transform');
+
+        $api = new RunsApi($requestSender, $transformer, 'test-api-key');
+
+        $this->expectException(UnexpectedResponseException::class);
+        $this->expectExceptionMessage(sprintf(RunsApiInterface::UNEXPECTED_RESPONSE_SPRINTF, RunsApiInterface::KEY_RUNS));
+
+        $api->getRuns();
+    }
+}

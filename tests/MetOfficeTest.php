@@ -6,6 +6,8 @@ namespace ChristianBrown\MetOffice\Tests;
 
 use ChristianBrown\MetOffice\AtmosphericModels\AtmosphericModels;
 use ChristianBrown\MetOffice\AtmosphericModels\AtmosphericModelsInterface;
+use ChristianBrown\MetOffice\MapImages\MapImages;
+use ChristianBrown\MetOffice\MapImages\MapImagesInterface;
 use ChristianBrown\MetOffice\MetOffice;
 use ChristianBrown\MetOffice\ObservationLand\ObservationLand;
 use ChristianBrown\MetOffice\ObservationLand\ObservationLandInterface;
@@ -17,6 +19,7 @@ use PHPUnit\Framework\TestCase;
 
 #[CoversClass(MetOffice::class)]
 #[UsesClass(AtmosphericModels::class)]
+#[UsesClass(MapImages::class)]
 #[UsesClass(ObservationLand::class)]
 #[UsesClass(SiteSpecific::class)]
 final class MetOfficeTest extends TestCase
@@ -26,6 +29,13 @@ final class MetOfficeTest extends TestCase
         $metOffice = new MetOffice();
 
         self::assertInstanceOf(AtmosphericModelsInterface::class, $metOffice->atmosphericModels('key'));
+    }
+
+    public function testMapImages(): void
+    {
+        $metOffice = new MetOffice();
+
+        self::assertInstanceOf(MapImagesInterface::class, $metOffice->mapImages('key'));
     }
 
     public function testObservationLand(): void
