@@ -5,22 +5,30 @@ small, uniform, and highly opinionated, so new code should be indistinguishable 
 
 ## What this is
 
-A thin, strongly-typed, read-only PHP 8.5+ client for the Met Office **Weather DataHub Site-Specific**
-(Global Spot) API. Given a latitude/longitude it fetches the hourly, three-hourly, or daily point
-forecast and returns typed model objects instead of raw GeoJSON arrays. It builds on the generic
-`christianjbrown/php-api-client-lib` (which wraps Guzzle and normalises transport exceptions) and
-wires its clients + transformer chains through a Symfony `ContainerBuilder`. The entry point is the
-`MetOffice` facade (`src/MetOffice.php`).
+A thin, strongly-typed, read-only PHP 8.5+ client for the Met Office **Weather DataHub** APIs. It is
+structured to host multiple DataHub APIs side by side; its first (and currently only) supported API is
+**Site-Specific** (Global Spot). It builds on the generic `christianjbrown/php-api-client-lib` (which
+wraps Guzzle and normalises transport exceptions) and wires each API's clients + transformer chains
+through a Symfony `ContainerBuilder`.
 
-Upstream API essentials:
+The top-level entry point is the umbrella `MetOffice` facade (`src/MetOffice.php`): constructed with
+**no arguments**, it is a simple factory whose `siteSpecific(string $apiKey): SiteSpecific\SiteSpecificInterface`
+returns the Site-Specific client. Each API's own facade (e.g. `SiteSpecific\SiteSpecific`,
+constructed with a `string $apiKey`) owns the DI container for that API. New DataHub APIs are added as
+new `siteSpecific()`-style factory methods returning new per-API facades.
+
+Site-Specific API essentials: given a latitude/longitude it fetches the hourly, three-hourly, or daily
+point forecast and returns typed model objects instead of raw GeoJSON arrays.
 
 - **Endpoints:** `GET https://data.hub.api.metoffice.gov.uk/sitespecific/v0/point/{hourly,three-hourly,daily}`.
 - **Auth:** the API key is sent as the HTTP header `apikey: <key>` (header name literally `apikey`).
+  This header key and the DataHub host live on the **shared** `ChristianBrown\MetOffice\ApiInterface`
+  (`src/ApiInterface.php`), which every API's `Api\ApiInterface` extends.
 - **Query params** (all strings): `latitude`, `longitude`, `dataSource=BD1`,
   `excludeParameterMetadata=true`, `includeLocationName=true`.
 - **Response:** GeoJSON — `features[0].properties` holds `location.name`, `modelRunDate` (ISO-8601),
   and `timeSeries` (an array of per-step objects). Each step has a `time` (ISO-8601) plus its weather
-  fields. The three resolutions have **three distinct step schemas** (see `src/Model/`).
+  fields. The three resolutions have **three distinct step schemas** (see `src/SiteSpecific/Model/`).
 
 ## Commands
 
@@ -47,37 +55,61 @@ style → PHPStan → PHPUnit-with-coverage — on push/PR to `main`.
 ## Architecture
 
 Everything lives under the `ChristianBrown\MetOffice\` namespace (`src/`), mirrored 1:1 under
-`ChristianBrown\MetOffice\Tests\` (`tests/`). A layered design:
+`ChristianBrown\MetOffice\Tests\` (`tests/`). The layout separates **shared** code (top level) from
+**per-API** code (one sub-namespace per DataHub API, starting with `SiteSpecific\`).
 
-- **`MetOffice`** (`src/MetOffice.php`) — the facade/entry point. Constructed with a `string $apiKey`,
-  it builds a Symfony `ContainerBuilder` and registers the `ApiClient`, the JSON request sender, the
-  three step transformers, three `ForecastTimeStepsTransformer` + `ForecastTransformer` chains, and
-  the three API clients (ids are `SERVICE_*` constants on `MetOfficeInterface`, `met_office.` prefix).
-  Exposes `getHourlyForecastApi()`, `getThreeHourlyForecastApi()`, `getDailyForecastApi()`.
-- **`Api/`** — one client per resolution (`HourlyForecastApi`, `ThreeHourlyForecastApi`,
+### Shared (top level, `ChristianBrown\MetOffice\`)
+
+- **`MetOffice`** (`src/MetOffice.php`) — the umbrella facade. **No constructor arguments.** A plain
+  factory: `siteSpecific(string $apiKey)` returns `new SiteSpecific\SiteSpecific($apiKey)`. No DI
+  container at this level. Each future API gets its own factory method here.
+- **`ApiInterface`** (`src/ApiInterface.php`) — the shared base interface holding only the cross-API
+  constants `HEADER_KEY_API_KEY = 'apikey'` and `API_HOST`. Every API's `Api\ApiInterface` extends it.
+- **`Transformer\WeatherTypeTransformer`** (+ interface) — turns a `WeatherType` into a display name or
+  emoji. Shared because weather codes are a Met Office-wide concept.
+- **`Enums/`** — `WeatherType` (int-backed 0–30 code table, plus `-1` for trace/NA) and
+  `WindDirection` (string-backed 16-point compass with `WindDirection::fromDegrees(int): self`). Both
+  are Met Office-wide concepts, so they live at the top level.
+- **`Exception/`** — a flat hierarchy rooted at `ExceptionInterface extends Throwable`:
+  `UnexpectedResponseException extends RuntimeException` (bad/unparseable response) and
+  `MissingInputException extends InvalidArgumentException`. A single `catch (ExceptionInterface)`
+  covers everything this library throws. Shared across all APIs.
+
+### Site-Specific (`ChristianBrown\MetOffice\SiteSpecific\`)
+
+- **`SiteSpecific\SiteSpecific`** (`src/SiteSpecific/SiteSpecific.php`) — the Site-Specific facade.
+  Constructed with a `string $apiKey`, it builds a Symfony `ContainerBuilder` and registers the
+  `ApiClient`, the JSON request sender, the three step transformers, three `ForecastTimeStepsTransformer`
+  + `ForecastTransformer` chains, and the three API clients (ids are `SERVICE_*` constants on
+  `SiteSpecificInterface`, **`met_office.site_specific.` prefix**). Exposes `getHourlyForecastApi()`,
+  `getThreeHourlyForecastApi()`, `getDailyForecastApi()`.
+- **`SiteSpecific\Api/`** — one client per resolution (`HourlyForecastApi`, `ThreeHourlyForecastApi`,
   `DailyForecastApi`), each constructed with `(JsonApiRequestSenderInterface, ForecastTransformerInterface,
   string $apiKey)`. `getForecast(float $latitude, float $longitude, bool $skipCache = false)` builds
   the query + `apikey` header, calls the sender, guards the `features`/`properties` shape, delegates
   `features[0].properties` to the injected `ForecastTransformer`, and caches by `"latitude,longitude"`.
-  Shared constants (header/query keys, `KEY_FEATURES`, `KEY_PROPERTIES`) live on `Api/ApiInterface`.
-- **`Model/`** — plain mutable DTOs. `Forecast` holds `locationName`, `modelRunDate` (Unix), and an
-  array of `ForecastTimeStepInterface`. `ForecastTimeStepInterface` is the marker (`getTime(): int`)
+  `SiteSpecific\Api\ApiInterface` **extends the shared `ChristianBrown\MetOffice\ApiInterface`** and adds
+  the Site-Specific constants (query keys, `KEY_FEATURES`, `KEY_PROPERTIES`, `CACHE_KEY_SPRINTF`,
+  `UNEXPECTED_RESPONSE_SPRINTF`); each endpoint interface adds its own `API_URL`.
+- **`SiteSpecific\Model/`** — plain mutable DTOs. `Forecast` holds `locationName`, `modelRunDate` (Unix),
+  and an array of `ForecastTimeStepInterface`. `ForecastTimeStepInterface` is the marker (`getTime(): int`)
   implemented by the three step models — `HourlyForecastTimeStep`, `ThreeHourlyForecastTimeStep`,
   `DailyForecastTimeStep` — which have **distinct field sets** (the hourly "instant" schema, the
-  three-hourly schema, and the daily day/night schema). Weather codes are stored as `?WeatherType`,
-  wind direction as raw `?int` degrees.
-- **`Transformer/`** — `ForecastTransformer` builds a `Forecast`, applies optional `location.name` and
-  `modelRunDate`, and delegates `timeSeries` to `ForecastTimeStepsTransformer` (a collection wrapping
-  one `ForecastTimeStepTransformerInterface`). The three step transformers each implement that
-  interface and narrow their return type to their concrete step interface. `WeatherTypeTransformer`
-  turns a `WeatherType` into a display name or emoji.
-- **`Enums/`** — `WeatherType` (int-backed 0–30 code table, plus `-1` for trace/NA),
-  `WindDirection` (string-backed 16-point compass with `WindDirection::fromDegrees(int): self`), and
-  `Visibility` (the legacy string visibility bands, retained for completeness).
-- **`Exception/`** — a flat hierarchy rooted at `ExceptionInterface extends Throwable`:
-  `UnexpectedResponseException extends RuntimeException` (bad/unparseable response) and
-  `MissingInputException extends InvalidArgumentException`. A single `catch (ExceptionInterface)`
-  covers everything this library throws.
+  three-hourly schema, and the daily day/night schema). Weather codes are stored as `?WeatherType` (the
+  shared enum), wind direction as raw `?int` degrees.
+- **`SiteSpecific\Transformer/`** — `ForecastTransformer` builds a `Forecast`, applies optional
+  `location.name` and `modelRunDate`, and delegates `timeSeries` to `ForecastTimeStepsTransformer` (a
+  collection wrapping one `ForecastTimeStepTransformerInterface`). The three step transformers each
+  implement that interface and narrow their return type to their concrete step interface. These
+  reference the shared `Enums\WeatherType` and the shared `Transformer\WeatherTypeTransformer`.
+
+### Adding a new DataHub API
+
+Each new API gets its own `ChristianBrown\MetOffice\<ApiName>\` sub-namespace containing its `Api/`,
+`Model/`, `Transformer/` (and any API-specific enums/exceptions), plus a `<ApiName>\<ApiName>` facade
+that owns its DI container (service-id prefix `met_office.<api_name>.`) and an `Api\ApiInterface` that
+extends the shared top-level `ApiInterface`. Wire it into the umbrella `MetOffice` facade with a new
+factory method. Anything genuinely shared across APIs stays at the top level.
 
 ## Conventions (follow all of these)
 
@@ -86,7 +118,7 @@ Everything lives under the `ChristianBrown\MetOffice\` namespace (`src/`), mirro
   There are **no abstract base classes** — the three near-identical API clients and step models each
   stand alone.
 - **Constants live on the interface, not the class**: container service ids
-  (`MetOfficeInterface::SERVICE_*`), URLs (`API_URL`), request keys (`HEADER_KEY_*`, `QUERY_KEY_*`,
+  (`SiteSpecificInterface::SERVICE_*`), URLs (`API_URL`), request keys (`HEADER_KEY_*`, `QUERY_KEY_*`,
   `QUERY_VALUE_*`), JSON keys (`KEY_*`), and all message templates (`*_SPRINTF`). Message text never
   appears as a literal in a class body.
 - **No constructor property promotion** — declare typed `private` properties and assign them in the
@@ -144,7 +176,8 @@ The `phpunit.xml` config is strict (`requireCoverageMetadata`, `beStrictAboutCov
 
 1. Add the class + its matching `...Interface` in the right layer, with any constants (service ids,
    URLs, keys, message templates) on the interface.
-2. If it's a new service, register it in `MetOffice::init()` using a new `SERVICE_*` constant.
+2. If it's a new service, register it in the owning API facade's `init()` (e.g. `SiteSpecific::init()`)
+   using a new `SERVICE_*` constant.
 3. Add a matching `#[CoversClass]` test under `tests/<Layer>/`, doubling all collaborators and
    exercising every guard and optional-field state (absent / wrong-type / valid / zero / whole-number
    float).

@@ -2,9 +2,20 @@
 
 [![CI](https://github.com/christianjbrown/php-met-office-api-lib/actions/workflows/ci.yml/badge.svg)](https://github.com/christianjbrown/php-met-office-api-lib/actions/workflows/ci.yml)
 
-A strongly-typed PHP client for the [Met Office Weather DataHub](https://datahub.metoffice.gov.uk/) **Site-Specific** (Global Spot) API. Given a latitude and longitude it fetches the hourly, three-hourly, or daily forecast for that point and returns plain, typed model objects rather than raw GeoJSON arrays.
+A strongly-typed, **read-only** PHP client for the [Met Office Weather DataHub](https://datahub.metoffice.gov.uk/) APIs. It returns plain, typed model objects rather than raw GeoJSON arrays. The library is structured to host multiple DataHub APIs side by side; its first supported API is **Site-Specific** (Global Spot).
 
-The client is **read-only** and supports the three Site-Specific forecast resolutions:
+## :satellite: Supported APIs
+
+| API | Entry point | Status |
+| --- | --- | --- |
+| **Site-Specific** (Global Spot) | `MetOffice::siteSpecific()` | ✅ Supported |
+| Atmospheric Models | — | 🔜 Planned |
+| Observations (Land) | — | 🔜 Planned |
+| Map Images | — | 🔜 Planned |
+
+### Site-Specific (Global Spot)
+
+Given a latitude and longitude it fetches the hourly, three-hourly, or daily point forecast and returns typed model objects. It supports the three forecast resolutions:
 
 - **Hourly** (`getHourlyForecastApi()`) — per-hour "instant" steps: temperature, feels-like, wind, visibility, humidity, pressure, UV, weather code, precipitation rate/amount, and probability of precipitation.
 - **Three-hourly** (`getThreeHourlyForecastApi()`) — per-three-hour steps: max/min air temperature, feels-like, wind, visibility, humidity, pressure, UV, weather code, precipitation/snow amounts, and the full set of precipitation-type probabilities (rain, heavy rain, snow, heavy snow, hail, sferics).
@@ -36,17 +47,26 @@ composer require christianjbrown/php-met-office-api-lib
 
 ## :computer: Usage
 
-First, create a Met Office [Weather DataHub](https://datahub.metoffice.gov.uk/) account and subscribe to the **Site-Specific** API to obtain an API key. The key is sent to the API as the `apikey` HTTP header, and is passed to the `MetOffice` entry point.
+First, create a Met Office [Weather DataHub](https://datahub.metoffice.gov.uk/) account and subscribe to the **Site-Specific** API to obtain an API key. The key is sent to the API as the `apikey` HTTP header.
 
-The quickest way to get the three clients is the `MetOffice` entry point, which builds them (and their transformer chains) for you through a dependency-injection container — just pass your key:
+The `MetOffice` umbrella facade is the entry point for every DataHub API. Call `siteSpecific($apiKey)` to get the Site-Specific client, which builds the three forecast clients (and their transformer chains) for you through a dependency-injection container:
 
 ```php
 use ChristianBrown\MetOffice\MetOffice;
 
-$metOffice           = new MetOffice('your-met-office-datahub-api-key');
-$hourlyForecastApi   = $metOffice->getHourlyForecastApi();       // HourlyForecastApiInterface
-$threeHourlyForecast = $metOffice->getThreeHourlyForecastApi();  // ThreeHourlyForecastApiInterface
-$dailyForecastApi    = $metOffice->getDailyForecastApi();        // DailyForecastApiInterface
+$siteSpecific        = (new MetOffice())->siteSpecific('your-site-specific-apikey');
+$hourlyForecastApi   = $siteSpecific->getHourlyForecastApi();       // HourlyForecastApiInterface
+$threeHourlyForecast = $siteSpecific->getThreeHourlyForecastApi();  // ThreeHourlyForecastApiInterface
+$dailyForecastApi    = $siteSpecific->getDailyForecastApi();        // DailyForecastApiInterface
+```
+
+You can also construct the Site-Specific facade directly, without going through the umbrella facade:
+
+```php
+use ChristianBrown\MetOffice\SiteSpecific\SiteSpecific;
+
+$siteSpecific      = new SiteSpecific('your-site-specific-apikey');
+$hourlyForecastApi = $siteSpecific->getHourlyForecastApi();
 ```
 
 If you'd rather wire the clients by hand, see [Wiring the clients](#wiring-the-clients) below.
@@ -63,7 +83,7 @@ echo date('c', $forecast->getModelRunDate() ?? 0), "\n";         // model run da
 foreach ($forecast->getTimeSteps() as $step) {
     // Every step implements ForecastTimeStepInterface (getTime(): int, a Unix timestamp).
     // The hourly client yields HourlyForecastTimeStepInterface instances.
-    if ($step instanceof \ChristianBrown\MetOffice\Model\HourlyForecastTimeStepInterface) {
+    if ($step instanceof \ChristianBrown\MetOffice\SiteSpecific\Model\HourlyForecastTimeStepInterface) {
         printf(
             "%s  %.1f°C  wind %.1f m/s\n",
             date('H:i', $step->getTime()),
@@ -119,23 +139,23 @@ There are two concrete types:
 
 Both live in `src/Exception/`. Request-level failures (network errors, non-2xx responses) still surface as `RequestExceptionInterface` from [`christianjbrown/php-api-client-lib`](https://github.com/christianjbrown/php-api-client-lib), which is outside this library's exception hierarchy.
 
-Under the hood, `MetOffice` wires the clients and their transformer chains through a [Symfony dependency-injection](https://symfony.com/doc/current/components/dependency_injection.html) container. If you don't want the container, you can build the same chains by hand — as shown below. The HTTP request sender comes from [`christianjbrown/php-api-client-lib`](https://github.com/christianjbrown/php-api-client-lib).
+Under the hood, `SiteSpecific` wires the clients and their transformer chains through a [Symfony dependency-injection](https://symfony.com/doc/current/components/dependency_injection.html) container. If you don't want the container, you can build the same chains by hand — as shown below. The HTTP request sender comes from [`christianjbrown/php-api-client-lib`](https://github.com/christianjbrown/php-api-client-lib).
 
 <details id="wiring-the-clients">
 <summary><strong>Wiring the clients</strong></summary>
 
 ```php
 use ChristianBrown\ApiClient\ApiClient;
-use ChristianBrown\MetOffice\Api\DailyForecastApi;
-use ChristianBrown\MetOffice\Api\HourlyForecastApi;
-use ChristianBrown\MetOffice\Api\ThreeHourlyForecastApi;
-use ChristianBrown\MetOffice\Transformer\DailyForecastTimeStepTransformer;
-use ChristianBrown\MetOffice\Transformer\ForecastTimeStepsTransformer;
-use ChristianBrown\MetOffice\Transformer\ForecastTransformer;
-use ChristianBrown\MetOffice\Transformer\HourlyForecastTimeStepTransformer;
-use ChristianBrown\MetOffice\Transformer\ThreeHourlyForecastTimeStepTransformer;
+use ChristianBrown\MetOffice\SiteSpecific\Api\DailyForecastApi;
+use ChristianBrown\MetOffice\SiteSpecific\Api\HourlyForecastApi;
+use ChristianBrown\MetOffice\SiteSpecific\Api\ThreeHourlyForecastApi;
+use ChristianBrown\MetOffice\SiteSpecific\Transformer\DailyForecastTimeStepTransformer;
+use ChristianBrown\MetOffice\SiteSpecific\Transformer\ForecastTimeStepsTransformer;
+use ChristianBrown\MetOffice\SiteSpecific\Transformer\ForecastTransformer;
+use ChristianBrown\MetOffice\SiteSpecific\Transformer\HourlyForecastTimeStepTransformer;
+use ChristianBrown\MetOffice\SiteSpecific\Transformer\ThreeHourlyForecastTimeStepTransformer;
 
-$apiKey = 'your-met-office-datahub-api-key';
+$apiKey = 'your-site-specific-apikey';
 
 // Shared JSON request sender (wires Guzzle for you).
 $requestSender = (new ApiClient())->getJsonApiRequestSender();
