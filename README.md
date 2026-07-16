@@ -1,4 +1,4 @@
-# Met Office API Client
+# Met Office Weather DataHub API Client
 
 [![CI](https://github.com/christianjbrown/php-met-office-weather-datahub-api-lib/actions/workflows/ci.yml/badge.svg)](https://github.com/christianjbrown/php-met-office-weather-datahub-api-lib/actions/workflows/ci.yml)
 
