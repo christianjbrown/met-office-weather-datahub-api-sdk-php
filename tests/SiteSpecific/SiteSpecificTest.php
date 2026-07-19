@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ChristianBrown\MetOffice\Tests\SiteSpecific;
 
 use ChristianBrown\MetOffice\SiteSpecific\Api\DailyForecastApi;
+use ChristianBrown\MetOffice\SiteSpecific\Api\ForecastApi;
 use ChristianBrown\MetOffice\SiteSpecific\Api\HourlyForecastApi;
 use ChristianBrown\MetOffice\SiteSpecific\Api\ThreeHourlyForecastApi;
 use ChristianBrown\MetOffice\SiteSpecific\SiteSpecific;
@@ -19,6 +20,7 @@ use PHPUnit\Framework\TestCase;
 
 #[CoversClass(SiteSpecific::class)]
 #[UsesClass(HourlyForecastApi::class)]
+#[UsesClass(ForecastApi::class)]
 #[UsesClass(ThreeHourlyForecastApi::class)]
 #[UsesClass(DailyForecastApi::class)]
 #[UsesClass(ForecastTransformer::class)]

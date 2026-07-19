@@ -8,6 +8,7 @@ use ChristianBrown\ApiClient\ApiClient;
 use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
 use ChristianBrown\MetOffice\SiteSpecific\Api\DailyForecastApi;
 use ChristianBrown\MetOffice\SiteSpecific\Api\DailyForecastApiInterface;
+use ChristianBrown\MetOffice\SiteSpecific\Api\ForecastApi;
 use ChristianBrown\MetOffice\SiteSpecific\Api\HourlyForecastApi;
 use ChristianBrown\MetOffice\SiteSpecific\Api\HourlyForecastApiInterface;
 use ChristianBrown\MetOffice\SiteSpecific\Api\ThreeHourlyForecastApi;
@@ -124,7 +125,7 @@ final class SiteSpecific implements SiteSpecificInterface
                 ]
             );
 
-        $this->container->register(self::SERVICE_HOURLY_FORECAST_API, HourlyForecastApi::class)
+        $this->container->register(self::SERVICE_HOURLY_FORECAST, ForecastApi::class)
             ->setArguments(
                 [
                     $this->container->getDefinition(self::SERVICE_JSON_API_REQUEST_SENDER),
@@ -132,7 +133,14 @@ final class SiteSpecific implements SiteSpecificInterface
                     $this->apiKey,
                 ]
             );
-        $this->container->register(self::SERVICE_THREE_HOURLY_FORECAST_API, ThreeHourlyForecastApi::class)
+        $this->container->register(self::SERVICE_HOURLY_FORECAST_API, HourlyForecastApi::class)
+            ->setArguments(
+                [
+                    $this->container->getDefinition(self::SERVICE_HOURLY_FORECAST),
+                ]
+            );
+
+        $this->container->register(self::SERVICE_THREE_HOURLY_FORECAST, ForecastApi::class)
             ->setArguments(
                 [
                     $this->container->getDefinition(self::SERVICE_JSON_API_REQUEST_SENDER),
@@ -140,12 +148,25 @@ final class SiteSpecific implements SiteSpecificInterface
                     $this->apiKey,
                 ]
             );
-        $this->container->register(self::SERVICE_DAILY_FORECAST_API, DailyForecastApi::class)
+        $this->container->register(self::SERVICE_THREE_HOURLY_FORECAST_API, ThreeHourlyForecastApi::class)
+            ->setArguments(
+                [
+                    $this->container->getDefinition(self::SERVICE_THREE_HOURLY_FORECAST),
+                ]
+            );
+
+        $this->container->register(self::SERVICE_DAILY_FORECAST, ForecastApi::class)
             ->setArguments(
                 [
                     $this->container->getDefinition(self::SERVICE_JSON_API_REQUEST_SENDER),
                     $this->container->getDefinition(self::SERVICE_DAILY_FORECAST_TRANSFORMER),
                     $this->apiKey,
+                ]
+            );
+        $this->container->register(self::SERVICE_DAILY_FORECAST_API, DailyForecastApi::class)
+            ->setArguments(
+                [
+                    $this->container->getDefinition(self::SERVICE_DAILY_FORECAST),
                 ]
             );
     }

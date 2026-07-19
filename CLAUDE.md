@@ -87,14 +87,20 @@ Everything lives under the `ChristianBrown\MetOffice\` namespace (`src/`), mirro
   + `ForecastTransformer` chains, and the three API clients (ids are `SERVICE_*` constants on
   `SiteSpecificInterface`, **`met_office.site_specific.` prefix**). Exposes `getHourlyForecastApi()`,
   `getThreeHourlyForecastApi()`, `getDailyForecastApi()`.
-- **`SiteSpecific\Api/`** — one client per resolution (`HourlyForecastApi`, `ThreeHourlyForecastApi`,
-  `DailyForecastApi`), each constructed with `(JsonApiRequestSenderInterface, ForecastTransformerInterface,
-  string $apiKey)`. `getForecast(float $latitude, float $longitude, bool $skipCache = false)` builds
-  the query + `apikey` header, calls the sender, guards the `features`/`properties` shape, delegates
-  `features[0].properties` to the injected `ForecastTransformer`, and caches by `"latitude,longitude"`.
+- **`SiteSpecific\Api/`** — the shared **`ForecastApi`** (constructed with
+  `(JsonApiRequestSenderInterface, ForecastTransformerInterface, string $apiKey)`) holds the request
+  logic: `getForecast(string $apiUrl, float $latitude, float $longitude, bool $skipCache = false)` builds
+  the query + `apikey` header, calls the sender against the passed `$apiUrl`, guards the
+  `features`/`properties` shape, delegates `features[0].properties` to the injected `ForecastTransformer`,
+  and caches by `"latitude,longitude"`. The three resolution clients (`HourlyForecastApi`,
+  `ThreeHourlyForecastApi`, `DailyForecastApi`) are **thin typed wrappers** that inject a
+  `ForecastApiInterface` and delegate, passing their own `self::API_URL` — one shared implementation
+  instead of three copies, via composition (not an abstract base). The facade wires one `ForecastApi`
+  per resolution (each with that resolution's transformer) behind the matching wrapper.
   `SiteSpecific\Api\ApiInterface` **extends the shared `ChristianBrown\MetOffice\ApiInterface`** and adds
   the Site-Specific constants (query keys, `KEY_FEATURES`, `KEY_PROPERTIES`, `CACHE_KEY_SPRINTF`,
-  `UNEXPECTED_RESPONSE_SPRINTF`); each endpoint interface adds its own `API_URL`.
+  `UNEXPECTED_RESPONSE_SPRINTF`); `ForecastApiInterface` extends it, and each endpoint interface adds its
+  own `API_URL`.
 - **`SiteSpecific\Model/`** — plain mutable DTOs. `Forecast` holds `locationName`, `modelRunDate` (Unix),
   and an array of `ForecastTimeStepInterface`. `ForecastTimeStepInterface` is the marker (`getTime(): int`)
   implemented by the three step models — `HourlyForecastTimeStep`, `ThreeHourlyForecastTimeStep`,
@@ -227,8 +233,10 @@ factory method. Anything genuinely shared across APIs stays at the top level.
 
 - `declare(strict_types=1);` on every file, immediately after `<?php`.
 - **Every concrete class is `final` and implements a matching `...Interface`** in the same namespace.
-  There are **no abstract base classes** — the three near-identical API clients and step models each
-  stand alone.
+  There are **no abstract base classes** — shared logic is reused by **composition**, not inheritance:
+  the three Site-Specific resolution clients are thin wrappers that delegate to a shared `ForecastApi`
+  (the URL is a `getForecast()` argument, not a `self::` constant). The three step models still each
+  stand alone (their field sets genuinely differ).
 - **Constants live on the interface, not the class**: container service ids
   (`SiteSpecificInterface::SERVICE_*`), URLs (`API_URL`), request keys (`HEADER_KEY_*`, `QUERY_KEY_*`,
   `QUERY_VALUE_*`), JSON keys (`KEY_*`), and all message templates (`*_SPRINTF`). Message text never
