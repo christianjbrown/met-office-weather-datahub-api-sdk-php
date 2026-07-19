@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ChristianBrown\MetOffice\MapImages\Api;
 
-use ChristianBrown\MetOffice\MapImages\Model\RunInterface;
+use ChristianBrown\MetOffice\Coverage\Model\RunInterface;
 
 interface RunsApiInterface extends ApiInterface
 {

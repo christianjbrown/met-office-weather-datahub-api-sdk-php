@@ -6,8 +6,8 @@ namespace ChristianBrown\MetOffice\AtmosphericModels\Api;
 
 use ChristianBrown\ApiClient\Exception\Request\RequestExceptionInterface;
 use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
-use ChristianBrown\MetOffice\AtmosphericModels\Model\RunInterface;
-use ChristianBrown\MetOffice\AtmosphericModels\Transformer\RunsTransformerInterface;
+use ChristianBrown\MetOffice\Coverage\Model\RunInterface;
+use ChristianBrown\MetOffice\Coverage\Transformer\RunsTransformerInterface;
 use ChristianBrown\MetOffice\Exception\UnexpectedResponseException;
 
 use function is_array;

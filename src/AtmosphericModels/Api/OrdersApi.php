@@ -7,12 +7,12 @@ namespace ChristianBrown\MetOffice\AtmosphericModels\Api;
 use ChristianBrown\ApiClient\ApiRequestSenderInterface;
 use ChristianBrown\ApiClient\Exception\Request\RequestExceptionInterface;
 use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
-use ChristianBrown\MetOffice\AtmosphericModels\Model\OrderFileDetailsInterface;
-use ChristianBrown\MetOffice\AtmosphericModels\Model\OrderFileInterface;
-use ChristianBrown\MetOffice\AtmosphericModels\Model\OrderInterface;
-use ChristianBrown\MetOffice\AtmosphericModels\Transformer\OrderFileDetailsTransformerInterface;
-use ChristianBrown\MetOffice\AtmosphericModels\Transformer\OrderFilesTransformerInterface;
-use ChristianBrown\MetOffice\AtmosphericModels\Transformer\OrdersTransformerInterface;
+use ChristianBrown\MetOffice\Coverage\Model\OrderFileDetailsInterface;
+use ChristianBrown\MetOffice\Coverage\Model\OrderFileInterface;
+use ChristianBrown\MetOffice\Coverage\Model\OrderInterface;
+use ChristianBrown\MetOffice\Coverage\Transformer\OrderFileDetailsTransformerInterface;
+use ChristianBrown\MetOffice\Coverage\Transformer\OrderFilesTransformerInterface;
+use ChristianBrown\MetOffice\Coverage\Transformer\OrdersTransformerInterface;
 use ChristianBrown\MetOffice\Exception\UnexpectedResponseException;
 
 use function is_array;

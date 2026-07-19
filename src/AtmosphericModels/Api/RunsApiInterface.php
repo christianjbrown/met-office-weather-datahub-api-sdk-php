@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ChristianBrown\MetOffice\AtmosphericModels\Api;
 
-use ChristianBrown\MetOffice\AtmosphericModels\Model\RunInterface;
+use ChristianBrown\MetOffice\Coverage\Model\RunInterface;
 
 interface RunsApiInterface extends ApiInterface
 {

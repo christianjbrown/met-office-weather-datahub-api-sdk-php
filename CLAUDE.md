@@ -137,6 +137,27 @@ same `apikey` header.
   (indexed `for` over `array_values`). All observations in the array are sparse (often only `datetime`),
   so every non-`datetime` field is optional and skipped when absent or wrong-typed.
 
+### Coverage — shared order/run schema (`ChristianBrown\MetOffice\Coverage\`)
+
+Atmospheric Models and Map Images are both DataHub "coverage order" APIs with an **identical**
+run/order/file schema, so their `Model/` and `Transformer/` layers (previously duplicated 1:1 in each
+module) live once under `ChristianBrown\MetOffice\Coverage\`:
+
+- **`Coverage\Model/`** — `Run`/`RunDetail`, `Order`, `OrderFile`, `OrderFileDetails`,
+  `ParameterDetail`, `Region`/`AxisExtent` (a region's `extent.x`/`extent.y` are each an `AxisExtent`).
+  `runDateTime` values are Unix timestamps; `ParameterDetail` exposes `timeCoordinates` (from `extent.t`)
+  and `verticalCoordinates` (from `extent.z`, `float[]`).
+- **`Coverage\Transformer/`** — one object + one collection transformer per list
+  (`RunsTransformer`/`RunTransformer`, `RunDetailsTransformer`/`RunDetailTransformer`,
+  `OrdersTransformer`/`OrderTransformer`, `OrderFilesTransformer`/`OrderFileTransformer`,
+  `OrderFileDetailsTransformer`, `ParameterDetailsTransformer`/`ParameterDetailTransformer`,
+  `RegionsTransformer`/`RegionTransformer`, `AxisExtentTransformer`), following the same guard/`applyX`
+  idioms as the other APIs. String-array fields are filtered with `array_values(array_filter(..., is_string))`
+  and `extent.z` numbers pass through the sequential-`if` `toFloat()` helper (int-or-float → `float`).
+
+Only each module's `Api/` layer stays per-module — that is where the two genuinely differ (base URL,
+`Accept` header, and Map Images lacking `/runs/{modelId}`). Their tests live once under `tests/Coverage/`.
+
 ### Atmospheric Models (`ChristianBrown\MetOffice\AtmosphericModels\`)
 
 Orders for Atmospheric Model ("Gridded") data. The model data itself is delivered as binary **GRIB**
@@ -161,24 +182,18 @@ as a `string`** for a download — **no GRIB parsing is performed**. Base URL
   JSON wrapper-shape guards live in the API classes and the per-item parsing is delegated to the
   transformers. `Api\ApiInterface` extends the shared top-level `ApiInterface` and adds the `API_URL_*`,
   `QUERY_KEY_*`, `HEADER_KEY_ACCEPT`/`HEADER_VALUE_ACCEPT_GRIB`, and JSON wrapper `KEY_*` constants.
-- **`AtmosphericModels\Model/`** — `Run`/`RunDetail`, `Order`, `OrderFile`, `OrderFileDetails`,
-  `ParameterDetail`, and the shared `Region`/`AxisExtent` (a region's `extent.x`/`extent.y` are each an
-  `AxisExtent`). `runDateTime` values are Unix timestamps; `ParameterDetail` exposes `timeCoordinates`
-  (from `extent.t`) and `verticalCoordinates` (from `extent.z`, `float[]`).
-- **`AtmosphericModels\Transformer/`** — one object transformer + one collection transformer per list
-  (`RunsTransformer`/`RunTransformer`, `RunDetailsTransformer`/`RunDetailTransformer`,
-  `OrdersTransformer`/`OrderTransformer`, `OrderFilesTransformer`/`OrderFileTransformer`,
-  `OrderFileDetailsTransformer`, `ParameterDetailsTransformer`/`ParameterDetailTransformer`,
-  `RegionsTransformer`/`RegionTransformer`, `AxisExtentTransformer`), following the same guard/`applyX`
-  idioms as the other APIs. String-array fields are filtered with `array_values(array_filter(..., is_string))`
-  and `extent.z` numbers pass through the sequential-`if` `toFloat()` helper (int-or-float → `float`).
+- **Model + Transformer** — the run/order/file schema is shared with Map Images and lives under
+  `ChristianBrown\MetOffice\Coverage\` (see the Coverage section above). Atmospheric Models adds no
+  module-specific models or transformers; its `Api/` clients depend on `Coverage\Transformer\*` and
+  return `Coverage\Model\*` types.
 
 ### Map Images (`ChristianBrown\MetOffice\MapImages\`)
 
 Orders for Map Images data. Structurally almost identical to `AtmosphericModels\` — the schemas
 (`ApiOrderInfo`, `ApiOrderFile`, `ApiRunListForModel`/`ApiRunDetails`, `ApiParameterDetails`,
 `ApiRegionDetails`/`ApiOrderAxes`/`ApiAxisExtent`) are the same, so the `Model/` and `Transformer/`
-layers are a 1:1 copy. The map images themselves are delivered as binary **PNG** files; this library
+layers are shared with Atmospheric Models via `ChristianBrown\MetOffice\Coverage\` (see the Coverage
+section) rather than duplicated. The map images themselves are delivered as binary **PNG** files; this library
 returns typed metadata for the runs/orders/files and returns the **raw PNG bytes as a `string`** for a
 download — **no image decoding is performed**. Base URL
 `https://data.hub.api.metoffice.gov.uk/map-images/1.0.0`, same `apikey` header.
@@ -195,10 +210,10 @@ download — **no image decoding is performed**. Base URL
   (`getOrders()`, `getOrderFiles()`, `getOrderFile()`). **Accept header is mandatory** — the gateway
   returns `406` without it, so every JSON endpoint sends `Accept: application/json` and the raw
   download sends `Accept: image/png`. `Api\ApiInterface` extends the shared top-level `ApiInterface`.
-- **`MapImages\Model/`** and **`MapImages\Transformer/`** — identical shapes to the Atmospheric Models
-  models/transformers (`Run`/`RunDetail`, `Order`, `OrderFile`, `OrderFileDetails`, `ParameterDetail`,
-  `Region`/`AxisExtent`; the matching object + collection transformers). Live-verified there is a
-  single model, `mo-uk-mimg`.
+- **Model + Transformer** — shared with Atmospheric Models under `ChristianBrown\MetOffice\Coverage\`
+  (see the Coverage section); Map Images adds none of its own. Its `Api/` clients depend on
+  `Coverage\Transformer\*` and return `Coverage\Model\*` types. Live-verified there is a single model,
+  `mo-uk-mimg`.
 
 ### Adding a new DataHub API
 

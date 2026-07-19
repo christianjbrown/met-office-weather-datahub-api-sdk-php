@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace ChristianBrown\MetOffice\AtmosphericModels\Api;
 
-use ChristianBrown\MetOffice\AtmosphericModels\Model\OrderFileDetailsInterface;
-use ChristianBrown\MetOffice\AtmosphericModels\Model\OrderFileInterface;
-use ChristianBrown\MetOffice\AtmosphericModels\Model\OrderInterface;
+use ChristianBrown\MetOffice\Coverage\Model\OrderFileDetailsInterface;
+use ChristianBrown\MetOffice\Coverage\Model\OrderFileInterface;
+use ChristianBrown\MetOffice\Coverage\Model\OrderInterface;
 
 interface OrdersApiInterface extends ApiInterface
 {

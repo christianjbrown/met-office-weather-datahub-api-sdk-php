@@ -6,9 +6,9 @@ namespace ChristianBrown\MetOffice\MapImages\Api;
 
 use ChristianBrown\ApiClient\Exception\Request\RequestExceptionInterface;
 use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
+use ChristianBrown\MetOffice\Coverage\Model\RunInterface;
+use ChristianBrown\MetOffice\Coverage\Transformer\RunsTransformerInterface;
 use ChristianBrown\MetOffice\Exception\UnexpectedResponseException;
-use ChristianBrown\MetOffice\MapImages\Model\RunInterface;
-use ChristianBrown\MetOffice\MapImages\Transformer\RunsTransformerInterface;
 
 use function is_array;
 use function sprintf;
