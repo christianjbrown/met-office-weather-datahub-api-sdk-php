@@ -40,6 +40,9 @@ final class OrderFileDetailsTransformer implements OrderFileDetailsTransformerIn
         return $orderFileDetails;
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyParameterDetails(OrderFileDetails $orderFileDetails, array $data): void
     {
         if (!isset($data[self::KEY_PARAMETER_DETAILS])) {

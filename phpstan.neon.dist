@@ -4,11 +4,3 @@ parameters:
     paths:
         - src
         - tests
-    ignoreErrors:
-        # The private transformer apply*() helpers take the raw decoded array as their
-        # second parameter. Annotating only $data conflicts with the phpcs FunctionComment
-        # positional @param sniff (it maps the lone @param to the first parameter), so their
-        # iterable value type is intentionally left unspecified on these internal helpers.
-        -
-            identifier: missingType.iterableValue
-            message: '#::apply\w+\(\) has parameter \$data with no value type specified in iterable type array#'

@@ -48,6 +48,9 @@ final class OrderFileTransformer implements OrderFileTransformerInterface
         return $orderFile;
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyLevels(OrderFile $orderFile, array $data): void
     {
         if (!isset($data[self::KEY_LEVELS])) {
@@ -59,6 +62,9 @@ final class OrderFileTransformer implements OrderFileTransformerInterface
         $orderFile->setLevels($this->toStringArray($data[self::KEY_LEVELS]));
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyParameters(OrderFile $orderFile, array $data): void
     {
         if (!isset($data[self::KEY_PARAMETERS])) {
@@ -70,6 +76,9 @@ final class OrderFileTransformer implements OrderFileTransformerInterface
         $orderFile->setParameters($this->toStringArray($data[self::KEY_PARAMETERS]));
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyRegion(OrderFile $orderFile, array $data): void
     {
         if (!isset($data[self::KEY_REGION])) {
@@ -81,6 +90,9 @@ final class OrderFileTransformer implements OrderFileTransformerInterface
         $orderFile->setRegion($this->regionTransformer->transform($data[self::KEY_REGION]));
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyRun(OrderFile $orderFile, array $data): void
     {
         if (empty($data[self::KEY_RUN])) {
@@ -92,6 +104,9 @@ final class OrderFileTransformer implements OrderFileTransformerInterface
         $orderFile->setRun($data[self::KEY_RUN]);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyRunDateTime(OrderFile $orderFile, array $data): void
     {
         if (empty($data[self::KEY_RUN_DATE_TIME])) {
@@ -107,6 +122,9 @@ final class OrderFileTransformer implements OrderFileTransformerInterface
         $orderFile->setRunDateTime($runDateTime);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applySurfaceId(OrderFile $orderFile, array $data): void
     {
         if (empty($data[self::KEY_SURFACE_ID])) {
@@ -118,6 +136,9 @@ final class OrderFileTransformer implements OrderFileTransformerInterface
         $orderFile->setSurfaceId($data[self::KEY_SURFACE_ID]);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyTimesteps(OrderFile $orderFile, array $data): void
     {
         if (!isset($data[self::KEY_TIMESTEPS])) {

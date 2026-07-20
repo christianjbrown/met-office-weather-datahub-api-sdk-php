@@ -37,6 +37,9 @@ final class RunDetailTransformer implements RunDetailTransformerInterface
         return $runDetail;
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyRun(RunDetail $runDetail, array $data): void
     {
         if (empty($data[self::KEY_RUN])) {
@@ -48,6 +51,9 @@ final class RunDetailTransformer implements RunDetailTransformerInterface
         $runDetail->setRun($data[self::KEY_RUN]);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyRunFilter(RunDetail $runDetail, array $data): void
     {
         if (empty($data[self::KEY_RUN_FILTER])) {

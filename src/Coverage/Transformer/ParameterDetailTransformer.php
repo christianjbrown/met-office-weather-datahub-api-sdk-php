@@ -38,6 +38,9 @@ final class ParameterDetailTransformer implements ParameterDetailTransformerInte
         return $parameterDetail;
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyTimeCoordinates(ParameterDetail $parameterDetail, array $data): void
     {
         if (!isset($data[self::KEY_EXTENT])) {
@@ -56,6 +59,9 @@ final class ParameterDetailTransformer implements ParameterDetailTransformerInte
         $parameterDetail->setTimeCoordinates($this->toStringArray($extent[self::KEY_TIME]));
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyVerticalCoordinates(ParameterDetail $parameterDetail, array $data): void
     {
         if (!isset($data[self::KEY_EXTENT])) {

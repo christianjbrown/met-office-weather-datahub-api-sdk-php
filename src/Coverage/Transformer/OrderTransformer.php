@@ -47,6 +47,9 @@ final class OrderTransformer implements OrderTransformerInterface
         return $order;
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyDescription(Order $order, array $data): void
     {
         if (empty($data[self::KEY_DESCRIPTION])) {
@@ -58,6 +61,9 @@ final class OrderTransformer implements OrderTransformerInterface
         $order->setDescription($data[self::KEY_DESCRIPTION]);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyFormat(Order $order, array $data): void
     {
         if (empty($data[self::KEY_FORMAT])) {
@@ -69,6 +75,9 @@ final class OrderTransformer implements OrderTransformerInterface
         $order->setFormat($data[self::KEY_FORMAT]);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyModelId(Order $order, array $data): void
     {
         if (empty($data[self::KEY_MODEL_ID])) {
@@ -80,6 +89,9 @@ final class OrderTransformer implements OrderTransformerInterface
         $order->setModelId($data[self::KEY_MODEL_ID]);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyName(Order $order, array $data): void
     {
         if (empty($data[self::KEY_NAME])) {
@@ -91,6 +103,9 @@ final class OrderTransformer implements OrderTransformerInterface
         $order->setName($data[self::KEY_NAME]);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyRegions(Order $order, array $data): void
     {
         if (!isset($data[self::KEY_REGIONS])) {
@@ -102,6 +117,9 @@ final class OrderTransformer implements OrderTransformerInterface
         $order->setRegions($this->regionsTransformer->transform($data[self::KEY_REGIONS]));
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyRequiredLatestRuns(Order $order, array $data): void
     {
         if (!isset($data[self::KEY_REQUIRED_LATEST_RUNS])) {
@@ -113,6 +131,9 @@ final class OrderTransformer implements OrderTransformerInterface
         $order->setRequiredLatestRuns($this->toStringArray($data[self::KEY_REQUIRED_LATEST_RUNS]));
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyTimesteps(Order $order, array $data): void
     {
         if (!isset($data[self::KEY_TIMESTEPS])) {

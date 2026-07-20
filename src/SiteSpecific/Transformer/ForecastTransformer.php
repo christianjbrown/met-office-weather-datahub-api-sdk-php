@@ -34,6 +34,9 @@ final class ForecastTransformer implements ForecastTransformerInterface
         return $forecast;
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyLocationName(Forecast $forecast, array $data): void
     {
         if (empty($data[self::KEY_LOCATION])) {
@@ -52,6 +55,9 @@ final class ForecastTransformer implements ForecastTransformerInterface
         $forecast->setLocationName($location[self::KEY_NAME]);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyModelRunDate(Forecast $forecast, array $data): void
     {
         if (empty($data[self::KEY_MODEL_RUN_DATE])) {
@@ -67,6 +73,9 @@ final class ForecastTransformer implements ForecastTransformerInterface
         $forecast->setModelRunDate($modelRunDate);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyTimeSteps(Forecast $forecast, array $data): void
     {
         if (empty($data[self::KEY_TIME_SERIES])) {

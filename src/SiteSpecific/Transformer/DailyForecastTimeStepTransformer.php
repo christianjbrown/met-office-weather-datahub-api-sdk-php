@@ -79,6 +79,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         return $timeStep;
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyDayLowerBoundMaxFeelsLikeTemp(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_DAY_LOWER_BOUND_MAX_FEELS_LIKE_TEMP])) {
@@ -91,6 +94,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setDayLowerBoundMaxFeelsLikeTemp($value);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyDayLowerBoundMaxTemp(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_DAY_LOWER_BOUND_MAX_TEMP])) {
@@ -103,6 +109,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setDayLowerBoundMaxTemp($value);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyDayMaxFeelsLikeTemp(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_DAY_MAX_FEELS_LIKE_TEMP])) {
@@ -115,6 +124,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setDayMaxFeelsLikeTemp($value);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyDayMaxScreenTemperature(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_DAY_MAX_SCREEN_TEMPERATURE])) {
@@ -127,6 +139,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setDayMaxScreenTemperature($value);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyDayProbabilityOfHail(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_DAY_PROBABILITY_OF_HAIL])) {
@@ -138,6 +153,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setDayProbabilityOfHail($data[self::KEY_DAY_PROBABILITY_OF_HAIL]);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyDayProbabilityOfHeavyRain(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_DAY_PROBABILITY_OF_HEAVY_RAIN])) {
@@ -149,6 +167,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setDayProbabilityOfHeavyRain($data[self::KEY_DAY_PROBABILITY_OF_HEAVY_RAIN]);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyDayProbabilityOfHeavySnow(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_DAY_PROBABILITY_OF_HEAVY_SNOW])) {
@@ -160,6 +181,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setDayProbabilityOfHeavySnow($data[self::KEY_DAY_PROBABILITY_OF_HEAVY_SNOW]);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyDayProbabilityOfPrecipitation(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_DAY_PROBABILITY_OF_PRECIPITATION])) {
@@ -171,6 +195,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setDayProbabilityOfPrecipitation($data[self::KEY_DAY_PROBABILITY_OF_PRECIPITATION]);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyDayProbabilityOfRain(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_DAY_PROBABILITY_OF_RAIN])) {
@@ -182,6 +209,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setDayProbabilityOfRain($data[self::KEY_DAY_PROBABILITY_OF_RAIN]);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyDayProbabilityOfSferics(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_DAY_PROBABILITY_OF_SFERICS])) {
@@ -193,6 +223,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setDayProbabilityOfSferics($data[self::KEY_DAY_PROBABILITY_OF_SFERICS]);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyDayProbabilityOfSnow(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_DAY_PROBABILITY_OF_SNOW])) {
@@ -204,6 +237,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setDayProbabilityOfSnow($data[self::KEY_DAY_PROBABILITY_OF_SNOW]);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyDaySignificantWeatherCode(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_DAY_SIGNIFICANT_WEATHER_CODE])) {
@@ -219,6 +255,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setDaySignificantWeatherCode($weatherType);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyDayUpperBoundMaxFeelsLikeTemp(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_DAY_UPPER_BOUND_MAX_FEELS_LIKE_TEMP])) {
@@ -231,6 +270,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setDayUpperBoundMaxFeelsLikeTemp($value);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyDayUpperBoundMaxTemp(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_DAY_UPPER_BOUND_MAX_TEMP])) {
@@ -243,6 +285,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setDayUpperBoundMaxTemp($value);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyMaxUvIndex(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_MAX_UV_INDEX])) {
@@ -254,6 +299,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setMaxUvIndex($data[self::KEY_MAX_UV_INDEX]);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyMidday10MWindDirection(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_MIDDAY10_M_WIND_DIRECTION])) {
@@ -265,6 +313,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setMidday10MWindDirection($data[self::KEY_MIDDAY10_M_WIND_DIRECTION]);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyMidday10MWindGust(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_MIDDAY10_M_WIND_GUST])) {
@@ -277,6 +328,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setMidday10MWindGust($value);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyMidday10MWindSpeed(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_MIDDAY10_M_WIND_SPEED])) {
@@ -289,6 +343,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setMidday10MWindSpeed($value);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyMiddayMslp(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_MIDDAY_MSLP])) {
@@ -300,6 +357,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setMiddayMslp($data[self::KEY_MIDDAY_MSLP]);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyMiddayRelativeHumidity(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_MIDDAY_RELATIVE_HUMIDITY])) {
@@ -312,6 +372,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setMiddayRelativeHumidity($value);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyMiddayVisibility(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_MIDDAY_VISIBILITY])) {
@@ -323,6 +386,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setMiddayVisibility($data[self::KEY_MIDDAY_VISIBILITY]);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyMidnight10MWindDirection(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_MIDNIGHT10_M_WIND_DIRECTION])) {
@@ -334,6 +400,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setMidnight10MWindDirection($data[self::KEY_MIDNIGHT10_M_WIND_DIRECTION]);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyMidnight10MWindGust(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_MIDNIGHT10_M_WIND_GUST])) {
@@ -346,6 +415,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setMidnight10MWindGust($value);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyMidnight10MWindSpeed(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_MIDNIGHT10_M_WIND_SPEED])) {
@@ -358,6 +430,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setMidnight10MWindSpeed($value);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyMidnightMslp(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_MIDNIGHT_MSLP])) {
@@ -369,6 +444,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setMidnightMslp($data[self::KEY_MIDNIGHT_MSLP]);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyMidnightRelativeHumidity(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_MIDNIGHT_RELATIVE_HUMIDITY])) {
@@ -381,6 +459,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setMidnightRelativeHumidity($value);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyMidnightVisibility(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_MIDNIGHT_VISIBILITY])) {
@@ -392,6 +473,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setMidnightVisibility($data[self::KEY_MIDNIGHT_VISIBILITY]);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyNightLowerBoundMinFeelsLikeTemp(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_NIGHT_LOWER_BOUND_MIN_FEELS_LIKE_TEMP])) {
@@ -404,6 +488,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setNightLowerBoundMinFeelsLikeTemp($value);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyNightLowerBoundMinTemp(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_NIGHT_LOWER_BOUND_MIN_TEMP])) {
@@ -416,6 +503,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setNightLowerBoundMinTemp($value);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyNightMinFeelsLikeTemp(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_NIGHT_MIN_FEELS_LIKE_TEMP])) {
@@ -428,6 +518,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setNightMinFeelsLikeTemp($value);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyNightMinScreenTemperature(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_NIGHT_MIN_SCREEN_TEMPERATURE])) {
@@ -440,6 +533,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setNightMinScreenTemperature($value);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyNightProbabilityOfHail(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_NIGHT_PROBABILITY_OF_HAIL])) {
@@ -451,6 +547,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setNightProbabilityOfHail($data[self::KEY_NIGHT_PROBABILITY_OF_HAIL]);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyNightProbabilityOfHeavyRain(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_NIGHT_PROBABILITY_OF_HEAVY_RAIN])) {
@@ -462,6 +561,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setNightProbabilityOfHeavyRain($data[self::KEY_NIGHT_PROBABILITY_OF_HEAVY_RAIN]);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyNightProbabilityOfHeavySnow(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_NIGHT_PROBABILITY_OF_HEAVY_SNOW])) {
@@ -473,6 +575,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setNightProbabilityOfHeavySnow($data[self::KEY_NIGHT_PROBABILITY_OF_HEAVY_SNOW]);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyNightProbabilityOfPrecipitation(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_NIGHT_PROBABILITY_OF_PRECIPITATION])) {
@@ -484,6 +589,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setNightProbabilityOfPrecipitation($data[self::KEY_NIGHT_PROBABILITY_OF_PRECIPITATION]);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyNightProbabilityOfRain(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_NIGHT_PROBABILITY_OF_RAIN])) {
@@ -495,6 +603,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setNightProbabilityOfRain($data[self::KEY_NIGHT_PROBABILITY_OF_RAIN]);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyNightProbabilityOfSferics(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_NIGHT_PROBABILITY_OF_SFERICS])) {
@@ -506,6 +617,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setNightProbabilityOfSferics($data[self::KEY_NIGHT_PROBABILITY_OF_SFERICS]);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyNightProbabilityOfSnow(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_NIGHT_PROBABILITY_OF_SNOW])) {
@@ -517,6 +631,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setNightProbabilityOfSnow($data[self::KEY_NIGHT_PROBABILITY_OF_SNOW]);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyNightSignificantWeatherCode(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_NIGHT_SIGNIFICANT_WEATHER_CODE])) {
@@ -532,6 +649,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setNightSignificantWeatherCode($weatherType);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyNightUpperBoundMinFeelsLikeTemp(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_NIGHT_UPPER_BOUND_MIN_FEELS_LIKE_TEMP])) {
@@ -544,6 +664,9 @@ final class DailyForecastTimeStepTransformer implements DailyForecastTimeStepTra
         $timeStep->setNightUpperBoundMinFeelsLikeTemp($value);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyNightUpperBoundMinTemp(DailyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_NIGHT_UPPER_BOUND_MIN_TEMP])) {

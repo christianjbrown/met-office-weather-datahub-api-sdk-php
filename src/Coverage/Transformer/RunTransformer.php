@@ -39,6 +39,9 @@ final class RunTransformer implements RunTransformerInterface
         return $run;
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyCompleteRuns(Run $run, array $data): void
     {
         if (!isset($data[self::KEY_COMPLETE_RUNS])) {

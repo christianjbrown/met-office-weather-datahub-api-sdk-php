@@ -34,6 +34,9 @@ final class NearestLocationTransformer implements NearestLocationTransformerInte
         return $location;
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyArea(NearestLocation $location, array $data): void
     {
         if (empty($data[self::KEY_AREA])) {
@@ -45,6 +48,9 @@ final class NearestLocationTransformer implements NearestLocationTransformerInte
         $location->setArea($data[self::KEY_AREA]);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyCountry(NearestLocation $location, array $data): void
     {
         if (empty($data[self::KEY_COUNTRY])) {
@@ -56,6 +62,9 @@ final class NearestLocationTransformer implements NearestLocationTransformerInte
         $location->setCountry($data[self::KEY_COUNTRY]);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyOlsonTimeZone(NearestLocation $location, array $data): void
     {
         if (empty($data[self::KEY_OLSON_TIME_ZONE])) {
@@ -67,6 +76,9 @@ final class NearestLocationTransformer implements NearestLocationTransformerInte
         $location->setOlsonTimeZone($data[self::KEY_OLSON_TIME_ZONE]);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyRegion(NearestLocation $location, array $data): void
     {
         if (empty($data[self::KEY_REGION])) {

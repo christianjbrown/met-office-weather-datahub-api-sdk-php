@@ -108,9 +108,7 @@ final class OrdersApiTest extends TestCase
     }
 
     /**
-     * @param null|string           $detail
-     * @param null|string           $runFilter
-     * @param array<string, string> $expectedQuery
+     * @phpstan-param array<string, string> $expectedQuery
      *
      * @throws RequestExceptionInterface
      * @throws Exception

@@ -33,6 +33,9 @@ final class RegionTransformer implements RegionTransformerInterface
         return $region;
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyName(Region $region, array $data): void
     {
         if (empty($data[self::KEY_NAME])) {
@@ -44,6 +47,9 @@ final class RegionTransformer implements RegionTransformerInterface
         $region->setName($data[self::KEY_NAME]);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyX(Region $region, array $data): void
     {
         if (!isset($data[self::KEY_EXTENT])) {
@@ -62,6 +68,9 @@ final class RegionTransformer implements RegionTransformerInterface
         $region->setX($this->axisExtentTransformer->transform($extent[self::KEY_X]));
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyY(Region $region, array $data): void
     {
         if (!isset($data[self::KEY_EXTENT])) {

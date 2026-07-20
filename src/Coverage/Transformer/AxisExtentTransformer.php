@@ -26,6 +26,9 @@ final class AxisExtentTransformer implements AxisExtentTransformerInterface
         return $axisExtent;
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyLabel(AxisExtent $axisExtent, array $data): void
     {
         if (empty($data[self::KEY_LABEL])) {
@@ -37,6 +40,9 @@ final class AxisExtentTransformer implements AxisExtentTransformerInterface
         $axisExtent->setLabel($data[self::KEY_LABEL]);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyLowerBound(AxisExtent $axisExtent, array $data): void
     {
         if (empty($data[self::KEY_LOWER_BOUND])) {
@@ -48,6 +54,9 @@ final class AxisExtentTransformer implements AxisExtentTransformerInterface
         $axisExtent->setLowerBound($data[self::KEY_LOWER_BOUND]);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyUomLabel(AxisExtent $axisExtent, array $data): void
     {
         if (empty($data[self::KEY_UOM_LABEL])) {
@@ -59,6 +68,9 @@ final class AxisExtentTransformer implements AxisExtentTransformerInterface
         $axisExtent->setUomLabel($data[self::KEY_UOM_LABEL]);
     }
 
+    /**
+     * @phpstan-param mixed[] $data
+     */
     private function applyUpperBound(AxisExtent $axisExtent, array $data): void
     {
         if (empty($data[self::KEY_UPPER_BOUND])) {
