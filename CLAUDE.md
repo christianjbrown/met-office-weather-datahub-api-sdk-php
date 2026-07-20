@@ -41,8 +41,10 @@ point forecast and returns typed model objects instead of raw GeoJSON arrays.
 
 Binaries install into `bin/` (Composer `bin-dir`), not `vendor/bin/`. Both `bin/` and `vendor/` are
 gitignored and Composer-installed, so run `composer install` first. The style tooling comes from the
-`christianjbrown/php-code-quality-scripts` dev dependency (php-cs-fixer + PHP_CodeSniffer,
-**Symfony2 coding standard**), pulled from GitHub like the other sibling dependencies.
+`christianjbrown/php-code-quality-scripts` dev dependency (PHP_CodeSniffer 4 with the
+**`ChristianBrown` standard** — slevomat sniffs plus PSR/PEAR/Squiz/Generic — for linting via
+`check-style`, and php-cs-fixer with `@PhpCsFixer`/`@Symfony` for formatting), pulled from GitHub
+like the other sibling dependencies.
 
 | Task | Command |
 | --- | --- |
