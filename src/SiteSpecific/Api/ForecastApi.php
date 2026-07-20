@@ -7,6 +7,7 @@ namespace ChristianBrown\MetOffice\SiteSpecific\Api;
 use ChristianBrown\ApiClient\Exception\Request\RequestExceptionInterface;
 use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
 use ChristianBrown\MetOffice\ApiKeyInterface;
+use ChristianBrown\MetOffice\CoordinatesInterface;
 use ChristianBrown\MetOffice\Exception\UnexpectedResponseException;
 use ChristianBrown\MetOffice\SiteSpecific\Model\ForecastInterface;
 use ChristianBrown\MetOffice\SiteSpecific\Transformer\ForecastTransformerInterface;
@@ -37,9 +38,9 @@ final class ForecastApi implements ForecastApiInterface
      * @throws RequestExceptionInterface
      * @throws UnexpectedResponseException
      */
-    public function getForecast(string $apiUrl, float $latitude, float $longitude, bool $skipCache = false): ForecastInterface
+    public function getForecast(string $apiUrl, CoordinatesInterface $coordinates, bool $skipCache = false): ForecastInterface
     {
-        $cacheKey = sprintf(self::CACHE_KEY_SPRINTF, $latitude, $longitude);
+        $cacheKey = sprintf(self::CACHE_KEY_SPRINTF, $coordinates->getLatitude(), $coordinates->getLongitude());
         if (!$skipCache) {
             if (isset($this->cache[$cacheKey])) {
                 return $this->cache[$cacheKey];
@@ -48,8 +49,8 @@ final class ForecastApi implements ForecastApiInterface
 
         $headers = $this->apiKey->toHeaders();
         $query = [
-            self::QUERY_KEY_LATITUDE => (string) $latitude,
-            self::QUERY_KEY_LONGITUDE => (string) $longitude,
+            self::QUERY_KEY_LATITUDE => (string) $coordinates->getLatitude(),
+            self::QUERY_KEY_LONGITUDE => (string) $coordinates->getLongitude(),
             self::QUERY_KEY_DATA_SOURCE => self::QUERY_VALUE_DATA_SOURCE,
             self::QUERY_KEY_EXCLUDE_PARAMETER_METADATA => self::QUERY_VALUE_TRUE,
             self::QUERY_KEY_INCLUDE_LOCATION_NAME => self::QUERY_VALUE_TRUE,

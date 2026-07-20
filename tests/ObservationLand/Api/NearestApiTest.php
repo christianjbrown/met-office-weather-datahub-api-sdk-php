@@ -8,6 +8,7 @@ use ChristianBrown\ApiClient\Exception\Request\RequestExceptionInterface;
 use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
 use ChristianBrown\MetOffice\ApiKey;
 use ChristianBrown\MetOffice\ApiKeyInterface;
+use ChristianBrown\MetOffice\Coordinates;
 use ChristianBrown\MetOffice\ObservationLand\Api\NearestApi;
 use ChristianBrown\MetOffice\ObservationLand\Api\NearestApiInterface;
 use ChristianBrown\MetOffice\ObservationLand\Model\NearestLocationInterface;
@@ -18,6 +19,7 @@ use PHPUnit\Framework\MockObject\Exception;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(NearestApi::class)]
+#[UsesClass(Coordinates::class)]
 #[UsesClass(ApiKey::class)]
 final class NearestApiTest extends TestCase
 {
@@ -53,7 +55,7 @@ final class NearestApiTest extends TestCase
 
         $api = new NearestApi($requestSender, $transformer, new ApiKey('test-api-key'));
 
-        self::assertSame($locations, $api->getByCoordinates(51.554, -0.181));
+        self::assertSame($locations, $api->getByCoordinates(new Coordinates(51.554, -0.181)));
     }
 
     /**

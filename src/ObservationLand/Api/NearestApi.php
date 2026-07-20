@@ -7,6 +7,7 @@ namespace ChristianBrown\MetOffice\ObservationLand\Api;
 use ChristianBrown\ApiClient\Exception\Request\RequestExceptionInterface;
 use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
 use ChristianBrown\MetOffice\ApiKeyInterface;
+use ChristianBrown\MetOffice\CoordinatesInterface;
 use ChristianBrown\MetOffice\Exception\UnexpectedResponseException;
 use ChristianBrown\MetOffice\ObservationLand\Model\NearestLocationInterface;
 use ChristianBrown\MetOffice\ObservationLand\Transformer\NearestLocationsTransformerInterface;
@@ -32,12 +33,12 @@ final class NearestApi implements NearestApiInterface
      *
      * @return array<int, NearestLocationInterface>
      */
-    public function getByCoordinates(float $latitude, float $longitude): array
+    public function getByCoordinates(CoordinatesInterface $coordinates): array
     {
         $headers = $this->apiKey->toHeaders();
         $query = [
-            self::QUERY_KEY_LAT => $this->formatCoordinate($latitude),
-            self::QUERY_KEY_LON => $this->formatCoordinate($longitude),
+            self::QUERY_KEY_LAT => $this->formatCoordinate($coordinates->getLatitude()),
+            self::QUERY_KEY_LON => $this->formatCoordinate($coordinates->getLongitude()),
         ];
         $data = $this->requestSender->get(self::API_URL_NEAREST, $query, $headers);
 

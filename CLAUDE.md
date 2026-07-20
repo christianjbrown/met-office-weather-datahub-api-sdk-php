@@ -72,6 +72,11 @@ Everything lives under the `ChristianBrown\MetOffice\` namespace (`src/`), mirro
   container at this level. Each future API gets its own factory method here.
 - **`ApiInterface`** (`src/ApiInterface.php`) — the shared base interface holding the cross-API
   `API_HOST` constant. Every API's `Api\ApiInterface` extends it.
+- **`Coordinates`** / **`CoordinatesInterface`** (`src/Coordinates.php`) — a shared lat/lon value object
+  (`getLatitude(): float`, `getLongitude(): float`). The forecast clients' `getForecast()` and
+  ObservationLand's `getByCoordinates()` take a `CoordinatesInterface` rather than two positional floats,
+  so a lat/lon pair is a single cohesive argument (no silent transposition mid-pipeline). A plain
+  immutable holder — no range validation (it would not catch a swap of two in-range values anyway).
 - **`ApiKey`** / **`ApiKeyInterface`** (`src/ApiKey.php`) — the shared credential value object. Wraps the
   `string` API key and exposes `toHeaders(): array<string,string>` returning `['apikey' => <key>]` (the
   `HEADER_KEY_API_KEY` constant lives here). Each API facade builds **one** `ApiKey` from its `string
@@ -97,8 +102,8 @@ Everything lives under the `ChristianBrown\MetOffice\` namespace (`src/`), mirro
   `SiteSpecificInterface`, **`met_office.site_specific.` prefix**). Exposes `getHourlyForecastApi()`,
   `getThreeHourlyForecastApi()`, `getDailyForecastApi()`.
 - **`SiteSpecific\Api/`** — the shared **`ForecastApi`** (constructed with
-  `(JsonApiRequestSenderInterface, ForecastTransformerInterface, string $apiKey)`) holds the request
-  logic: `getForecast(string $apiUrl, float $latitude, float $longitude, bool $skipCache = false)` builds
+  `(JsonApiRequestSenderInterface, ForecastTransformerInterface, ApiKeyInterface)`) holds the request
+  logic: `getForecast(string $apiUrl, CoordinatesInterface $coordinates, bool $skipCache = false)` builds
   the query + `apikey` header, calls the sender against the passed `$apiUrl`, guards the
   `features`/`properties` shape, delegates `features[0].properties` to the injected `ForecastTransformer`,
   and caches by `"latitude,longitude"`. The three resolution clients (`HourlyForecastApi`,
@@ -134,7 +139,7 @@ same `apikey` header.
   `SERVICE_*` constants on `ObservationLandInterface`, **`met_office.observation_land.` prefix**).
   Exposes `getNearestApi()` and `getObservationApi()`.
 - **`ObservationLand\Api/`** — `NearestApi` (`GET /nearest`, query is either `geohash` **or** `lat`+`lon`,
-  each formatted to ≤2 decimal places) with `getByCoordinates(float $latitude, float $longitude)` and
+  each formatted to ≤2 decimal places) with `getByCoordinates(CoordinatesInterface $coordinates)` and
   `getByGeohash(string $geohash)` returning `NearestLocationInterface[]`; and `ObservationApi`
   (`GET /{geohash}`, geohash is a path segment) with `getByGeohash(string $geohash, bool $skipCache = false)`
   returning `ObservationInterface[]`, cached per geohash. Both build the `apikey` header, call the sender,
