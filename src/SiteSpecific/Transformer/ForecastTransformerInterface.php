@@ -8,10 +8,10 @@ use ChristianBrown\MetOffice\SiteSpecific\Model\ForecastInterface;
 
 interface ForecastTransformerInterface
 {
-    public const KEY_LOCATION = 'location';
-    public const KEY_MODEL_RUN_DATE = 'modelRunDate';
-    public const KEY_NAME = 'name';
-    public const KEY_TIME_SERIES = 'timeSeries';
+    public const string KEY_LOCATION = 'location';
+    public const string KEY_MODEL_RUN_DATE = 'modelRunDate';
+    public const string KEY_NAME = 'name';
+    public const string KEY_TIME_SERIES = 'timeSeries';
 
     /**
      * @param mixed[] $properties

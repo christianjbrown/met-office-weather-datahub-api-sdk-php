@@ -8,11 +8,11 @@ use ChristianBrown\MetOffice\Coverage\Model\ParameterDetailInterface;
 
 interface ParameterDetailTransformerInterface
 {
-    public const KEY_EXTENT = 'extent';
-    public const KEY_PARAMETER_ID = 'parameterId';
-    public const KEY_TIME = 't';
-    public const KEY_VERTICAL = 'z';
-    public const UNEXPECTED_STRING_SPRINTF = '%s not set or not a string';
+    public const string KEY_EXTENT = 'extent';
+    public const string KEY_PARAMETER_ID = 'parameterId';
+    public const string KEY_TIME = 't';
+    public const string KEY_VERTICAL = 'z';
+    public const string UNEXPECTED_STRING_SPRINTF = '%s not set or not a string';
 
     /**
      * @param mixed[] $data

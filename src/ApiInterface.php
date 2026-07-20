@@ -6,5 +6,5 @@ namespace ChristianBrown\MetOffice;
 
 interface ApiInterface
 {
-    public const API_HOST = 'https://data.hub.api.metoffice.gov.uk';
+    public const string API_HOST = 'https://data.hub.api.metoffice.gov.uk';
 }

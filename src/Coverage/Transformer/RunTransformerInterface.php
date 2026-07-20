@@ -8,9 +8,9 @@ use ChristianBrown\MetOffice\Coverage\Model\RunInterface;
 
 interface RunTransformerInterface
 {
-    public const KEY_COMPLETE_RUNS = 'completeRuns';
-    public const KEY_MODEL_ID = 'modelId';
-    public const UNEXPECTED_STRING_SPRINTF = '%s not set or not a string';
+    public const string KEY_COMPLETE_RUNS = 'completeRuns';
+    public const string KEY_MODEL_ID = 'modelId';
+    public const string UNEXPECTED_STRING_SPRINTF = '%s not set or not a string';
 
     /**
      * @param mixed[] $data

@@ -8,8 +8,8 @@ use ChristianBrown\MetOffice\Coverage\Model\RegionInterface;
 
 interface RegionsTransformerInterface
 {
-    public const ARRAY_NAME = 'regions';
-    public const UNEXPECTED_ARRAY_SPRINTF = '%s not set or not an array';
+    public const string ARRAY_NAME = 'regions';
+    public const string UNEXPECTED_ARRAY_SPRINTF = '%s not set or not an array';
 
     /**
      * @param mixed[] $data

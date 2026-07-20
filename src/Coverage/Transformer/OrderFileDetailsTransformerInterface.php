@@ -8,9 +8,9 @@ use ChristianBrown\MetOffice\Coverage\Model\OrderFileDetailsInterface;
 
 interface OrderFileDetailsTransformerInterface
 {
-    public const KEY_FILE = 'file';
-    public const KEY_PARAMETER_DETAILS = 'parameterDetails';
-    public const UNEXPECTED_ARRAY_SPRINTF = '%s not set or not an array';
+    public const string KEY_FILE = 'file';
+    public const string KEY_PARAMETER_DETAILS = 'parameterDetails';
+    public const string UNEXPECTED_ARRAY_SPRINTF = '%s not set or not an array';
 
     /**
      * @param mixed[] $data

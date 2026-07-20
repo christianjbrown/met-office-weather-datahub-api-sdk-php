@@ -8,10 +8,10 @@ use ChristianBrown\MetOffice\Coverage\Model\AxisExtentInterface;
 
 interface AxisExtentTransformerInterface
 {
-    public const KEY_LABEL = 'label';
-    public const KEY_LOWER_BOUND = 'lowerBound';
-    public const KEY_UOM_LABEL = 'uomLabel';
-    public const KEY_UPPER_BOUND = 'upperBound';
+    public const string KEY_LABEL = 'label';
+    public const string KEY_LOWER_BOUND = 'lowerBound';
+    public const string KEY_UOM_LABEL = 'uomLabel';
+    public const string KEY_UPPER_BOUND = 'upperBound';
 
     /**
      * @param mixed[] $data

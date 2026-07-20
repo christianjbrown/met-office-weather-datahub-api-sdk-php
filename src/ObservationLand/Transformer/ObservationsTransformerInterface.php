@@ -8,8 +8,8 @@ use ChristianBrown\MetOffice\ObservationLand\Model\ObservationInterface;
 
 interface ObservationsTransformerInterface
 {
-    public const ARRAY_NAME = 'observations';
-    public const UNEXPECTED_ARRAY_SPRINTF = '%s not set or not an array';
+    public const string ARRAY_NAME = 'observations';
+    public const string UNEXPECTED_ARRAY_SPRINTF = '%s not set or not an array';
 
     /**
      * @param mixed[] $data

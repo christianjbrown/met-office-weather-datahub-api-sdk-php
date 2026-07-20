@@ -8,18 +8,18 @@ use ChristianBrown\MetOffice\ObservationLand\Model\ObservationInterface;
 
 interface ObservationTransformerInterface
 {
-    public const KEY_DATETIME = 'datetime';
-    public const KEY_HUMIDITY = 'humidity';
-    public const KEY_MSLP = 'mslp';
-    public const KEY_PRESSURE_TENDENCY = 'pressure_tendency';
-    public const KEY_TEMPERATURE = 'temperature';
-    public const KEY_VISIBILITY = 'visibility';
-    public const KEY_WEATHER_CODE = 'weather_code';
-    public const KEY_WIND_DIRECTION = 'wind_direction';
-    public const KEY_WIND_GUST = 'wind_gust';
-    public const KEY_WIND_SPEED = 'wind_speed';
-    public const UNEXPECTED_STRING_SPRINTF = '%s not set or not a string';
-    public const UNEXPECTED_TIMESTAMP_SPRINTF = '%s not a valid timestamp';
+    public const string KEY_DATETIME = 'datetime';
+    public const string KEY_HUMIDITY = 'humidity';
+    public const string KEY_MSLP = 'mslp';
+    public const string KEY_PRESSURE_TENDENCY = 'pressure_tendency';
+    public const string KEY_TEMPERATURE = 'temperature';
+    public const string KEY_VISIBILITY = 'visibility';
+    public const string KEY_WEATHER_CODE = 'weather_code';
+    public const string KEY_WIND_DIRECTION = 'wind_direction';
+    public const string KEY_WIND_GUST = 'wind_gust';
+    public const string KEY_WIND_SPEED = 'wind_speed';
+    public const string UNEXPECTED_STRING_SPRINTF = '%s not set or not a string';
+    public const string UNEXPECTED_TIMESTAMP_SPRINTF = '%s not a valid timestamp';
 
     /**
      * @param mixed[] $data

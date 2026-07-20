@@ -8,7 +8,7 @@ use ChristianBrown\MetOffice\Enums\WeatherType;
 
 interface WeatherTypeTransformerInterface
 {
-    public const WEATHER_TYPE_EMOJIS = [
+    public const array WEATHER_TYPE_EMOJIS = [
         WeatherType::CLEAR_NIGHT->value => '🌙',
         WeatherType::CLOUDY->value => '☁️',
         WeatherType::DRIZZLE->value => '🌧️',
@@ -41,7 +41,7 @@ interface WeatherTypeTransformerInterface
         WeatherType::THUNDER_SHOWER_NIGHT->value => '⛈️',
         WeatherType::TRACE_RAIN->value => '🌧',
     ];
-    public const WEATHER_TYPE_NAMES = [
+    public const array WEATHER_TYPE_NAMES = [
         WeatherType::CLEAR_NIGHT->value => 'Clear night',
         WeatherType::CLOUDY->value => 'Cloudy',
         WeatherType::DRIZZLE->value => 'Drizzle',

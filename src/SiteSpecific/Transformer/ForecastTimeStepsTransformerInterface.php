@@ -8,8 +8,8 @@ use ChristianBrown\MetOffice\SiteSpecific\Model\ForecastTimeStepInterface;
 
 interface ForecastTimeStepsTransformerInterface
 {
-    public const ARRAY_NAME = 'timeSeries';
-    public const UNEXPECTED_ARRAY_SPRINTF = '%s not set or not an array';
+    public const string ARRAY_NAME = 'timeSeries';
+    public const string UNEXPECTED_ARRAY_SPRINTF = '%s not set or not an array';
 
     /**
      * @param mixed[] $data

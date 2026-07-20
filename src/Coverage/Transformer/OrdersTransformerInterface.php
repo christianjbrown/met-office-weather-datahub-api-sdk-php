@@ -8,8 +8,8 @@ use ChristianBrown\MetOffice\Coverage\Model\OrderInterface;
 
 interface OrdersTransformerInterface
 {
-    public const ARRAY_NAME = 'orders';
-    public const UNEXPECTED_ARRAY_SPRINTF = '%s not set or not an array';
+    public const string ARRAY_NAME = 'orders';
+    public const string UNEXPECTED_ARRAY_SPRINTF = '%s not set or not an array';
 
     /**
      * @param mixed[] $data

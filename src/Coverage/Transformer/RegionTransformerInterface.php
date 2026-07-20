@@ -8,10 +8,10 @@ use ChristianBrown\MetOffice\Coverage\Model\RegionInterface;
 
 interface RegionTransformerInterface
 {
-    public const KEY_EXTENT = 'extent';
-    public const KEY_NAME = 'name';
-    public const KEY_X = 'x';
-    public const KEY_Y = 'y';
+    public const string KEY_EXTENT = 'extent';
+    public const string KEY_NAME = 'name';
+    public const string KEY_X = 'x';
+    public const string KEY_Y = 'y';
 
     /**
      * @param mixed[] $data

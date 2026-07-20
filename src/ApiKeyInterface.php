@@ -6,7 +6,7 @@ namespace ChristianBrown\MetOffice;
 
 interface ApiKeyInterface
 {
-    public const HEADER_KEY_API_KEY = 'apikey';
+    public const string HEADER_KEY_API_KEY = 'apikey';
 
     /**
      * @return array<string, string>

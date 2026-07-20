@@ -8,8 +8,8 @@ use ChristianBrown\MetOffice\Coverage\Model\RunDetailInterface;
 
 interface RunDetailsTransformerInterface
 {
-    public const ARRAY_NAME = 'completeRuns';
-    public const UNEXPECTED_ARRAY_SPRINTF = '%s not set or not an array';
+    public const string ARRAY_NAME = 'completeRuns';
+    public const string UNEXPECTED_ARRAY_SPRINTF = '%s not set or not an array';
 
     /**
      * @param mixed[] $data
