@@ -6,6 +6,7 @@ namespace ChristianBrown\MetOffice\SiteSpecific;
 
 use ChristianBrown\ApiClient\ApiClient;
 use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
+use ChristianBrown\MetOffice\ApiKey;
 use ChristianBrown\MetOffice\SiteSpecific\Api\DailyForecastApi;
 use ChristianBrown\MetOffice\SiteSpecific\Api\DailyForecastApiInterface;
 use ChristianBrown\MetOffice\SiteSpecific\Api\ForecastApi;
@@ -83,6 +84,13 @@ final class SiteSpecific implements SiteSpecificInterface
         $this->container->register(self::SERVICE_JSON_API_REQUEST_SENDER, JsonApiRequestSenderInterface::class)
             ->setFactory([new Reference(self::SERVICE_API_CLIENT), 'getJsonApiRequestSender']);
 
+        $this->container->register(self::SERVICE_API_KEY, ApiKey::class)
+            ->setArguments(
+                [
+                    $this->apiKey,
+                ]
+            );
+
         $this->container->register(self::SERVICE_HOURLY_FORECAST_TIME_STEP_TRANSFORMER, HourlyForecastTimeStepTransformer::class);
         $this->container->register(self::SERVICE_HOURLY_FORECAST_TIME_STEPS_TRANSFORMER, ForecastTimeStepsTransformer::class)
             ->setArguments(
@@ -130,7 +138,7 @@ final class SiteSpecific implements SiteSpecificInterface
                 [
                     $this->container->getDefinition(self::SERVICE_JSON_API_REQUEST_SENDER),
                     $this->container->getDefinition(self::SERVICE_HOURLY_FORECAST_TRANSFORMER),
-                    $this->apiKey,
+                    $this->container->getDefinition(self::SERVICE_API_KEY),
                 ]
             );
         $this->container->register(self::SERVICE_HOURLY_FORECAST_API, HourlyForecastApi::class)
@@ -145,7 +153,7 @@ final class SiteSpecific implements SiteSpecificInterface
                 [
                     $this->container->getDefinition(self::SERVICE_JSON_API_REQUEST_SENDER),
                     $this->container->getDefinition(self::SERVICE_THREE_HOURLY_FORECAST_TRANSFORMER),
-                    $this->apiKey,
+                    $this->container->getDefinition(self::SERVICE_API_KEY),
                 ]
             );
         $this->container->register(self::SERVICE_THREE_HOURLY_FORECAST_API, ThreeHourlyForecastApi::class)
@@ -160,7 +168,7 @@ final class SiteSpecific implements SiteSpecificInterface
                 [
                     $this->container->getDefinition(self::SERVICE_JSON_API_REQUEST_SENDER),
                     $this->container->getDefinition(self::SERVICE_DAILY_FORECAST_TRANSFORMER),
-                    $this->apiKey,
+                    $this->container->getDefinition(self::SERVICE_API_KEY),
                 ]
             );
         $this->container->register(self::SERVICE_DAILY_FORECAST_API, DailyForecastApi::class)

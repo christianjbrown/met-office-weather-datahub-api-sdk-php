@@ -11,6 +11,7 @@ use ChristianBrown\MetOffice\SiteSpecific\Api\ThreeHourlyForecastApiInterface;
 interface SiteSpecificInterface
 {
     public const SERVICE_API_CLIENT = 'met_office.site_specific.api_client';
+    public const SERVICE_API_KEY = 'met_office.site_specific.api_key';
     public const SERVICE_DAILY_FORECAST = 'met_office.site_specific.api.daily_forecast';
     public const SERVICE_DAILY_FORECAST_API = 'met_office.site_specific.api.daily_forecast_api';
     public const SERVICE_DAILY_FORECAST_TIME_STEP_TRANSFORMER = 'met_office.site_specific.transformer.daily_forecast_time_step_transformer';

@@ -26,8 +26,11 @@ point forecast and returns typed model objects instead of raw GeoJSON arrays.
 
 - **Endpoints:** `GET https://data.hub.api.metoffice.gov.uk/sitespecific/v0/point/{hourly,three-hourly,daily}`.
 - **Auth:** the API key is sent as the HTTP header `apikey: <key>` (header name literally `apikey`).
-  This header key and the DataHub host live on the **shared** `ChristianBrown\MetOffice\ApiInterface`
-  (`src/ApiInterface.php`), which every API's `Api\ApiInterface` extends.
+  The credential is a shared **`ApiKey` value object** (`src/ApiKey.php`), not a bare string: every API
+  client is injected an `ApiKeyInterface` and calls `$this->apiKey->toHeaders()` to get the
+  `['apikey' => <key>]` map (the header-key constant lives on `ApiKeyInterface`). The DataHub host lives
+  on the **shared** `ChristianBrown\MetOffice\ApiInterface` (`src/ApiInterface.php`), which every API's
+  `Api\ApiInterface` extends.
 - **Query params** (all strings): `latitude`, `longitude`, `dataSource=BD1`,
   `excludeParameterMetadata=true`, `includeLocationName=true`.
 - **Response:** GeoJSON — `features[0].properties` holds `location.name`, `modelRunDate` (ISO-8601),
@@ -67,8 +70,14 @@ Everything lives under the `ChristianBrown\MetOffice\` namespace (`src/`), mirro
 - **`MetOffice`** (`src/MetOffice.php`) — the umbrella facade. **No constructor arguments.** A plain
   factory: `siteSpecific(string $apiKey)` returns `new SiteSpecific\SiteSpecific($apiKey)`. No DI
   container at this level. Each future API gets its own factory method here.
-- **`ApiInterface`** (`src/ApiInterface.php`) — the shared base interface holding only the cross-API
-  constants `HEADER_KEY_API_KEY = 'apikey'` and `API_HOST`. Every API's `Api\ApiInterface` extends it.
+- **`ApiInterface`** (`src/ApiInterface.php`) — the shared base interface holding the cross-API
+  `API_HOST` constant. Every API's `Api\ApiInterface` extends it.
+- **`ApiKey`** / **`ApiKeyInterface`** (`src/ApiKey.php`) — the shared credential value object. Wraps the
+  `string` API key and exposes `toHeaders(): array<string,string>` returning `['apikey' => <key>]` (the
+  `HEADER_KEY_API_KEY` constant lives here). Each API facade builds **one** `ApiKey` from its `string
+  $apiKey` and injects `ApiKeyInterface` into every client, so the credential-to-header mapping lives in
+  one place (mirrors the SmartThings `Token` pattern) instead of a raw string threaded through each
+  client. Clients with extra headers spread it: `[...$this->apiKey->toHeaders(), HEADER_KEY_ACCEPT => …]`.
 - **`Transformer\WeatherTypeTransformer`** (+ interface) — turns a `WeatherType` into a display name or
   emoji. Shared because weather codes are a Met Office-wide concept.
 - **`Enums/`** — `WeatherType` (int-backed 0–30 code table, plus `-1` for trace/NA) and

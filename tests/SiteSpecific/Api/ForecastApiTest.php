@@ -6,6 +6,8 @@ namespace ChristianBrown\MetOffice\Tests\SiteSpecific\Api;
 
 use ChristianBrown\ApiClient\Exception\Request\RequestExceptionInterface;
 use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
+use ChristianBrown\MetOffice\ApiKey;
+use ChristianBrown\MetOffice\ApiKeyInterface;
 use ChristianBrown\MetOffice\Exception\UnexpectedResponseException;
 use ChristianBrown\MetOffice\SiteSpecific\Api\ForecastApi;
 use ChristianBrown\MetOffice\SiteSpecific\Api\ForecastApiInterface;
@@ -13,12 +15,14 @@ use ChristianBrown\MetOffice\SiteSpecific\Model\ForecastInterface;
 use ChristianBrown\MetOffice\SiteSpecific\Transformer\ForecastTransformerInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\TestWith;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\MockObject\Exception;
 use PHPUnit\Framework\TestCase;
 
 use function sprintf;
 
 #[CoversClass(ForecastApi::class)]
+#[UsesClass(ApiKey::class)]
 final class ForecastApiTest extends TestCase
 {
     private const string TEST_API_URL = 'https://test.example/sitespecific/v0/point/forecast';
@@ -49,7 +53,7 @@ final class ForecastApiTest extends TestCase
                     ForecastApiInterface::QUERY_KEY_INCLUDE_LOCATION_NAME => ForecastApiInterface::QUERY_VALUE_TRUE,
                 ],
                 [
-                    ForecastApiInterface::HEADER_KEY_API_KEY => 'test-api-key',
+                    ApiKeyInterface::HEADER_KEY_API_KEY => 'test-api-key',
                 ]
             )
             ->willReturn($data);
@@ -61,7 +65,7 @@ final class ForecastApiTest extends TestCase
             ->with(['test-properties'])
             ->willReturn($forecast);
 
-        $api = new ForecastApi($requestSender, $forecastTransformer, 'test-api-key');
+        $api = new ForecastApi($requestSender, $forecastTransformer, new ApiKey('test-api-key'));
         $actual = $api->getForecast(self::TEST_API_URL, 51.5, -0.1);
 
         self::assertSame($forecast, $actual);
@@ -94,7 +98,7 @@ final class ForecastApiTest extends TestCase
             ->with(['test-properties'])
             ->willReturn($forecast);
 
-        $api = new ForecastApi($requestSender, $forecastTransformer, 'test-api-key');
+        $api = new ForecastApi($requestSender, $forecastTransformer, new ApiKey('test-api-key'));
 
         // Second call for the same coordinates is served from the cache without hitting the API.
         self::assertSame($forecast, $api->getForecast(self::TEST_API_URL, 51.5, -0.1));
@@ -127,7 +131,7 @@ final class ForecastApiTest extends TestCase
             ->with(['test-properties'])
             ->willReturn($forecast);
 
-        $api = new ForecastApi($requestSender, $forecastTransformer, 'test-api-key');
+        $api = new ForecastApi($requestSender, $forecastTransformer, new ApiKey('test-api-key'));
 
         // First call populates the cache; the second bypasses it and hits the API again.
         self::assertSame($forecast, $api->getForecast(self::TEST_API_URL, 51.5, -0.1));
@@ -160,7 +164,7 @@ final class ForecastApiTest extends TestCase
 
         $forecastTransformer = self::createStub(ForecastTransformerInterface::class);
 
-        $api = new ForecastApi($requestSender, $forecastTransformer, 'test-api-key');
+        $api = new ForecastApi($requestSender, $forecastTransformer, new ApiKey('test-api-key'));
 
         $this->expectException(UnexpectedResponseException::class);
         $this->expectExceptionMessage(sprintf(ForecastApiInterface::UNEXPECTED_RESPONSE_SPRINTF, $field));

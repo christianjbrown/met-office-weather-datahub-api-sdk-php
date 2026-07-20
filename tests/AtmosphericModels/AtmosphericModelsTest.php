@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ChristianBrown\MetOffice\Tests\AtmosphericModels;
 
+use ChristianBrown\MetOffice\ApiKey;
 use ChristianBrown\MetOffice\AtmosphericModels\Api\OrdersApi;
 use ChristianBrown\MetOffice\AtmosphericModels\Api\RunsApi;
 use ChristianBrown\MetOffice\AtmosphericModels\AtmosphericModels;
@@ -26,6 +27,7 @@ use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(AtmosphericModels::class)]
+#[UsesClass(ApiKey::class)]
 #[UsesClass(RunsApi::class)]
 #[UsesClass(OrdersApi::class)]
 #[UsesClass(AxisExtentTransformer::class)]

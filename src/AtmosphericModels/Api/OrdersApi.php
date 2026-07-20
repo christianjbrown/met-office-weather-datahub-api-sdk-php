@@ -7,6 +7,7 @@ namespace ChristianBrown\MetOffice\AtmosphericModels\Api;
 use ChristianBrown\ApiClient\ApiRequestSenderInterface;
 use ChristianBrown\ApiClient\Exception\Request\RequestExceptionInterface;
 use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
+use ChristianBrown\MetOffice\ApiKeyInterface;
 use ChristianBrown\MetOffice\Coverage\Model\OrderFileDetailsInterface;
 use ChristianBrown\MetOffice\Coverage\Model\OrderFileInterface;
 use ChristianBrown\MetOffice\Coverage\Model\OrderInterface;
@@ -21,14 +22,14 @@ use function sprintf;
 
 final class OrdersApi implements OrdersApiInterface
 {
-    private string $apiKey;
+    private ApiKeyInterface $apiKey;
     private OrderFileDetailsTransformerInterface $orderFileDetailsTransformer;
     private OrderFilesTransformerInterface $orderFilesTransformer;
     private OrdersTransformerInterface $ordersTransformer;
     private ApiRequestSenderInterface $rawRequestSender;
     private JsonApiRequestSenderInterface $requestSender;
 
-    public function __construct(JsonApiRequestSenderInterface $requestSender, ApiRequestSenderInterface $rawRequestSender, OrdersTransformerInterface $ordersTransformer, OrderFilesTransformerInterface $orderFilesTransformer, OrderFileDetailsTransformerInterface $orderFileDetailsTransformer, string $apiKey)
+    public function __construct(JsonApiRequestSenderInterface $requestSender, ApiRequestSenderInterface $rawRequestSender, OrdersTransformerInterface $ordersTransformer, OrderFilesTransformerInterface $orderFilesTransformer, OrderFileDetailsTransformerInterface $orderFileDetailsTransformer, ApiKeyInterface $apiKey)
     {
         $this->requestSender = $requestSender;
         $this->rawRequestSender = $rawRequestSender;
@@ -45,7 +46,7 @@ final class OrdersApi implements OrdersApiInterface
     public function getOrderFile(string $orderId, string $fileId): OrderFileDetailsInterface
     {
         $headers = [
-            self::HEADER_KEY_API_KEY => $this->apiKey,
+            ...$this->apiKey->toHeaders(),
             self::HEADER_KEY_ACCEPT => self::HEADER_VALUE_ACCEPT_JSON,
         ];
         $data = $this->requestSender->get(sprintf(self::API_URL_ORDER_FILE_SPRINTF, $orderId, $fileId), [], $headers);
@@ -66,7 +67,7 @@ final class OrdersApi implements OrdersApiInterface
     public function getOrderFileData(string $orderId, string $fileId): string
     {
         $headers = [
-            self::HEADER_KEY_API_KEY => $this->apiKey,
+            ...$this->apiKey->toHeaders(),
             self::HEADER_KEY_ACCEPT => self::HEADER_VALUE_ACCEPT_GRIB,
         ];
 
@@ -82,7 +83,7 @@ final class OrdersApi implements OrdersApiInterface
     public function getOrderFiles(string $orderId, ?string $detail = null, ?string $runFilter = null): array
     {
         $headers = [
-            self::HEADER_KEY_API_KEY => $this->apiKey,
+            ...$this->apiKey->toHeaders(),
             self::HEADER_KEY_ACCEPT => self::HEADER_VALUE_ACCEPT_JSON,
         ];
         $data = $this->requestSender->get(sprintf(self::API_URL_ORDER_LATEST_SPRINTF, $orderId), $this->buildFilesQuery($detail, $runFilter), $headers);
@@ -99,7 +100,7 @@ final class OrdersApi implements OrdersApiInterface
     public function getOrders(): array
     {
         $headers = [
-            self::HEADER_KEY_API_KEY => $this->apiKey,
+            ...$this->apiKey->toHeaders(),
             self::HEADER_KEY_ACCEPT => self::HEADER_VALUE_ACCEPT_JSON,
         ];
         $data = $this->requestSender->get(self::API_URL_ORDERS, [], $headers);

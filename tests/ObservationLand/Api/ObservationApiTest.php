@@ -6,17 +6,21 @@ namespace ChristianBrown\MetOffice\Tests\ObservationLand\Api;
 
 use ChristianBrown\ApiClient\Exception\Request\RequestExceptionInterface;
 use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
+use ChristianBrown\MetOffice\ApiKey;
+use ChristianBrown\MetOffice\ApiKeyInterface;
 use ChristianBrown\MetOffice\ObservationLand\Api\ObservationApi;
 use ChristianBrown\MetOffice\ObservationLand\Api\ObservationApiInterface;
 use ChristianBrown\MetOffice\ObservationLand\Model\ObservationInterface;
 use ChristianBrown\MetOffice\ObservationLand\Transformer\ObservationsTransformerInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\MockObject\Exception;
 use PHPUnit\Framework\TestCase;
 
 use function sprintf;
 
 #[CoversClass(ObservationApi::class)]
+#[UsesClass(ApiKey::class)]
 final class ObservationApiTest extends TestCase
 {
     /**
@@ -33,7 +37,7 @@ final class ObservationApiTest extends TestCase
                 sprintf(ObservationApiInterface::API_URL_OBSERVATION_SPRINTF, 'gcpvj0'),
                 [],
                 [
-                    ObservationApiInterface::HEADER_KEY_API_KEY => 'test-api-key',
+                    ApiKeyInterface::HEADER_KEY_API_KEY => 'test-api-key',
                 ]
             )
             ->willReturn($data);
@@ -46,7 +50,7 @@ final class ObservationApiTest extends TestCase
             ->with($data)
             ->willReturn($observations);
 
-        $api = new ObservationApi($requestSender, $transformer, 'test-api-key');
+        $api = new ObservationApi($requestSender, $transformer, new ApiKey('test-api-key'));
 
         self::assertSame($observations, $api->getByGeohash('gcpvj0'));
     }
@@ -73,7 +77,7 @@ final class ObservationApiTest extends TestCase
             ->with($data)
             ->willReturn($observations);
 
-        $api = new ObservationApi($requestSender, $transformer, 'test-api-key');
+        $api = new ObservationApi($requestSender, $transformer, new ApiKey('test-api-key'));
 
         // Second call for the same geohash is served from the cache without hitting the API.
         self::assertSame($observations, $api->getByGeohash('gcpvj0'));
@@ -101,7 +105,7 @@ final class ObservationApiTest extends TestCase
             ->with($data)
             ->willReturn($observations);
 
-        $api = new ObservationApi($requestSender, $transformer, 'test-api-key');
+        $api = new ObservationApi($requestSender, $transformer, new ApiKey('test-api-key'));
 
         // First call populates the cache; the second bypasses it and hits the API again.
         self::assertSame($observations, $api->getByGeohash('gcpvj0'));

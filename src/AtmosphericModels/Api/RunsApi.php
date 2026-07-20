@@ -6,6 +6,7 @@ namespace ChristianBrown\MetOffice\AtmosphericModels\Api;
 
 use ChristianBrown\ApiClient\Exception\Request\RequestExceptionInterface;
 use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
+use ChristianBrown\MetOffice\ApiKeyInterface;
 use ChristianBrown\MetOffice\Coverage\Model\RunInterface;
 use ChristianBrown\MetOffice\Coverage\Transformer\RunsTransformerInterface;
 use ChristianBrown\MetOffice\Exception\UnexpectedResponseException;
@@ -15,11 +16,11 @@ use function sprintf;
 
 final class RunsApi implements RunsApiInterface
 {
-    private string $apiKey;
+    private ApiKeyInterface $apiKey;
     private JsonApiRequestSenderInterface $requestSender;
     private RunsTransformerInterface $runsTransformer;
 
-    public function __construct(JsonApiRequestSenderInterface $requestSender, RunsTransformerInterface $runsTransformer, string $apiKey)
+    public function __construct(JsonApiRequestSenderInterface $requestSender, RunsTransformerInterface $runsTransformer, ApiKeyInterface $apiKey)
     {
         $this->requestSender = $requestSender;
         $this->runsTransformer = $runsTransformer;
@@ -35,7 +36,7 @@ final class RunsApi implements RunsApiInterface
     public function getRuns(): array
     {
         $headers = [
-            self::HEADER_KEY_API_KEY => $this->apiKey,
+            ...$this->apiKey->toHeaders(),
             self::HEADER_KEY_ACCEPT => self::HEADER_VALUE_ACCEPT_JSON,
         ];
         $data = $this->requestSender->get(self::API_URL_RUNS, [], $headers);
@@ -52,7 +53,7 @@ final class RunsApi implements RunsApiInterface
     public function getRunsByModel(string $modelId): array
     {
         $headers = [
-            self::HEADER_KEY_API_KEY => $this->apiKey,
+            ...$this->apiKey->toHeaders(),
             self::HEADER_KEY_ACCEPT => self::HEADER_VALUE_ACCEPT_JSON,
         ];
         $data = $this->requestSender->get(sprintf(self::API_URL_RUNS_BY_MODEL_SPRINTF, $modelId), [], $headers);

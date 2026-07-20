@@ -6,6 +6,7 @@ namespace ChristianBrown\MetOffice\ObservationLand;
 
 use ChristianBrown\ApiClient\ApiClient;
 use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
+use ChristianBrown\MetOffice\ApiKey;
 use ChristianBrown\MetOffice\ObservationLand\Api\NearestApi;
 use ChristianBrown\MetOffice\ObservationLand\Api\NearestApiInterface;
 use ChristianBrown\MetOffice\ObservationLand\Api\ObservationApi;
@@ -65,6 +66,13 @@ final class ObservationLand implements ObservationLandInterface
         $this->container->register(self::SERVICE_JSON_API_REQUEST_SENDER, JsonApiRequestSenderInterface::class)
             ->setFactory([new Reference(self::SERVICE_API_CLIENT), 'getJsonApiRequestSender']);
 
+        $this->container->register(self::SERVICE_API_KEY, ApiKey::class)
+            ->setArguments(
+                [
+                    $this->apiKey,
+                ]
+            );
+
         $this->container->register(self::SERVICE_NEAREST_LOCATION_TRANSFORMER, NearestLocationTransformer::class);
         $this->container->register(self::SERVICE_NEAREST_LOCATIONS_TRANSFORMER, NearestLocationsTransformer::class)
             ->setArguments(
@@ -86,7 +94,7 @@ final class ObservationLand implements ObservationLandInterface
                 [
                     $this->container->getDefinition(self::SERVICE_JSON_API_REQUEST_SENDER),
                     $this->container->getDefinition(self::SERVICE_NEAREST_LOCATIONS_TRANSFORMER),
-                    $this->apiKey,
+                    $this->container->getDefinition(self::SERVICE_API_KEY),
                 ]
             );
         $this->container->register(self::SERVICE_OBSERVATION_API, ObservationApi::class)
@@ -94,7 +102,7 @@ final class ObservationLand implements ObservationLandInterface
                 [
                     $this->container->getDefinition(self::SERVICE_JSON_API_REQUEST_SENDER),
                     $this->container->getDefinition(self::SERVICE_OBSERVATIONS_TRANSFORMER),
-                    $this->apiKey,
+                    $this->container->getDefinition(self::SERVICE_API_KEY),
                 ]
             );
     }

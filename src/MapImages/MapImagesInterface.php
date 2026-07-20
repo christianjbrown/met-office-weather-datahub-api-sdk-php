@@ -10,6 +10,7 @@ use ChristianBrown\MetOffice\MapImages\Api\RunsApiInterface;
 interface MapImagesInterface
 {
     public const SERVICE_API_CLIENT = 'met_office.map_images.api_client';
+    public const SERVICE_API_KEY = 'met_office.map_images.api_key';
     public const SERVICE_API_REQUEST_SENDER = 'met_office.map_images.api_request_sender';
     public const SERVICE_AXIS_EXTENT_TRANSFORMER = 'met_office.map_images.transformer.axis_extent_transformer';
     public const SERVICE_JSON_API_REQUEST_SENDER = 'met_office.map_images.json_api_request_sender';

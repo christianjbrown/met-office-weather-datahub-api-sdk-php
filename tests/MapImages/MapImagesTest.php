@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ChristianBrown\MetOffice\Tests\MapImages;
 
+use ChristianBrown\MetOffice\ApiKey;
 use ChristianBrown\MetOffice\Coverage\Transformer\AxisExtentTransformer;
 use ChristianBrown\MetOffice\Coverage\Transformer\OrderFileDetailsTransformer;
 use ChristianBrown\MetOffice\Coverage\Transformer\OrderFilesTransformer;
@@ -26,6 +27,7 @@ use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(MapImages::class)]
+#[UsesClass(ApiKey::class)]
 #[UsesClass(RunsApi::class)]
 #[UsesClass(OrdersApi::class)]
 #[UsesClass(AxisExtentTransformer::class)]

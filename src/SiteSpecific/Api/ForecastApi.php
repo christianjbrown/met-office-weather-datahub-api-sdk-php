@@ -6,6 +6,7 @@ namespace ChristianBrown\MetOffice\SiteSpecific\Api;
 
 use ChristianBrown\ApiClient\Exception\Request\RequestExceptionInterface;
 use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
+use ChristianBrown\MetOffice\ApiKeyInterface;
 use ChristianBrown\MetOffice\Exception\UnexpectedResponseException;
 use ChristianBrown\MetOffice\SiteSpecific\Model\ForecastInterface;
 use ChristianBrown\MetOffice\SiteSpecific\Transformer\ForecastTransformerInterface;
@@ -16,7 +17,7 @@ use function sprintf;
 
 final class ForecastApi implements ForecastApiInterface
 {
-    private string $apiKey;
+    private ApiKeyInterface $apiKey;
 
     /**
      * @var array<string, ForecastInterface>
@@ -25,7 +26,7 @@ final class ForecastApi implements ForecastApiInterface
     private ForecastTransformerInterface $forecastTransformer;
     private JsonApiRequestSenderInterface $requestSender;
 
-    public function __construct(JsonApiRequestSenderInterface $requestSender, ForecastTransformerInterface $forecastTransformer, string $apiKey)
+    public function __construct(JsonApiRequestSenderInterface $requestSender, ForecastTransformerInterface $forecastTransformer, ApiKeyInterface $apiKey)
     {
         $this->requestSender = $requestSender;
         $this->forecastTransformer = $forecastTransformer;
@@ -45,9 +46,7 @@ final class ForecastApi implements ForecastApiInterface
             }
         }
 
-        $headers = [
-            self::HEADER_KEY_API_KEY => $this->apiKey,
-        ];
+        $headers = $this->apiKey->toHeaders();
         $query = [
             self::QUERY_KEY_LATITUDE => (string) $latitude,
             self::QUERY_KEY_LONGITUDE => (string) $longitude,

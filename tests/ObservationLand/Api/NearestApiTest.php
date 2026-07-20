@@ -6,15 +6,19 @@ namespace ChristianBrown\MetOffice\Tests\ObservationLand\Api;
 
 use ChristianBrown\ApiClient\Exception\Request\RequestExceptionInterface;
 use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
+use ChristianBrown\MetOffice\ApiKey;
+use ChristianBrown\MetOffice\ApiKeyInterface;
 use ChristianBrown\MetOffice\ObservationLand\Api\NearestApi;
 use ChristianBrown\MetOffice\ObservationLand\Api\NearestApiInterface;
 use ChristianBrown\MetOffice\ObservationLand\Model\NearestLocationInterface;
 use ChristianBrown\MetOffice\ObservationLand\Transformer\NearestLocationsTransformerInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\MockObject\Exception;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(NearestApi::class)]
+#[UsesClass(ApiKey::class)]
 final class NearestApiTest extends TestCase
 {
     /**
@@ -34,7 +38,7 @@ final class NearestApiTest extends TestCase
                     NearestApiInterface::QUERY_KEY_LON => '-0.18',
                 ],
                 [
-                    NearestApiInterface::HEADER_KEY_API_KEY => 'test-api-key',
+                    ApiKeyInterface::HEADER_KEY_API_KEY => 'test-api-key',
                 ]
             )
             ->willReturn($data);
@@ -47,7 +51,7 @@ final class NearestApiTest extends TestCase
             ->with($data)
             ->willReturn($locations);
 
-        $api = new NearestApi($requestSender, $transformer, 'test-api-key');
+        $api = new NearestApi($requestSender, $transformer, new ApiKey('test-api-key'));
 
         self::assertSame($locations, $api->getByCoordinates(51.554, -0.181));
     }
@@ -68,7 +72,7 @@ final class NearestApiTest extends TestCase
                     NearestApiInterface::QUERY_KEY_GEOHASH => 'gcpvj0',
                 ],
                 [
-                    NearestApiInterface::HEADER_KEY_API_KEY => 'test-api-key',
+                    ApiKeyInterface::HEADER_KEY_API_KEY => 'test-api-key',
                 ]
             )
             ->willReturn($data);
@@ -81,7 +85,7 @@ final class NearestApiTest extends TestCase
             ->with($data)
             ->willReturn($locations);
 
-        $api = new NearestApi($requestSender, $transformer, 'test-api-key');
+        $api = new NearestApi($requestSender, $transformer, new ApiKey('test-api-key'));
 
         self::assertSame($locations, $api->getByGeohash('gcpvj0'));
     }

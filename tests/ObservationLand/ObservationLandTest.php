@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ChristianBrown\MetOffice\Tests\ObservationLand;
 
+use ChristianBrown\MetOffice\ApiKey;
 use ChristianBrown\MetOffice\ObservationLand\Api\NearestApi;
 use ChristianBrown\MetOffice\ObservationLand\Api\ObservationApi;
 use ChristianBrown\MetOffice\ObservationLand\ObservationLand;
@@ -16,6 +17,7 @@ use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(ObservationLand::class)]
+#[UsesClass(ApiKey::class)]
 #[UsesClass(NearestApi::class)]
 #[UsesClass(ObservationApi::class)]
 #[UsesClass(NearestLocationTransformer::class)]

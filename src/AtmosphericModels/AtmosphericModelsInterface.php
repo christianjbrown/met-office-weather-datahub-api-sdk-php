@@ -10,6 +10,7 @@ use ChristianBrown\MetOffice\AtmosphericModels\Api\RunsApiInterface;
 interface AtmosphericModelsInterface
 {
     public const SERVICE_API_CLIENT = 'met_office.atmospheric_models.api_client';
+    public const SERVICE_API_KEY = 'met_office.atmospheric_models.api_key';
     public const SERVICE_API_REQUEST_SENDER = 'met_office.atmospheric_models.api_request_sender';
     public const SERVICE_AXIS_EXTENT_TRANSFORMER = 'met_office.atmospheric_models.transformer.axis_extent_transformer';
     public const SERVICE_JSON_API_REQUEST_SENDER = 'met_office.atmospheric_models.json_api_request_sender';

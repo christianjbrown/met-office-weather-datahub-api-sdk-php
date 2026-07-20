@@ -6,6 +6,7 @@ namespace ChristianBrown\MetOffice\ObservationLand\Api;
 
 use ChristianBrown\ApiClient\Exception\Request\RequestExceptionInterface;
 use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
+use ChristianBrown\MetOffice\ApiKeyInterface;
 use ChristianBrown\MetOffice\Exception\UnexpectedResponseException;
 use ChristianBrown\MetOffice\ObservationLand\Model\ObservationInterface;
 use ChristianBrown\MetOffice\ObservationLand\Transformer\ObservationsTransformerInterface;
@@ -14,7 +15,7 @@ use function sprintf;
 
 final class ObservationApi implements ObservationApiInterface
 {
-    private string $apiKey;
+    private ApiKeyInterface $apiKey;
 
     /**
      * @var array<string, array<int, ObservationInterface>>
@@ -23,7 +24,7 @@ final class ObservationApi implements ObservationApiInterface
     private ObservationsTransformerInterface $observationsTransformer;
     private JsonApiRequestSenderInterface $requestSender;
 
-    public function __construct(JsonApiRequestSenderInterface $requestSender, ObservationsTransformerInterface $observationsTransformer, string $apiKey)
+    public function __construct(JsonApiRequestSenderInterface $requestSender, ObservationsTransformerInterface $observationsTransformer, ApiKeyInterface $apiKey)
     {
         $this->requestSender = $requestSender;
         $this->observationsTransformer = $observationsTransformer;
@@ -44,9 +45,7 @@ final class ObservationApi implements ObservationApiInterface
             }
         }
 
-        $headers = [
-            self::HEADER_KEY_API_KEY => $this->apiKey,
-        ];
+        $headers = $this->apiKey->toHeaders();
         $data = $this->requestSender->get(sprintf(self::API_URL_OBSERVATION_SPRINTF, $geohash), [], $headers);
 
         $observations = $this->observationsTransformer->transform($data);

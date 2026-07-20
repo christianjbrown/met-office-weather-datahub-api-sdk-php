@@ -7,6 +7,7 @@ namespace ChristianBrown\MetOffice\MapImages;
 use ChristianBrown\ApiClient\ApiClient;
 use ChristianBrown\ApiClient\ApiRequestSenderInterface;
 use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
+use ChristianBrown\MetOffice\ApiKey;
 use ChristianBrown\MetOffice\Coverage\Transformer\AxisExtentTransformer;
 use ChristianBrown\MetOffice\Coverage\Transformer\OrderFileDetailsTransformer;
 use ChristianBrown\MetOffice\Coverage\Transformer\OrderFilesTransformer;
@@ -75,6 +76,13 @@ final class MapImages implements MapImagesInterface
         $this->container->register(self::SERVICE_API_CLIENT, ApiClient::class);
         $this->container->register(self::SERVICE_JSON_API_REQUEST_SENDER, JsonApiRequestSenderInterface::class)
             ->setFactory([new Reference(self::SERVICE_API_CLIENT), 'getJsonApiRequestSender']);
+
+        $this->container->register(self::SERVICE_API_KEY, ApiKey::class)
+            ->setArguments(
+                [
+                    $this->apiKey,
+                ]
+            );
         $this->container->register(self::SERVICE_API_REQUEST_SENDER, ApiRequestSenderInterface::class)
             ->setFactory([new Reference(self::SERVICE_API_CLIENT), 'getApiRequestSender']);
 
@@ -159,7 +167,7 @@ final class MapImages implements MapImagesInterface
                 [
                     $this->container->getDefinition(self::SERVICE_JSON_API_REQUEST_SENDER),
                     $this->container->getDefinition(self::SERVICE_RUNS_TRANSFORMER),
-                    $this->apiKey,
+                    $this->container->getDefinition(self::SERVICE_API_KEY),
                 ]
             );
         $this->container->register(self::SERVICE_ORDERS_API, OrdersApi::class)
@@ -170,7 +178,7 @@ final class MapImages implements MapImagesInterface
                     $this->container->getDefinition(self::SERVICE_ORDERS_TRANSFORMER),
                     $this->container->getDefinition(self::SERVICE_ORDER_FILES_TRANSFORMER),
                     $this->container->getDefinition(self::SERVICE_ORDER_FILE_DETAILS_TRANSFORMER),
-                    $this->apiKey,
+                    $this->container->getDefinition(self::SERVICE_API_KEY),
                 ]
             );
     }

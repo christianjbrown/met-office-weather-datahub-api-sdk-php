@@ -6,6 +6,7 @@ namespace ChristianBrown\MetOffice\ObservationLand\Api;
 
 use ChristianBrown\ApiClient\Exception\Request\RequestExceptionInterface;
 use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
+use ChristianBrown\MetOffice\ApiKeyInterface;
 use ChristianBrown\MetOffice\Exception\UnexpectedResponseException;
 use ChristianBrown\MetOffice\ObservationLand\Model\NearestLocationInterface;
 use ChristianBrown\MetOffice\ObservationLand\Transformer\NearestLocationsTransformerInterface;
@@ -14,11 +15,11 @@ use function round;
 
 final class NearestApi implements NearestApiInterface
 {
-    private string $apiKey;
+    private ApiKeyInterface $apiKey;
     private NearestLocationsTransformerInterface $nearestLocationsTransformer;
     private JsonApiRequestSenderInterface $requestSender;
 
-    public function __construct(JsonApiRequestSenderInterface $requestSender, NearestLocationsTransformerInterface $nearestLocationsTransformer, string $apiKey)
+    public function __construct(JsonApiRequestSenderInterface $requestSender, NearestLocationsTransformerInterface $nearestLocationsTransformer, ApiKeyInterface $apiKey)
     {
         $this->requestSender = $requestSender;
         $this->nearestLocationsTransformer = $nearestLocationsTransformer;
@@ -33,9 +34,7 @@ final class NearestApi implements NearestApiInterface
      */
     public function getByCoordinates(float $latitude, float $longitude): array
     {
-        $headers = [
-            self::HEADER_KEY_API_KEY => $this->apiKey,
-        ];
+        $headers = $this->apiKey->toHeaders();
         $query = [
             self::QUERY_KEY_LAT => $this->formatCoordinate($latitude),
             self::QUERY_KEY_LON => $this->formatCoordinate($longitude),
@@ -53,9 +52,7 @@ final class NearestApi implements NearestApiInterface
      */
     public function getByGeohash(string $geohash): array
     {
-        $headers = [
-            self::HEADER_KEY_API_KEY => $this->apiKey,
-        ];
+        $headers = $this->apiKey->toHeaders();
         $query = [
             self::QUERY_KEY_GEOHASH => $geohash,
         ];

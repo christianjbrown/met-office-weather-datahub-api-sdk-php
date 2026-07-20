@@ -7,6 +7,8 @@ namespace ChristianBrown\MetOffice\Tests\MapImages\Api;
 use ChristianBrown\ApiClient\ApiRequestSenderInterface;
 use ChristianBrown\ApiClient\Exception\Request\RequestExceptionInterface;
 use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
+use ChristianBrown\MetOffice\ApiKey;
+use ChristianBrown\MetOffice\ApiKeyInterface;
 use ChristianBrown\MetOffice\Coverage\Model\OrderFileDetailsInterface;
 use ChristianBrown\MetOffice\Coverage\Model\OrderFileInterface;
 use ChristianBrown\MetOffice\Coverage\Model\OrderInterface;
@@ -19,6 +21,7 @@ use ChristianBrown\MetOffice\MapImages\Api\OrdersApiInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\TestWith;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\MockObject\Exception;
 use PHPUnit\Framework\TestCase;
 
@@ -26,6 +29,7 @@ use function rawurlencode;
 use function sprintf;
 
 #[CoversClass(OrdersApi::class)]
+#[UsesClass(ApiKey::class)]
 final class OrdersApiTest extends TestCase
 {
     /**
@@ -43,7 +47,7 @@ final class OrdersApiTest extends TestCase
                 sprintf(OrdersApiInterface::API_URL_ORDER_FILE_SPRINTF, 'myorder', 'isbl_temperature_100000_+00'),
                 [],
                 [
-                    OrdersApiInterface::HEADER_KEY_API_KEY => 'test-api-key',
+                    ApiKeyInterface::HEADER_KEY_API_KEY => 'test-api-key',
                     OrdersApiInterface::HEADER_KEY_ACCEPT => OrdersApiInterface::HEADER_VALUE_ACCEPT_JSON,
                 ]
             )
@@ -62,7 +66,7 @@ final class OrdersApiTest extends TestCase
             self::createStub(OrdersTransformerInterface::class),
             self::createStub(OrderFilesTransformerInterface::class),
             $orderFileDetailsTransformer,
-            'test-api-key'
+            new ApiKey('test-api-key')
         );
 
         self::assertSame($orderFileDetails, $api->getOrderFile('myorder', 'isbl_temperature_100000_+00'));
@@ -82,7 +86,7 @@ final class OrdersApiTest extends TestCase
                 sprintf(OrdersApiInterface::API_URL_ORDER_FILE_DATA_SPRINTF, 'myorder', rawurlencode('isbl_temperature_100000_+00')),
                 [],
                 [
-                    OrdersApiInterface::HEADER_KEY_API_KEY => 'test-api-key',
+                    ApiKeyInterface::HEADER_KEY_API_KEY => 'test-api-key',
                     OrdersApiInterface::HEADER_KEY_ACCEPT => OrdersApiInterface::HEADER_VALUE_ACCEPT_PNG,
                 ]
             )
@@ -94,15 +98,13 @@ final class OrdersApiTest extends TestCase
             self::createStub(OrdersTransformerInterface::class),
             self::createStub(OrderFilesTransformerInterface::class),
             self::createStub(OrderFileDetailsTransformerInterface::class),
-            'test-api-key'
+            new ApiKey('test-api-key')
         );
 
         self::assertSame($png, $api->getOrderFileData('myorder', 'isbl_temperature_100000_+00'));
     }
 
     /**
-     * @param null|string           $detail
-     * @param null|string           $runFilter
      * @param array<string, string> $expectedQuery
      *
      * @throws RequestExceptionInterface
@@ -124,7 +126,7 @@ final class OrdersApiTest extends TestCase
                 sprintf(OrdersApiInterface::API_URL_ORDER_LATEST_SPRINTF, 'myorder'),
                 $expectedQuery,
                 [
-                    OrdersApiInterface::HEADER_KEY_API_KEY => 'test-api-key',
+                    ApiKeyInterface::HEADER_KEY_API_KEY => 'test-api-key',
                     OrdersApiInterface::HEADER_KEY_ACCEPT => OrdersApiInterface::HEADER_VALUE_ACCEPT_JSON,
                 ]
             )
@@ -144,7 +146,7 @@ final class OrdersApiTest extends TestCase
             self::createStub(OrdersTransformerInterface::class),
             $orderFilesTransformer,
             self::createStub(OrderFileDetailsTransformerInterface::class),
-            'test-api-key'
+            new ApiKey('test-api-key')
         );
 
         self::assertSame($files, $api->getOrderFiles('myorder', $detail, $runFilter));
@@ -192,7 +194,7 @@ final class OrdersApiTest extends TestCase
             self::createStub(OrdersTransformerInterface::class),
             $orderFilesTransformer,
             self::createStub(OrderFileDetailsTransformerInterface::class),
-            'test-api-key'
+            new ApiKey('test-api-key')
         );
 
         $this->expectException(UnexpectedResponseException::class);
@@ -223,7 +225,7 @@ final class OrdersApiTest extends TestCase
             self::createStub(OrdersTransformerInterface::class),
             self::createStub(OrderFilesTransformerInterface::class),
             $orderFileDetailsTransformer,
-            'test-api-key'
+            new ApiKey('test-api-key')
         );
 
         $this->expectException(UnexpectedResponseException::class);
@@ -247,7 +249,7 @@ final class OrdersApiTest extends TestCase
                 OrdersApiInterface::API_URL_ORDERS,
                 [],
                 [
-                    OrdersApiInterface::HEADER_KEY_API_KEY => 'test-api-key',
+                    ApiKeyInterface::HEADER_KEY_API_KEY => 'test-api-key',
                     OrdersApiInterface::HEADER_KEY_ACCEPT => OrdersApiInterface::HEADER_VALUE_ACCEPT_JSON,
                 ]
             )
@@ -267,7 +269,7 @@ final class OrdersApiTest extends TestCase
             $ordersTransformer,
             self::createStub(OrderFilesTransformerInterface::class),
             self::createStub(OrderFileDetailsTransformerInterface::class),
-            'test-api-key'
+            new ApiKey('test-api-key')
         );
 
         self::assertSame($orders, $api->getOrders());
@@ -295,7 +297,7 @@ final class OrdersApiTest extends TestCase
             $ordersTransformer,
             self::createStub(OrderFilesTransformerInterface::class),
             self::createStub(OrderFileDetailsTransformerInterface::class),
-            'test-api-key'
+            new ApiKey('test-api-key')
         );
 
         $this->expectException(UnexpectedResponseException::class);
