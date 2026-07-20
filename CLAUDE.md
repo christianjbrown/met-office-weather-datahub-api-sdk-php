@@ -85,11 +85,12 @@ Everything lives under the `ChristianBrown\MetOffice\` namespace (`src/`), mirro
   $apiKey` and injects `ApiKeyInterface` into every client, so the credential-to-header mapping lives in
   one place (mirrors the SmartThings `Token` pattern) instead of a raw string threaded through each
   client. Clients with extra headers spread it: `[...$this->apiKey->toHeaders(), HEADER_KEY_ACCEPT => …]`.
-- **`Transformer\WeatherTypeTransformer`** (+ interface) — turns a `WeatherType` into a display name or
-  emoji. Shared because weather codes are a Met Office-wide concept.
 - **`Enums/`** — `WeatherType` (int-backed 0–30 code table, plus `-1` for trace/NA) and
   `WindDirection` (string-backed 16-point compass with `WindDirection::fromDegrees(int): self`). Both
-  are Met Office-wide concepts, so they live at the top level.
+  are Met Office-wide concepts, so they live at the top level. `WeatherType` is the readable form of the
+  raw code: `->value` is the numeric code, `->name` is a stable string token. **Display wording (name /
+  emoji) is deliberately not in this library** — it is a locale-sensitive presentation concern owned by
+  the consumer, so no `WeatherTypeTransformer` lives here.
 - **`Exception/`** — a flat hierarchy rooted at `ExceptionInterface extends Throwable`:
   `UnexpectedResponseException extends RuntimeException` (bad/unparseable response) and
   `MissingInputException extends InvalidArgumentException`. A single `catch (ExceptionInterface)`
@@ -127,7 +128,7 @@ Everything lives under the `ChristianBrown\MetOffice\` namespace (`src/`), mirro
   `location.name` and `modelRunDate`, and delegates `timeSeries` to `ForecastTimeStepsTransformer` (a
   collection wrapping one `ForecastTimeStepTransformerInterface`). The three step transformers each
   implement that interface and narrow their return type to their concrete step interface. These
-  reference the shared `Enums\WeatherType` and the shared `Transformer\WeatherTypeTransformer`.
+  reference the shared `Enums\WeatherType`.
 
 ### Observation (Land) (`ChristianBrown\MetOffice\ObservationLand\`)
 

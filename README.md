@@ -157,15 +157,14 @@ $direction = WindDirection::fromDegrees(200);   // WindDirection::SOUTH_SOUTH_WE
 echo $direction->value;                          // "SSW"
 ```
 
-Weather codes are decoded to the `WeatherType` enum (`getSignificantWeatherCode()`, `getDaySignificantWeatherCode()`, …, an `?WeatherType`). Turn one into a display string or emoji with `WeatherTypeTransformer`:
+Weather codes are decoded to the `WeatherType` enum (`getSignificantWeatherCode()`, `getDaySignificantWeatherCode()`, …, an `?WeatherType`). The enum is the readable, debuggable form of the raw Met Office code — use `->value` for the numeric code and `->name` for a stable string token. Display wording (a human-readable name or emoji) is intentionally **not** provided here; it is a locale-sensitive presentation concern and belongs to the consumer:
 
 ```php
 use ChristianBrown\MetOffice\Enums\WeatherType;
-use ChristianBrown\MetOffice\Transformer\WeatherTypeTransformer;
 
-$weatherTypeTransformer = new WeatherTypeTransformer();
-echo $weatherTypeTransformer->transform(WeatherType::SUNNY_DAY);         // "Sunny day"
-echo $weatherTypeTransformer->transformToEmoji(WeatherType::SUNNY_DAY);  // "☀️"
+$type = WeatherType::SUNNY_DAY;
+echo $type->value;   // 1        (raw Met Office significant weather code)
+echo $type->name;    // "SUNNY_DAY"  (stable token to map to a display string / emoji)
 ```
 
 
