@@ -53,7 +53,8 @@ final class ForecastTimeStepsTransformerTest extends TestCase
         $timeStep1 = self::createStub(ForecastTimeStepInterface::class);
 
         $timeStepTransformer = self::createMock(ForecastTimeStepTransformerInterface::class);
-        $timeStepTransformer->method('transform')
+        $timeStepTransformer->expects(self::once())
+            ->method('transform')
             ->with(['test-time-step-1'])
             ->willReturn($timeStep1);
 

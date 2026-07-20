@@ -53,7 +53,8 @@ final class ObservationsTransformerTest extends TestCase
         $observation1 = self::createStub(ObservationInterface::class);
 
         $observationTransformer = self::createMock(ObservationTransformerInterface::class);
-        $observationTransformer->method('transform')
+        $observationTransformer->expects(self::once())
+            ->method('transform')
             ->with(['test-observation-1'])
             ->willReturn($observation1);
 

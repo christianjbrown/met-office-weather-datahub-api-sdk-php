@@ -37,7 +37,8 @@ final class OrderFileTransformerTest extends TestCase
         $region = self::createStub(RegionInterface::class);
 
         $regionTransformer = self::createMock(RegionTransformerInterface::class);
-        $regionTransformer->method('transform')
+        $regionTransformer->expects(self::once())
+            ->method('transform')
             ->with($regionData)
             ->willReturn($region);
 

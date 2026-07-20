@@ -32,7 +32,8 @@ final class RunTransformerTest extends TestCase
         $completeRuns = [$runDetail];
 
         $runDetailsTransformer = self::createMock(RunDetailsTransformerInterface::class);
-        $runDetailsTransformer->method('transform')
+        $runDetailsTransformer->expects(self::once())
+            ->method('transform')
             ->with($completeRunsData)
             ->willReturn($completeRuns);
 

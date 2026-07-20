@@ -53,7 +53,8 @@ final class NearestLocationsTransformerTest extends TestCase
         $location1 = self::createStub(NearestLocationInterface::class);
 
         $locationTransformer = self::createMock(NearestLocationTransformerInterface::class);
-        $locationTransformer->method('transform')
+        $locationTransformer->expects(self::once())
+            ->method('transform')
             ->with(['test-location-1'])
             ->willReturn($location1);
 

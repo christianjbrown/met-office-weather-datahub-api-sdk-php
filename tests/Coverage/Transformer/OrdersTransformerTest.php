@@ -53,7 +53,8 @@ final class OrdersTransformerTest extends TestCase
         $order1 = self::createStub(OrderInterface::class);
 
         $orderTransformer = self::createMock(OrderTransformerInterface::class);
-        $orderTransformer->method('transform')
+        $orderTransformer->expects(self::once())
+            ->method('transform')
             ->with(['test-order-1'])
             ->willReturn($order1);
 

@@ -53,7 +53,8 @@ final class RegionsTransformerTest extends TestCase
         $region1 = self::createStub(RegionInterface::class);
 
         $regionTransformer = self::createMock(RegionTransformerInterface::class);
-        $regionTransformer->method('transform')
+        $regionTransformer->expects(self::once())
+            ->method('transform')
             ->with(['test-region-1'])
             ->willReturn($region1);
 

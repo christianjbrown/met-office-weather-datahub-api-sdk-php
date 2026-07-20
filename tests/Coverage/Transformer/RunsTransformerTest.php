@@ -53,7 +53,8 @@ final class RunsTransformerTest extends TestCase
         $run1 = self::createStub(RunInterface::class);
 
         $runTransformer = self::createMock(RunTransformerInterface::class);
-        $runTransformer->method('transform')
+        $runTransformer->expects(self::once())
+            ->method('transform')
             ->with(['test-run-1'])
             ->willReturn($run1);
 

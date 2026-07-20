@@ -44,7 +44,8 @@ final class ForecastApiTest extends TestCase
         ];
 
         $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
-        $requestSender->method('get')
+        $requestSender->expects(self::once())
+            ->method('get')
             ->with(
                 self::TEST_API_URL,
                 [
@@ -63,7 +64,8 @@ final class ForecastApiTest extends TestCase
         $forecast = self::createStub(ForecastInterface::class);
 
         $forecastTransformer = self::createMock(ForecastTransformerInterface::class);
-        $forecastTransformer->method('transform')
+        $forecastTransformer->expects(self::once())
+            ->method('transform')
             ->with(['test-properties'])
             ->willReturn($forecast);
 
@@ -129,7 +131,8 @@ final class ForecastApiTest extends TestCase
             ->willReturn($data);
 
         $forecastTransformer = self::createMock(ForecastTransformerInterface::class);
-        $forecastTransformer->method('transform')
+        $forecastTransformer->expects(self::exactly(2))
+            ->method('transform')
             ->with(['test-properties'])
             ->willReturn($forecast);
 

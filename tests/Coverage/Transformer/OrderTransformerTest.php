@@ -38,7 +38,8 @@ final class OrderTransformerTest extends TestCase
         $regions = [$region];
 
         $regionsTransformer = self::createMock(RegionsTransformerInterface::class);
-        $regionsTransformer->method('transform')
+        $regionsTransformer->expects(self::once())
+            ->method('transform')
             ->with($regionsData)
             ->willReturn($regions);
 

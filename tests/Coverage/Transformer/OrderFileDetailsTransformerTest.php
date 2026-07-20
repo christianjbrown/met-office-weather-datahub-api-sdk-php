@@ -36,12 +36,14 @@ final class OrderFileDetailsTransformerTest extends TestCase
         $parameterDetails = [$parameterDetail];
 
         $orderFileTransformer = self::createMock(OrderFileTransformerInterface::class);
-        $orderFileTransformer->method('transform')
+        $orderFileTransformer->expects(self::once())
+            ->method('transform')
             ->with($fileData)
             ->willReturn($file);
 
         $parameterDetailsTransformer = self::createMock(ParameterDetailsTransformerInterface::class);
-        $parameterDetailsTransformer->method('transform')
+        $parameterDetailsTransformer->expects(self::once())
+            ->method('transform')
             ->with($parameterDetailsData)
             ->willReturn($parameterDetails);
 
@@ -63,7 +65,8 @@ final class OrderFileDetailsTransformerTest extends TestCase
         $file = self::createStub(OrderFileInterface::class);
 
         $orderFileTransformer = self::createMock(OrderFileTransformerInterface::class);
-        $orderFileTransformer->method('transform')
+        $orderFileTransformer->expects(self::once())
+            ->method('transform')
             ->with($fileData)
             ->willReturn($file);
 
@@ -89,7 +92,8 @@ final class OrderFileDetailsTransformerTest extends TestCase
         $file = self::createStub(OrderFileInterface::class);
 
         $orderFileTransformer = self::createMock(OrderFileTransformerInterface::class);
-        $orderFileTransformer->method('transform')
+        $orderFileTransformer->expects(self::once())
+            ->method('transform')
             ->with($fileData)
             ->willReturn($file);
 

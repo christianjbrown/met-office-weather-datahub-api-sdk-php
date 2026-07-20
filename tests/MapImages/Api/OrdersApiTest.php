@@ -42,7 +42,8 @@ final class OrdersApiTest extends TestCase
         $data = [OrdersApiInterface::KEY_FILE_DETAILS => $fileDetailsData];
 
         $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
-        $requestSender->method('get')
+        $requestSender->expects(self::once())
+            ->method('get')
             ->with(
                 sprintf(OrdersApiInterface::API_URL_ORDER_FILE_SPRINTF, 'myorder', 'isbl_temperature_100000_+00'),
                 [],
@@ -56,7 +57,8 @@ final class OrdersApiTest extends TestCase
         $orderFileDetails = self::createStub(OrderFileDetailsInterface::class);
 
         $orderFileDetailsTransformer = self::createMock(OrderFileDetailsTransformerInterface::class);
-        $orderFileDetailsTransformer->method('transform')
+        $orderFileDetailsTransformer->expects(self::once())
+            ->method('transform')
             ->with($fileDetailsData)
             ->willReturn($orderFileDetails);
 
@@ -81,7 +83,8 @@ final class OrdersApiTest extends TestCase
         $png = "\x89PNG\x0d\x0a\x1a\x0abinary-bytes";
 
         $rawRequestSender = self::createMock(ApiRequestSenderInterface::class);
-        $rawRequestSender->method('get')
+        $rawRequestSender->expects(self::once())
+            ->method('get')
             ->with(
                 sprintf(OrdersApiInterface::API_URL_ORDER_FILE_DATA_SPRINTF, 'myorder', rawurlencode('isbl_temperature_100000_+00')),
                 [],
@@ -123,7 +126,8 @@ final class OrdersApiTest extends TestCase
         ];
 
         $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
-        $requestSender->method('get')
+        $requestSender->expects(self::once())
+            ->method('get')
             ->with(
                 sprintf(OrdersApiInterface::API_URL_ORDER_LATEST_SPRINTF, 'myorder'),
                 $expectedQuery,
@@ -138,7 +142,8 @@ final class OrdersApiTest extends TestCase
         $files = [$file];
 
         $orderFilesTransformer = self::createMock(OrderFilesTransformerInterface::class);
-        $orderFilesTransformer->method('transform')
+        $orderFilesTransformer->expects(self::once())
+            ->method('transform')
             ->with($filesData)
             ->willReturn($files);
 
@@ -246,7 +251,8 @@ final class OrdersApiTest extends TestCase
         $data = [OrdersApiInterface::KEY_ORDERS => $ordersData];
 
         $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
-        $requestSender->method('get')
+        $requestSender->expects(self::once())
+            ->method('get')
             ->with(
                 OrdersApiInterface::API_URL_ORDERS,
                 [],
@@ -261,7 +267,8 @@ final class OrdersApiTest extends TestCase
         $orders = [$order];
 
         $ordersTransformer = self::createMock(OrdersTransformerInterface::class);
-        $ordersTransformer->method('transform')
+        $ordersTransformer->expects(self::once())
+            ->method('transform')
             ->with($ordersData)
             ->willReturn($orders);
 

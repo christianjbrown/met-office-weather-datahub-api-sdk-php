@@ -53,7 +53,8 @@ final class RunDetailsTransformerTest extends TestCase
         $runDetail1 = self::createStub(RunDetailInterface::class);
 
         $runDetailTransformer = self::createMock(RunDetailTransformerInterface::class);
-        $runDetailTransformer->method('transform')
+        $runDetailTransformer->expects(self::once())
+            ->method('transform')
             ->with(['test-run-detail-1'])
             ->willReturn($runDetail1);
 

@@ -32,7 +32,8 @@ final class NearestApiTest extends TestCase
         $data = [['test-location']];
 
         $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
-        $requestSender->method('get')
+        $requestSender->expects(self::once())
+            ->method('get')
             ->with(
                 NearestApiInterface::API_URL_NEAREST,
                 [
@@ -49,7 +50,8 @@ final class NearestApiTest extends TestCase
         $locations = [$location];
 
         $transformer = self::createMock(NearestLocationsTransformerInterface::class);
-        $transformer->method('transform')
+        $transformer->expects(self::once())
+            ->method('transform')
             ->with($data)
             ->willReturn($locations);
 
@@ -67,7 +69,8 @@ final class NearestApiTest extends TestCase
         $data = [['test-location']];
 
         $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
-        $requestSender->method('get')
+        $requestSender->expects(self::once())
+            ->method('get')
             ->with(
                 NearestApiInterface::API_URL_NEAREST,
                 [
@@ -83,7 +86,8 @@ final class NearestApiTest extends TestCase
         $locations = [$location];
 
         $transformer = self::createMock(NearestLocationsTransformerInterface::class);
-        $transformer->method('transform')
+        $transformer->expects(self::once())
+            ->method('transform')
             ->with($data)
             ->willReturn($locations);
 

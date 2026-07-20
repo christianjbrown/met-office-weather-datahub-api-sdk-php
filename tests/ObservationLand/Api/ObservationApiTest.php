@@ -32,7 +32,8 @@ final class ObservationApiTest extends TestCase
         $data = [['test-observation']];
 
         $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
-        $requestSender->method('get')
+        $requestSender->expects(self::once())
+            ->method('get')
             ->with(
                 sprintf(ObservationApiInterface::API_URL_OBSERVATION_SPRINTF, 'gcpvj0'),
                 [],
@@ -46,7 +47,8 @@ final class ObservationApiTest extends TestCase
         $observations = [$observation];
 
         $transformer = self::createMock(ObservationsTransformerInterface::class);
-        $transformer->method('transform')
+        $transformer->expects(self::once())
+            ->method('transform')
             ->with($data)
             ->willReturn($observations);
 
@@ -101,7 +103,8 @@ final class ObservationApiTest extends TestCase
             ->willReturn($data);
 
         $transformer = self::createMock(ObservationsTransformerInterface::class);
-        $transformer->method('transform')
+        $transformer->expects(self::exactly(2))
+            ->method('transform')
             ->with($data)
             ->willReturn($observations);
 

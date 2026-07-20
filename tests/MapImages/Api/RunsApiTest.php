@@ -35,7 +35,8 @@ final class RunsApiTest extends TestCase
         $data = [RunsApiInterface::KEY_RUNS => $runsData];
 
         $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
-        $requestSender->method('get')
+        $requestSender->expects(self::once())
+            ->method('get')
             ->with(
                 RunsApiInterface::API_URL_RUNS,
                 [],
@@ -50,7 +51,8 @@ final class RunsApiTest extends TestCase
         $runs = [$run];
 
         $transformer = self::createMock(RunsTransformerInterface::class);
-        $transformer->method('transform')
+        $transformer->expects(self::once())
+            ->method('transform')
             ->with($runsData)
             ->willReturn($runs);
 

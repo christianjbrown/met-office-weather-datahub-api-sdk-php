@@ -53,7 +53,8 @@ final class ParameterDetailsTransformerTest extends TestCase
         $parameterDetail1 = self::createStub(ParameterDetailInterface::class);
 
         $parameterDetailTransformer = self::createMock(ParameterDetailTransformerInterface::class);
-        $parameterDetailTransformer->method('transform')
+        $parameterDetailTransformer->expects(self::once())
+            ->method('transform')
             ->with(['test-parameter-1'])
             ->willReturn($parameterDetail1);
 

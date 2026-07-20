@@ -53,7 +53,8 @@ final class OrderFilesTransformerTest extends TestCase
         $file1 = self::createStub(OrderFileInterface::class);
 
         $orderFileTransformer = self::createMock(OrderFileTransformerInterface::class);
-        $orderFileTransformer->method('transform')
+        $orderFileTransformer->expects(self::once())
+            ->method('transform')
             ->with(['test-file-1'])
             ->willReturn($file1);
 
