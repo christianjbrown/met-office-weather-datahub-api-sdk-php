@@ -2,16 +2,19 @@
 
 [![CI](https://github.com/christianjbrown/php-met-office-weather-datahub-api-lib/actions/workflows/ci.yml/badge.svg)](https://github.com/christianjbrown/php-met-office-weather-datahub-api-lib/actions/workflows/ci.yml)
 
-A strongly-typed, **read-only** PHP client for the [Met Office Weather DataHub](https://datahub.metoffice.gov.uk/) APIs. It returns plain, typed model objects rather than raw GeoJSON arrays. The library is structured to host multiple DataHub APIs side by side; its supported APIs are **Site-Specific** (Global Spot), **Observation (Land)**, **Atmospheric Models** (Gridded), and **Map Images**.
+A strongly-typed, **read-only** PHP client for the [Met Office Weather DataHub](https://datahub.metoffice.gov.uk/) APIs. It returns plain, typed model objects rather than raw GeoJSON / CoverageJSON arrays. The library is structured to host multiple DataHub APIs side by side; its supported APIs are **Site-Specific** (Global Spot), **Site-Specific Blended Probabilistic Forecast**, **Observation (Land)**, **Atmospheric Models** (Gridded), and **Map Images**.
 
 ## :satellite: Supported APIs
 
 | API | Entry point | Status |
 | --- | --- | --- |
 | **Site-Specific** (Global Spot) | `MetOffice::siteSpecific()` | ✅ Supported |
+| **Site-Specific Blended Probabilistic Forecast** | `MetOffice::siteSpecificBlended()` | ✅ Supported |
 | **Observation (Land)** | `MetOffice::observationLand()` | ✅ Supported |
 | **Atmospheric Models** (Gridded) | `MetOffice::atmosphericModels()` | ✅ Supported |
 | **Map Images** | `MetOffice::mapImages()` | ✅ Supported |
+
+See [Coverage & limitations](#coverage--limitations) for what this library deliberately does **not** cover.
 
 ### Site-Specific (Global Spot)
 
@@ -74,6 +77,52 @@ $runs = $mapImages->getRunsApi()->getRuns();                              // Run
 
 $png = $mapImages->getOrdersApi()->getOrderFileData($orderId, $fileId);   // raw PNG bytes (string)
 ```
+
+### Site-Specific Blended Probabilistic Forecast
+
+The Met Office Site-Specific Blended Probabilistic Forecast (BPF) is a newer product for consuming site-specific forecasts **probabilistically** (a range of probabilities and percentiles rather than a single "most likely" value). Unlike Global Spot, it is an [OGC Environmental Data Retrieval (EDR)](https://ogcapi.ogc.org/edr/) API and returns [CoverageJSON](https://covjson.org/) — so it has its own module rather than reusing the Global Spot models. Base URL `https://data.hub.api.metoffice.gov.uk/mo-site-specific-blended-probabilistic-forecast/1.0.0`, same `apikey` header. It exposes three clients:
+
+- **Capabilities** (`getCapabilitiesApi()`) — `getLandingPage()` returns the API landing metadata (`LandingPageInterface`); `getConformance()` returns the conformance-class URIs (`string[]`).
+- **Collections** (`getCollectionsApi()`) — `getCollections()` lists the available collections (`CollectionInterface[]`; example ids `improver-percentiles-spot-global`, `improver-probabilities-spot-uk`, each carrying its `parameterNames`, `outputFormats`, `crs`, `links`, and `extent`); `getCollection(string $collectionId)` returns one collection's metadata.
+- **Locations** (`getLocationsApi()`) — `getLocations(string $collectionId)` lists the collection's available spot locations (`LocationInterface[]`, each with an `id`, latitude/longitude, and name; a collection has thousands of them); `getCoverage(string $collectionId, string $locationId, ?string $parameterName = null, ?string $datetime = null)` fetches one location's forecast as a typed **`CoverageCollectionInterface`** (the EDR endpoint returns a CoverageJSON *CoverageCollection*). It carries the shared `domainType`, a map of `ParameterInterface` metadata (each with an `observedPropertyLabel` and a `unit`), and an array of `CoverageInterface` — **one sub-coverage per parameter**. Each `CoverageInterface` has a `DomainInterface` exposing a map of named `AxisInterface` (`getAxes()` — e.g. `t`, `x`/`y`/`z`, `locationId`, and the statistical axis: `percentiles` for percentile collections, or a per-parameter `probabilityOf…Values` threshold axis for probability collections — each axis exposes `getFloatValues()` / `getStringValues()`), plus a map of `NdArrayInterface` ranges (`dataType`, `axisNames`, `shape`, and position-aligned `values` that may contain `null` gaps). The optional `parameter-name` and `datetime` query params are only sent when supplied.
+
+```php
+use ChristianBrown\MetOffice\MetOffice;
+
+$blended = (new MetOffice())->siteSpecificBlended('your-blended-probabilistic-apikey');
+
+$collections = $blended->getCollectionsApi()->getCollections();                     // CollectionInterface[]
+$locations   = $blended->getLocationsApi()->getLocations('improver-percentiles-spot-global');   // LocationInterface[]
+
+$coverageCollection = $blended->getLocationsApi()->getCoverage(
+    'improver-percentiles-spot-global',
+    $locations[0]->getId(),
+    'feels_like_temperature',   // optional parameter-name filter
+    '2026-07-23T11:00:00Z',     // optional datetime filter
+);   // CoverageCollectionInterface
+
+foreach ($coverageCollection->getCoverages() as $coverage) {
+    $timeAxis = $coverage->getDomain()->getAxes()['t'] ?? null;   // AxisInterface|null
+    foreach ($coverage->getRanges() as $parameterId => $range) {
+        // $range->getValues() is a flat float array aligned to $range->getShape()
+        // (e.g. shape [15, 206] = 15 percentiles x 206 time steps); nulls mark gaps.
+        $unit = $coverageCollection->getParameters()[$parameterId]?->getUnit();
+        printf("%s: %d values in %s\n", $parameterId, count($range->getValues()), $unit ?? '?');
+    }
+}
+```
+
+
+
+## :no_entry_sign: Coverage & limitations
+
+This library aims for full parity with the DataHub API **products**, but is deliberately scoped. What it does **not** cover:
+
+- **Radar** — the Met Office radar composites (UK / NW-European surface rain-rate, HDF5) are **not** part of the DataHub REST API; they are distributed separately via [AWS Open Data](https://registry.opendata.aws/met-office-uk-radar-observations/) (an S3 object store, no `apikey` header). They are out of scope for this DataHub client.
+- **Order creation / management** — the library is **read-only**. For Atmospheric Models and Map Images it reads existing orders (`/orders`, `/orders/{id}/latest`, files, and file data) but never creates, modifies, or deletes orders (there are no `POST`/`PUT`/`DELETE` calls). Orders are configured in the DataHub portal.
+- **No binary decoding** — Atmospheric Models GRIB and Map Images PNG payloads are returned as **raw bytes**; the library does not parse GRIB or decode images. (Blended Probabilistic data is JSON/CoverageJSON and *is* returned as typed models.)
+- **Fixed Global Spot query params** — the Site-Specific (Global Spot) client always sends `dataSource=BD1`, `excludeParameterMetadata=true`, and `includeLocationName=true`; alternative data sources or parameter-metadata responses are not exposed.
+- **Map Images has no per-model runs endpoint** — only `getRuns()` is available (there is no `getRunsByModel()`); this mirrors the real API, where Map Images genuinely lacks `/runs/{modelId}`.
 
 
 

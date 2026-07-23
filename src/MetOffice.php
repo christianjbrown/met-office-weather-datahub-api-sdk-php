@@ -12,6 +12,8 @@ use ChristianBrown\MetOffice\ObservationLand\ObservationLand;
 use ChristianBrown\MetOffice\ObservationLand\ObservationLandInterface;
 use ChristianBrown\MetOffice\SiteSpecific\SiteSpecific;
 use ChristianBrown\MetOffice\SiteSpecific\SiteSpecificInterface;
+use ChristianBrown\MetOffice\SiteSpecificBlended\SiteSpecificBlended;
+use ChristianBrown\MetOffice\SiteSpecificBlended\SiteSpecificBlendedInterface;
 
 final class MetOffice implements MetOfficeInterface
 {
@@ -33,5 +35,10 @@ final class MetOffice implements MetOfficeInterface
     public function siteSpecific(string $apiKey): SiteSpecificInterface
     {
         return new SiteSpecific($apiKey);
+    }
+
+    public function siteSpecificBlended(string $apiKey): SiteSpecificBlendedInterface
+    {
+        return new SiteSpecificBlended($apiKey);
     }
 }
