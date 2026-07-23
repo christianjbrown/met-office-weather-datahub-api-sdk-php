@@ -16,15 +16,11 @@ interface ApiInterface extends BaseApiInterface
     public const string HEADER_KEY_ACCEPT = 'Accept';
     public const string HEADER_VALUE_ACCEPT_JSON = 'application/json';
     public const string HEADER_VALUE_ACCEPT_PNG = 'image/png';
-    public const string KEY_FILE = 'file';
     public const string KEY_FILE_DETAILS = 'fileDetails';
     public const string KEY_FILES = 'files';
-    public const string KEY_ORDER = 'order';
     public const string KEY_ORDER_DETAILS = 'orderDetails';
     public const string KEY_ORDERS = 'orders';
-    public const string KEY_PARAMETER_DETAILS = 'parameterDetails';
     public const string KEY_RUNS = 'runs';
-    public const string QUERY_KEY_DATA_SPEC = 'dataSpec';
     public const string QUERY_KEY_DETAIL = 'detail';
     public const string QUERY_KEY_RUNFILTER = 'runfilter';
     public const string UNEXPECTED_RESPONSE_SPRINTF = '%s not set or not an array';
