@@ -32,8 +32,8 @@ final class ParameterDetailTransformer implements ParameterDetailTransformerInte
         }
         $parameterDetail = new ParameterDetail($data[self::KEY_PARAMETER_ID]);
 
-        $this->applyTimeCoordinates($parameterDetail, $data);
-        $this->applyVerticalCoordinates($parameterDetail, $data);
+        self::applyTimeCoordinates($parameterDetail, $data);
+        self::applyVerticalCoordinates($parameterDetail, $data);
 
         return $parameterDetail;
     }
@@ -41,7 +41,7 @@ final class ParameterDetailTransformer implements ParameterDetailTransformerInte
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyTimeCoordinates(ParameterDetail $parameterDetail, array $data): void
+    private static function applyTimeCoordinates(ParameterDetail $parameterDetail, array $data): void
     {
         if (!isset($data[self::KEY_EXTENT])) {
             return;
@@ -56,13 +56,13 @@ final class ParameterDetailTransformer implements ParameterDetailTransformerInte
         if (!is_array($extent[self::KEY_TIME])) {
             return;
         }
-        $parameterDetail->setTimeCoordinates($this->toStringArray($extent[self::KEY_TIME]));
+        $parameterDetail->setTimeCoordinates(self::toStringArray($extent[self::KEY_TIME]));
     }
 
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyVerticalCoordinates(ParameterDetail $parameterDetail, array $data): void
+    private static function applyVerticalCoordinates(ParameterDetail $parameterDetail, array $data): void
     {
         if (!isset($data[self::KEY_EXTENT])) {
             return;
@@ -77,10 +77,10 @@ final class ParameterDetailTransformer implements ParameterDetailTransformerInte
         if (!is_array($extent[self::KEY_VERTICAL])) {
             return;
         }
-        $parameterDetail->setVerticalCoordinates($this->toFloatArray($extent[self::KEY_VERTICAL]));
+        $parameterDetail->setVerticalCoordinates(self::toFloatArray($extent[self::KEY_VERTICAL]));
     }
 
-    private function toFloat(mixed $value): ?float
+    private static function toFloat(mixed $value): ?float
     {
         if (is_int($value)) {
             return (float) $value;
@@ -97,9 +97,9 @@ final class ParameterDetailTransformer implements ParameterDetailTransformerInte
      *
      * @return array<int, float>
      */
-    private function toFloatArray(array $values): array
+    private static function toFloatArray(array $values): array
     {
-        $floats = array_map(fn (mixed $value): ?float => $this->toFloat($value), $values);
+        $floats = array_map(static fn (mixed $value): ?float => self::toFloat($value), $values);
 
         return array_values(array_filter($floats, static fn (?float $value): bool => null !== $value));
     }
@@ -109,7 +109,7 @@ final class ParameterDetailTransformer implements ParameterDetailTransformerInte
      *
      * @return array<int, string>
      */
-    private function toStringArray(array $values): array
+    private static function toStringArray(array $values): array
     {
         return array_values(array_filter($values, static fn (mixed $value): bool => is_string($value)));
     }

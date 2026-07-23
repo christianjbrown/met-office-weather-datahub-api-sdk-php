@@ -86,9 +86,9 @@ final class OrdersApi implements OrdersApiInterface
             ...$this->apiKey->toHeaders(),
             self::HEADER_KEY_ACCEPT => self::HEADER_VALUE_ACCEPT_JSON,
         ];
-        $data = $this->requestSender->get(sprintf(self::API_URL_ORDER_LATEST_SPRINTF, $orderId), $this->buildFilesQuery($detail, $runFilter), $headers);
+        $data = $this->requestSender->get(sprintf(self::API_URL_ORDER_LATEST_SPRINTF, $orderId), self::buildFilesQuery($detail, $runFilter), $headers);
 
-        return $this->orderFilesTransformer->transform($this->extractFiles($data));
+        return $this->orderFilesTransformer->transform(self::extractFiles($data));
     }
 
     /**
@@ -105,13 +105,13 @@ final class OrdersApi implements OrdersApiInterface
         ];
         $data = $this->requestSender->get(self::API_URL_ORDERS, [], $headers);
 
-        return $this->ordersTransformer->transform($this->extractOrders($data));
+        return $this->ordersTransformer->transform(self::extractOrders($data));
     }
 
     /**
      * @return array<string, string>
      */
-    private function buildFilesQuery(?string $detail, ?string $runFilter): array
+    private static function buildFilesQuery(?string $detail, ?string $runFilter): array
     {
         $query = [];
         if (null !== $detail) {
@@ -131,7 +131,7 @@ final class OrdersApi implements OrdersApiInterface
      *
      * @return mixed[]
      */
-    private function extractFiles(array $data): array
+    private static function extractFiles(array $data): array
     {
         if (!isset($data[self::KEY_ORDER_DETAILS])) {
             throw new UnexpectedResponseException(sprintf(self::UNEXPECTED_RESPONSE_SPRINTF, self::KEY_ORDER_DETAILS));
@@ -157,7 +157,7 @@ final class OrdersApi implements OrdersApiInterface
      *
      * @return mixed[]
      */
-    private function extractOrders(array $data): array
+    private static function extractOrders(array $data): array
     {
         if (!isset($data[self::KEY_ORDERS])) {
             throw new UnexpectedResponseException(sprintf(self::UNEXPECTED_RESPONSE_SPRINTF, self::KEY_ORDERS));

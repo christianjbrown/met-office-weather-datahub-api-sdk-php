@@ -26,10 +26,10 @@ final class NearestLocationTransformer implements NearestLocationTransformerInte
         }
         $location = new NearestLocation($data[self::KEY_GEOHASH]);
 
-        $this->applyArea($location, $data);
-        $this->applyCountry($location, $data);
-        $this->applyOlsonTimeZone($location, $data);
-        $this->applyRegion($location, $data);
+        self::applyArea($location, $data);
+        self::applyCountry($location, $data);
+        self::applyOlsonTimeZone($location, $data);
+        self::applyRegion($location, $data);
 
         return $location;
     }
@@ -37,7 +37,7 @@ final class NearestLocationTransformer implements NearestLocationTransformerInte
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyArea(NearestLocation $location, array $data): void
+    private static function applyArea(NearestLocation $location, array $data): void
     {
         if (empty($data[self::KEY_AREA])) {
             return;
@@ -51,7 +51,7 @@ final class NearestLocationTransformer implements NearestLocationTransformerInte
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyCountry(NearestLocation $location, array $data): void
+    private static function applyCountry(NearestLocation $location, array $data): void
     {
         if (empty($data[self::KEY_COUNTRY])) {
             return;
@@ -65,7 +65,7 @@ final class NearestLocationTransformer implements NearestLocationTransformerInte
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyOlsonTimeZone(NearestLocation $location, array $data): void
+    private static function applyOlsonTimeZone(NearestLocation $location, array $data): void
     {
         if (empty($data[self::KEY_OLSON_TIME_ZONE])) {
             return;
@@ -79,7 +79,7 @@ final class NearestLocationTransformer implements NearestLocationTransformerInte
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyRegion(NearestLocation $location, array $data): void
+    private static function applyRegion(NearestLocation $location, array $data): void
     {
         if (empty($data[self::KEY_REGION])) {
             return;

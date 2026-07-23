@@ -37,8 +37,8 @@ final class NearestApi implements NearestApiInterface
     {
         $headers = $this->apiKey->toHeaders();
         $query = [
-            self::QUERY_KEY_LAT => $this->formatCoordinate($coordinates->getLatitude()),
-            self::QUERY_KEY_LON => $this->formatCoordinate($coordinates->getLongitude()),
+            self::QUERY_KEY_LAT => self::formatCoordinate($coordinates->getLatitude()),
+            self::QUERY_KEY_LON => self::formatCoordinate($coordinates->getLongitude()),
         ];
         $data = $this->requestSender->get(self::API_URL_NEAREST, $query, $headers);
 
@@ -62,7 +62,7 @@ final class NearestApi implements NearestApiInterface
         return $this->nearestLocationsTransformer->transform($data);
     }
 
-    private function formatCoordinate(float $value): string
+    private static function formatCoordinate(float $value): string
     {
         return (string) round($value, 2);
     }

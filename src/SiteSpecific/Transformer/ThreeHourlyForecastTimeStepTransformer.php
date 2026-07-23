@@ -34,27 +34,27 @@ final class ThreeHourlyForecastTimeStepTransformer implements ThreeHourlyForecas
         }
         $timeStep = new ThreeHourlyForecastTimeStep($time);
 
-        $this->applyFeelsLikeTemp($timeStep, $data);
-        $this->applyMax10mWindGust($timeStep, $data);
-        $this->applyMaxScreenAirTemp($timeStep, $data);
-        $this->applyMinScreenAirTemp($timeStep, $data);
-        $this->applyMslp($timeStep, $data);
-        $this->applyProbOfHail($timeStep, $data);
-        $this->applyProbOfHeavyRain($timeStep, $data);
-        $this->applyProbOfHeavySnow($timeStep, $data);
-        $this->applyProbOfPrecipitation($timeStep, $data);
-        $this->applyProbOfRain($timeStep, $data);
-        $this->applyProbOfSferics($timeStep, $data);
-        $this->applyProbOfSnow($timeStep, $data);
-        $this->applyScreenRelativeHumidity($timeStep, $data);
-        $this->applySignificantWeatherCode($timeStep, $data);
-        $this->applyTotalPrecipAmount($timeStep, $data);
-        $this->applyTotalSnowAmount($timeStep, $data);
-        $this->applyUvIndex($timeStep, $data);
-        $this->applyVisibility($timeStep, $data);
-        $this->applyWindDirectionFrom10m($timeStep, $data);
-        $this->applyWindGustSpeed10m($timeStep, $data);
-        $this->applyWindSpeed10m($timeStep, $data);
+        self::applyFeelsLikeTemp($timeStep, $data);
+        self::applyMax10mWindGust($timeStep, $data);
+        self::applyMaxScreenAirTemp($timeStep, $data);
+        self::applyMinScreenAirTemp($timeStep, $data);
+        self::applyMslp($timeStep, $data);
+        self::applyProbOfHail($timeStep, $data);
+        self::applyProbOfHeavyRain($timeStep, $data);
+        self::applyProbOfHeavySnow($timeStep, $data);
+        self::applyProbOfPrecipitation($timeStep, $data);
+        self::applyProbOfRain($timeStep, $data);
+        self::applyProbOfSferics($timeStep, $data);
+        self::applyProbOfSnow($timeStep, $data);
+        self::applyScreenRelativeHumidity($timeStep, $data);
+        self::applySignificantWeatherCode($timeStep, $data);
+        self::applyTotalPrecipAmount($timeStep, $data);
+        self::applyTotalSnowAmount($timeStep, $data);
+        self::applyUvIndex($timeStep, $data);
+        self::applyVisibility($timeStep, $data);
+        self::applyWindDirectionFrom10m($timeStep, $data);
+        self::applyWindGustSpeed10m($timeStep, $data);
+        self::applyWindSpeed10m($timeStep, $data);
 
         return $timeStep;
     }
@@ -62,12 +62,12 @@ final class ThreeHourlyForecastTimeStepTransformer implements ThreeHourlyForecas
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyFeelsLikeTemp(ThreeHourlyForecastTimeStep $timeStep, array $data): void
+    private static function applyFeelsLikeTemp(ThreeHourlyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_FEELS_LIKE_TEMP])) {
             return;
         }
-        $value = $this->toFloat($data[self::KEY_FEELS_LIKE_TEMP]);
+        $value = self::toFloat($data[self::KEY_FEELS_LIKE_TEMP]);
         if (null === $value) {
             return;
         }
@@ -77,12 +77,12 @@ final class ThreeHourlyForecastTimeStepTransformer implements ThreeHourlyForecas
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyMax10mWindGust(ThreeHourlyForecastTimeStep $timeStep, array $data): void
+    private static function applyMax10mWindGust(ThreeHourlyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_MAX10M_WIND_GUST])) {
             return;
         }
-        $value = $this->toFloat($data[self::KEY_MAX10M_WIND_GUST]);
+        $value = self::toFloat($data[self::KEY_MAX10M_WIND_GUST]);
         if (null === $value) {
             return;
         }
@@ -92,12 +92,12 @@ final class ThreeHourlyForecastTimeStepTransformer implements ThreeHourlyForecas
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyMaxScreenAirTemp(ThreeHourlyForecastTimeStep $timeStep, array $data): void
+    private static function applyMaxScreenAirTemp(ThreeHourlyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_MAX_SCREEN_AIR_TEMP])) {
             return;
         }
-        $value = $this->toFloat($data[self::KEY_MAX_SCREEN_AIR_TEMP]);
+        $value = self::toFloat($data[self::KEY_MAX_SCREEN_AIR_TEMP]);
         if (null === $value) {
             return;
         }
@@ -107,12 +107,12 @@ final class ThreeHourlyForecastTimeStepTransformer implements ThreeHourlyForecas
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyMinScreenAirTemp(ThreeHourlyForecastTimeStep $timeStep, array $data): void
+    private static function applyMinScreenAirTemp(ThreeHourlyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_MIN_SCREEN_AIR_TEMP])) {
             return;
         }
-        $value = $this->toFloat($data[self::KEY_MIN_SCREEN_AIR_TEMP]);
+        $value = self::toFloat($data[self::KEY_MIN_SCREEN_AIR_TEMP]);
         if (null === $value) {
             return;
         }
@@ -122,7 +122,7 @@ final class ThreeHourlyForecastTimeStepTransformer implements ThreeHourlyForecas
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyMslp(ThreeHourlyForecastTimeStep $timeStep, array $data): void
+    private static function applyMslp(ThreeHourlyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_MSLP])) {
             return;
@@ -136,7 +136,7 @@ final class ThreeHourlyForecastTimeStepTransformer implements ThreeHourlyForecas
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyProbOfHail(ThreeHourlyForecastTimeStep $timeStep, array $data): void
+    private static function applyProbOfHail(ThreeHourlyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_PROB_OF_HAIL])) {
             return;
@@ -150,7 +150,7 @@ final class ThreeHourlyForecastTimeStepTransformer implements ThreeHourlyForecas
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyProbOfHeavyRain(ThreeHourlyForecastTimeStep $timeStep, array $data): void
+    private static function applyProbOfHeavyRain(ThreeHourlyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_PROB_OF_HEAVY_RAIN])) {
             return;
@@ -164,7 +164,7 @@ final class ThreeHourlyForecastTimeStepTransformer implements ThreeHourlyForecas
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyProbOfHeavySnow(ThreeHourlyForecastTimeStep $timeStep, array $data): void
+    private static function applyProbOfHeavySnow(ThreeHourlyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_PROB_OF_HEAVY_SNOW])) {
             return;
@@ -178,7 +178,7 @@ final class ThreeHourlyForecastTimeStepTransformer implements ThreeHourlyForecas
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyProbOfPrecipitation(ThreeHourlyForecastTimeStep $timeStep, array $data): void
+    private static function applyProbOfPrecipitation(ThreeHourlyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_PROB_OF_PRECIPITATION])) {
             return;
@@ -192,7 +192,7 @@ final class ThreeHourlyForecastTimeStepTransformer implements ThreeHourlyForecas
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyProbOfRain(ThreeHourlyForecastTimeStep $timeStep, array $data): void
+    private static function applyProbOfRain(ThreeHourlyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_PROB_OF_RAIN])) {
             return;
@@ -206,7 +206,7 @@ final class ThreeHourlyForecastTimeStepTransformer implements ThreeHourlyForecas
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyProbOfSferics(ThreeHourlyForecastTimeStep $timeStep, array $data): void
+    private static function applyProbOfSferics(ThreeHourlyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_PROB_OF_SFERICS])) {
             return;
@@ -220,7 +220,7 @@ final class ThreeHourlyForecastTimeStepTransformer implements ThreeHourlyForecas
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyProbOfSnow(ThreeHourlyForecastTimeStep $timeStep, array $data): void
+    private static function applyProbOfSnow(ThreeHourlyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_PROB_OF_SNOW])) {
             return;
@@ -234,12 +234,12 @@ final class ThreeHourlyForecastTimeStepTransformer implements ThreeHourlyForecas
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyScreenRelativeHumidity(ThreeHourlyForecastTimeStep $timeStep, array $data): void
+    private static function applyScreenRelativeHumidity(ThreeHourlyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_SCREEN_RELATIVE_HUMIDITY])) {
             return;
         }
-        $value = $this->toFloat($data[self::KEY_SCREEN_RELATIVE_HUMIDITY]);
+        $value = self::toFloat($data[self::KEY_SCREEN_RELATIVE_HUMIDITY]);
         if (null === $value) {
             return;
         }
@@ -249,7 +249,7 @@ final class ThreeHourlyForecastTimeStepTransformer implements ThreeHourlyForecas
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applySignificantWeatherCode(ThreeHourlyForecastTimeStep $timeStep, array $data): void
+    private static function applySignificantWeatherCode(ThreeHourlyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_SIGNIFICANT_WEATHER_CODE])) {
             return;
@@ -267,12 +267,12 @@ final class ThreeHourlyForecastTimeStepTransformer implements ThreeHourlyForecas
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyTotalPrecipAmount(ThreeHourlyForecastTimeStep $timeStep, array $data): void
+    private static function applyTotalPrecipAmount(ThreeHourlyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_TOTAL_PRECIP_AMOUNT])) {
             return;
         }
-        $value = $this->toFloat($data[self::KEY_TOTAL_PRECIP_AMOUNT]);
+        $value = self::toFloat($data[self::KEY_TOTAL_PRECIP_AMOUNT]);
         if (null === $value) {
             return;
         }
@@ -282,12 +282,12 @@ final class ThreeHourlyForecastTimeStepTransformer implements ThreeHourlyForecas
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyTotalSnowAmount(ThreeHourlyForecastTimeStep $timeStep, array $data): void
+    private static function applyTotalSnowAmount(ThreeHourlyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_TOTAL_SNOW_AMOUNT])) {
             return;
         }
-        $value = $this->toFloat($data[self::KEY_TOTAL_SNOW_AMOUNT]);
+        $value = self::toFloat($data[self::KEY_TOTAL_SNOW_AMOUNT]);
         if (null === $value) {
             return;
         }
@@ -297,7 +297,7 @@ final class ThreeHourlyForecastTimeStepTransformer implements ThreeHourlyForecas
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyUvIndex(ThreeHourlyForecastTimeStep $timeStep, array $data): void
+    private static function applyUvIndex(ThreeHourlyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_UV_INDEX])) {
             return;
@@ -311,7 +311,7 @@ final class ThreeHourlyForecastTimeStepTransformer implements ThreeHourlyForecas
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyVisibility(ThreeHourlyForecastTimeStep $timeStep, array $data): void
+    private static function applyVisibility(ThreeHourlyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_VISIBILITY])) {
             return;
@@ -325,7 +325,7 @@ final class ThreeHourlyForecastTimeStepTransformer implements ThreeHourlyForecas
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyWindDirectionFrom10m(ThreeHourlyForecastTimeStep $timeStep, array $data): void
+    private static function applyWindDirectionFrom10m(ThreeHourlyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_WIND_DIRECTION_FROM10M])) {
             return;
@@ -339,12 +339,12 @@ final class ThreeHourlyForecastTimeStepTransformer implements ThreeHourlyForecas
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyWindGustSpeed10m(ThreeHourlyForecastTimeStep $timeStep, array $data): void
+    private static function applyWindGustSpeed10m(ThreeHourlyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_WIND_GUST_SPEED10M])) {
             return;
         }
-        $value = $this->toFloat($data[self::KEY_WIND_GUST_SPEED10M]);
+        $value = self::toFloat($data[self::KEY_WIND_GUST_SPEED10M]);
         if (null === $value) {
             return;
         }
@@ -354,19 +354,19 @@ final class ThreeHourlyForecastTimeStepTransformer implements ThreeHourlyForecas
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyWindSpeed10m(ThreeHourlyForecastTimeStep $timeStep, array $data): void
+    private static function applyWindSpeed10m(ThreeHourlyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_WIND_SPEED10M])) {
             return;
         }
-        $value = $this->toFloat($data[self::KEY_WIND_SPEED10M]);
+        $value = self::toFloat($data[self::KEY_WIND_SPEED10M]);
         if (null === $value) {
             return;
         }
         $timeStep->setWindSpeed10m($value);
     }
 
-    private function toFloat(mixed $value): ?float
+    private static function toFloat(mixed $value): ?float
     {
         if (is_int($value)) {
             return (float) $value;

@@ -35,15 +35,15 @@ final class ObservationTransformer implements ObservationTransformerInterface
         }
         $observation = new Observation($datetime);
 
-        $this->applyHumidity($observation, $data);
-        $this->applyMslp($observation, $data);
-        $this->applyPressureTendency($observation, $data);
-        $this->applyTemperature($observation, $data);
-        $this->applyVisibility($observation, $data);
-        $this->applyWeatherCode($observation, $data);
-        $this->applyWindDirection($observation, $data);
-        $this->applyWindGust($observation, $data);
-        $this->applyWindSpeed($observation, $data);
+        self::applyHumidity($observation, $data);
+        self::applyMslp($observation, $data);
+        self::applyPressureTendency($observation, $data);
+        self::applyTemperature($observation, $data);
+        self::applyVisibility($observation, $data);
+        self::applyWeatherCode($observation, $data);
+        self::applyWindDirection($observation, $data);
+        self::applyWindGust($observation, $data);
+        self::applyWindSpeed($observation, $data);
 
         return $observation;
     }
@@ -51,7 +51,7 @@ final class ObservationTransformer implements ObservationTransformerInterface
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyHumidity(Observation $observation, array $data): void
+    private static function applyHumidity(Observation $observation, array $data): void
     {
         if (!isset($data[self::KEY_HUMIDITY])) {
             return;
@@ -65,7 +65,7 @@ final class ObservationTransformer implements ObservationTransformerInterface
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyMslp(Observation $observation, array $data): void
+    private static function applyMslp(Observation $observation, array $data): void
     {
         if (!isset($data[self::KEY_MSLP])) {
             return;
@@ -79,7 +79,7 @@ final class ObservationTransformer implements ObservationTransformerInterface
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyPressureTendency(Observation $observation, array $data): void
+    private static function applyPressureTendency(Observation $observation, array $data): void
     {
         if (empty($data[self::KEY_PRESSURE_TENDENCY])) {
             return;
@@ -93,12 +93,12 @@ final class ObservationTransformer implements ObservationTransformerInterface
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyTemperature(Observation $observation, array $data): void
+    private static function applyTemperature(Observation $observation, array $data): void
     {
         if (!isset($data[self::KEY_TEMPERATURE])) {
             return;
         }
-        $value = $this->toFloat($data[self::KEY_TEMPERATURE]);
+        $value = self::toFloat($data[self::KEY_TEMPERATURE]);
         if (null === $value) {
             return;
         }
@@ -108,12 +108,12 @@ final class ObservationTransformer implements ObservationTransformerInterface
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyVisibility(Observation $observation, array $data): void
+    private static function applyVisibility(Observation $observation, array $data): void
     {
         if (!isset($data[self::KEY_VISIBILITY])) {
             return;
         }
-        $value = $this->toFloat($data[self::KEY_VISIBILITY]);
+        $value = self::toFloat($data[self::KEY_VISIBILITY]);
         if (null === $value) {
             return;
         }
@@ -123,7 +123,7 @@ final class ObservationTransformer implements ObservationTransformerInterface
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyWeatherCode(Observation $observation, array $data): void
+    private static function applyWeatherCode(Observation $observation, array $data): void
     {
         if (!isset($data[self::KEY_WEATHER_CODE])) {
             return;
@@ -141,7 +141,7 @@ final class ObservationTransformer implements ObservationTransformerInterface
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyWindDirection(Observation $observation, array $data): void
+    private static function applyWindDirection(Observation $observation, array $data): void
     {
         if (empty($data[self::KEY_WIND_DIRECTION])) {
             return;
@@ -159,12 +159,12 @@ final class ObservationTransformer implements ObservationTransformerInterface
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyWindGust(Observation $observation, array $data): void
+    private static function applyWindGust(Observation $observation, array $data): void
     {
         if (!isset($data[self::KEY_WIND_GUST])) {
             return;
         }
-        $value = $this->toFloat($data[self::KEY_WIND_GUST]);
+        $value = self::toFloat($data[self::KEY_WIND_GUST]);
         if (null === $value) {
             return;
         }
@@ -174,19 +174,19 @@ final class ObservationTransformer implements ObservationTransformerInterface
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyWindSpeed(Observation $observation, array $data): void
+    private static function applyWindSpeed(Observation $observation, array $data): void
     {
         if (!isset($data[self::KEY_WIND_SPEED])) {
             return;
         }
-        $value = $this->toFloat($data[self::KEY_WIND_SPEED]);
+        $value = self::toFloat($data[self::KEY_WIND_SPEED]);
         if (null === $value) {
             return;
         }
         $observation->setWindSpeed($value);
     }
 
-    private function toFloat(mixed $value): ?float
+    private static function toFloat(mixed $value): ?float
     {
         if (is_int($value)) {
             return (float) $value;

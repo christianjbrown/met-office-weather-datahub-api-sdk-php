@@ -57,7 +57,7 @@ final class ForecastApi implements ForecastApiInterface
         ];
         $data = $this->requestSender->get($apiUrl, $query, $headers);
 
-        $forecast = $this->forecastTransformer->transform($this->extractProperties($data));
+        $forecast = $this->forecastTransformer->transform(self::extractProperties($data));
         $this->cache[$cacheKey] = $forecast;
 
         return $forecast;
@@ -70,7 +70,7 @@ final class ForecastApi implements ForecastApiInterface
      *
      * @return mixed[]
      */
-    private function extractProperties(array $data): array
+    private static function extractProperties(array $data): array
     {
         if (empty($data[self::KEY_FEATURES])) {
             throw new UnexpectedResponseException(sprintf(self::UNEXPECTED_RESPONSE_SPRINTF, self::KEY_FEATURES));

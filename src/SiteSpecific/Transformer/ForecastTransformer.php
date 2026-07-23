@@ -27,8 +27,8 @@ final class ForecastTransformer implements ForecastTransformerInterface
     {
         $forecast = new Forecast();
 
-        $this->applyLocationName($forecast, $properties);
-        $this->applyModelRunDate($forecast, $properties);
+        self::applyLocationName($forecast, $properties);
+        self::applyModelRunDate($forecast, $properties);
         $this->applyTimeSteps($forecast, $properties);
 
         return $forecast;
@@ -37,7 +37,7 @@ final class ForecastTransformer implements ForecastTransformerInterface
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyLocationName(Forecast $forecast, array $data): void
+    private static function applyLocationName(Forecast $forecast, array $data): void
     {
         if (empty($data[self::KEY_LOCATION])) {
             return;
@@ -58,7 +58,7 @@ final class ForecastTransformer implements ForecastTransformerInterface
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyModelRunDate(Forecast $forecast, array $data): void
+    private static function applyModelRunDate(Forecast $forecast, array $data): void
     {
         if (empty($data[self::KEY_MODEL_RUN_DATE])) {
             return;

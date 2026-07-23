@@ -41,7 +41,7 @@ final class RunsApi implements RunsApiInterface
         ];
         $data = $this->requestSender->get(self::API_URL_RUNS, [], $headers);
 
-        return $this->runsTransformer->transform($this->extractRuns($data));
+        return $this->runsTransformer->transform(self::extractRuns($data));
     }
 
     /**
@@ -58,7 +58,7 @@ final class RunsApi implements RunsApiInterface
         ];
         $data = $this->requestSender->get(sprintf(self::API_URL_RUNS_BY_MODEL_SPRINTF, $modelId), [], $headers);
 
-        return $this->runsTransformer->transform($this->extractRuns($data));
+        return $this->runsTransformer->transform(self::extractRuns($data));
     }
 
     /**
@@ -68,7 +68,7 @@ final class RunsApi implements RunsApiInterface
      *
      * @return mixed[]
      */
-    private function extractRuns(array $data): array
+    private static function extractRuns(array $data): array
     {
         if (!isset($data[self::KEY_RUNS])) {
             throw new UnexpectedResponseException(sprintf(self::UNEXPECTED_RESPONSE_SPRINTF, self::KEY_RUNS));

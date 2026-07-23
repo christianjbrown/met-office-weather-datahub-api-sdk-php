@@ -26,7 +26,7 @@ final class RegionTransformer implements RegionTransformerInterface
     {
         $region = new Region();
 
-        $this->applyName($region, $data);
+        self::applyName($region, $data);
         $this->applyX($region, $data);
         $this->applyY($region, $data);
 
@@ -36,7 +36,7 @@ final class RegionTransformer implements RegionTransformerInterface
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyName(Region $region, array $data): void
+    private static function applyName(Region $region, array $data): void
     {
         if (empty($data[self::KEY_NAME])) {
             return;

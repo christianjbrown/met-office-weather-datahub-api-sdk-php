@@ -37,13 +37,13 @@ final class OrderFileTransformer implements OrderFileTransformerInterface
         }
         $orderFile = new OrderFile($data[self::KEY_FILE_ID]);
 
-        $this->applyLevels($orderFile, $data);
-        $this->applyParameters($orderFile, $data);
+        self::applyLevels($orderFile, $data);
+        self::applyParameters($orderFile, $data);
         $this->applyRegion($orderFile, $data);
-        $this->applyRun($orderFile, $data);
-        $this->applyRunDateTime($orderFile, $data);
-        $this->applySurfaceId($orderFile, $data);
-        $this->applyTimesteps($orderFile, $data);
+        self::applyRun($orderFile, $data);
+        self::applyRunDateTime($orderFile, $data);
+        self::applySurfaceId($orderFile, $data);
+        self::applyTimesteps($orderFile, $data);
 
         return $orderFile;
     }
@@ -51,7 +51,7 @@ final class OrderFileTransformer implements OrderFileTransformerInterface
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyLevels(OrderFile $orderFile, array $data): void
+    private static function applyLevels(OrderFile $orderFile, array $data): void
     {
         if (!isset($data[self::KEY_LEVELS])) {
             return;
@@ -59,13 +59,13 @@ final class OrderFileTransformer implements OrderFileTransformerInterface
         if (!is_array($data[self::KEY_LEVELS])) {
             return;
         }
-        $orderFile->setLevels($this->toStringArray($data[self::KEY_LEVELS]));
+        $orderFile->setLevels(self::toStringArray($data[self::KEY_LEVELS]));
     }
 
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyParameters(OrderFile $orderFile, array $data): void
+    private static function applyParameters(OrderFile $orderFile, array $data): void
     {
         if (!isset($data[self::KEY_PARAMETERS])) {
             return;
@@ -73,7 +73,7 @@ final class OrderFileTransformer implements OrderFileTransformerInterface
         if (!is_array($data[self::KEY_PARAMETERS])) {
             return;
         }
-        $orderFile->setParameters($this->toStringArray($data[self::KEY_PARAMETERS]));
+        $orderFile->setParameters(self::toStringArray($data[self::KEY_PARAMETERS]));
     }
 
     /**
@@ -93,7 +93,7 @@ final class OrderFileTransformer implements OrderFileTransformerInterface
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyRun(OrderFile $orderFile, array $data): void
+    private static function applyRun(OrderFile $orderFile, array $data): void
     {
         if (empty($data[self::KEY_RUN])) {
             return;
@@ -107,7 +107,7 @@ final class OrderFileTransformer implements OrderFileTransformerInterface
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyRunDateTime(OrderFile $orderFile, array $data): void
+    private static function applyRunDateTime(OrderFile $orderFile, array $data): void
     {
         if (empty($data[self::KEY_RUN_DATE_TIME])) {
             return;
@@ -125,7 +125,7 @@ final class OrderFileTransformer implements OrderFileTransformerInterface
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applySurfaceId(OrderFile $orderFile, array $data): void
+    private static function applySurfaceId(OrderFile $orderFile, array $data): void
     {
         if (empty($data[self::KEY_SURFACE_ID])) {
             return;
@@ -139,7 +139,7 @@ final class OrderFileTransformer implements OrderFileTransformerInterface
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyTimesteps(OrderFile $orderFile, array $data): void
+    private static function applyTimesteps(OrderFile $orderFile, array $data): void
     {
         if (!isset($data[self::KEY_TIMESTEPS])) {
             return;
@@ -147,7 +147,7 @@ final class OrderFileTransformer implements OrderFileTransformerInterface
         if (!is_array($data[self::KEY_TIMESTEPS])) {
             return;
         }
-        $orderFile->setTimesteps($this->toStringArray($data[self::KEY_TIMESTEPS]));
+        $orderFile->setTimesteps(self::toStringArray($data[self::KEY_TIMESTEPS]));
     }
 
     /**
@@ -155,7 +155,7 @@ final class OrderFileTransformer implements OrderFileTransformerInterface
      *
      * @return array<int, string>
      */
-    private function toStringArray(array $values): array
+    private static function toStringArray(array $values): array
     {
         return array_values(array_filter($values, static fn (mixed $value): bool => is_string($value)));
     }

@@ -36,13 +36,13 @@ final class OrderTransformer implements OrderTransformerInterface
         }
         $order = new Order($data[self::KEY_ORDER_ID]);
 
-        $this->applyDescription($order, $data);
-        $this->applyFormat($order, $data);
-        $this->applyModelId($order, $data);
-        $this->applyName($order, $data);
+        self::applyDescription($order, $data);
+        self::applyFormat($order, $data);
+        self::applyModelId($order, $data);
+        self::applyName($order, $data);
         $this->applyRegions($order, $data);
-        $this->applyRequiredLatestRuns($order, $data);
-        $this->applyTimesteps($order, $data);
+        self::applyRequiredLatestRuns($order, $data);
+        self::applyTimesteps($order, $data);
 
         return $order;
     }
@@ -50,7 +50,7 @@ final class OrderTransformer implements OrderTransformerInterface
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyDescription(Order $order, array $data): void
+    private static function applyDescription(Order $order, array $data): void
     {
         if (empty($data[self::KEY_DESCRIPTION])) {
             return;
@@ -64,7 +64,7 @@ final class OrderTransformer implements OrderTransformerInterface
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyFormat(Order $order, array $data): void
+    private static function applyFormat(Order $order, array $data): void
     {
         if (empty($data[self::KEY_FORMAT])) {
             return;
@@ -78,7 +78,7 @@ final class OrderTransformer implements OrderTransformerInterface
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyModelId(Order $order, array $data): void
+    private static function applyModelId(Order $order, array $data): void
     {
         if (empty($data[self::KEY_MODEL_ID])) {
             return;
@@ -92,7 +92,7 @@ final class OrderTransformer implements OrderTransformerInterface
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyName(Order $order, array $data): void
+    private static function applyName(Order $order, array $data): void
     {
         if (empty($data[self::KEY_NAME])) {
             return;
@@ -120,7 +120,7 @@ final class OrderTransformer implements OrderTransformerInterface
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyRequiredLatestRuns(Order $order, array $data): void
+    private static function applyRequiredLatestRuns(Order $order, array $data): void
     {
         if (!isset($data[self::KEY_REQUIRED_LATEST_RUNS])) {
             return;
@@ -128,13 +128,13 @@ final class OrderTransformer implements OrderTransformerInterface
         if (!is_array($data[self::KEY_REQUIRED_LATEST_RUNS])) {
             return;
         }
-        $order->setRequiredLatestRuns($this->toStringArray($data[self::KEY_REQUIRED_LATEST_RUNS]));
+        $order->setRequiredLatestRuns(self::toStringArray($data[self::KEY_REQUIRED_LATEST_RUNS]));
     }
 
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyTimesteps(Order $order, array $data): void
+    private static function applyTimesteps(Order $order, array $data): void
     {
         if (!isset($data[self::KEY_TIMESTEPS])) {
             return;
@@ -142,7 +142,7 @@ final class OrderTransformer implements OrderTransformerInterface
         if (!is_array($data[self::KEY_TIMESTEPS])) {
             return;
         }
-        $order->setTimesteps($this->toStringArray($data[self::KEY_TIMESTEPS]));
+        $order->setTimesteps(self::toStringArray($data[self::KEY_TIMESTEPS]));
     }
 
     /**
@@ -150,7 +150,7 @@ final class OrderTransformer implements OrderTransformerInterface
      *
      * @return array<int, string>
      */
-    private function toStringArray(array $values): array
+    private static function toStringArray(array $values): array
     {
         return array_values(array_filter($values, static fn (mixed $value): bool => is_string($value)));
     }

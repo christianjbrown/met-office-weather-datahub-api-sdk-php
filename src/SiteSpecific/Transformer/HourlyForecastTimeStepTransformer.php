@@ -34,24 +34,24 @@ final class HourlyForecastTimeStepTransformer implements HourlyForecastTimeStepT
         }
         $timeStep = new HourlyForecastTimeStep($time);
 
-        $this->applyFeelsLikeTemperature($timeStep, $data);
-        $this->applyMax10mWindGust($timeStep, $data);
-        $this->applyMaxScreenAirTemp($timeStep, $data);
-        $this->applyMinScreenAirTemp($timeStep, $data);
-        $this->applyMslp($timeStep, $data);
-        $this->applyPrecipitationRate($timeStep, $data);
-        $this->applyProbOfPrecipitation($timeStep, $data);
-        $this->applyScreenDewPointTemperature($timeStep, $data);
-        $this->applyScreenRelativeHumidity($timeStep, $data);
-        $this->applyScreenTemperature($timeStep, $data);
-        $this->applySignificantWeatherCode($timeStep, $data);
-        $this->applyTotalPrecipAmount($timeStep, $data);
-        $this->applyTotalSnowAmount($timeStep, $data);
-        $this->applyUvIndex($timeStep, $data);
-        $this->applyVisibility($timeStep, $data);
-        $this->applyWindDirectionFrom10m($timeStep, $data);
-        $this->applyWindGustSpeed10m($timeStep, $data);
-        $this->applyWindSpeed10m($timeStep, $data);
+        self::applyFeelsLikeTemperature($timeStep, $data);
+        self::applyMax10mWindGust($timeStep, $data);
+        self::applyMaxScreenAirTemp($timeStep, $data);
+        self::applyMinScreenAirTemp($timeStep, $data);
+        self::applyMslp($timeStep, $data);
+        self::applyPrecipitationRate($timeStep, $data);
+        self::applyProbOfPrecipitation($timeStep, $data);
+        self::applyScreenDewPointTemperature($timeStep, $data);
+        self::applyScreenRelativeHumidity($timeStep, $data);
+        self::applyScreenTemperature($timeStep, $data);
+        self::applySignificantWeatherCode($timeStep, $data);
+        self::applyTotalPrecipAmount($timeStep, $data);
+        self::applyTotalSnowAmount($timeStep, $data);
+        self::applyUvIndex($timeStep, $data);
+        self::applyVisibility($timeStep, $data);
+        self::applyWindDirectionFrom10m($timeStep, $data);
+        self::applyWindGustSpeed10m($timeStep, $data);
+        self::applyWindSpeed10m($timeStep, $data);
 
         return $timeStep;
     }
@@ -59,12 +59,12 @@ final class HourlyForecastTimeStepTransformer implements HourlyForecastTimeStepT
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyFeelsLikeTemperature(HourlyForecastTimeStep $timeStep, array $data): void
+    private static function applyFeelsLikeTemperature(HourlyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_FEELS_LIKE_TEMPERATURE])) {
             return;
         }
-        $value = $this->toFloat($data[self::KEY_FEELS_LIKE_TEMPERATURE]);
+        $value = self::toFloat($data[self::KEY_FEELS_LIKE_TEMPERATURE]);
         if (null === $value) {
             return;
         }
@@ -74,12 +74,12 @@ final class HourlyForecastTimeStepTransformer implements HourlyForecastTimeStepT
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyMax10mWindGust(HourlyForecastTimeStep $timeStep, array $data): void
+    private static function applyMax10mWindGust(HourlyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_MAX10M_WIND_GUST])) {
             return;
         }
-        $value = $this->toFloat($data[self::KEY_MAX10M_WIND_GUST]);
+        $value = self::toFloat($data[self::KEY_MAX10M_WIND_GUST]);
         if (null === $value) {
             return;
         }
@@ -89,12 +89,12 @@ final class HourlyForecastTimeStepTransformer implements HourlyForecastTimeStepT
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyMaxScreenAirTemp(HourlyForecastTimeStep $timeStep, array $data): void
+    private static function applyMaxScreenAirTemp(HourlyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_MAX_SCREEN_AIR_TEMP])) {
             return;
         }
-        $value = $this->toFloat($data[self::KEY_MAX_SCREEN_AIR_TEMP]);
+        $value = self::toFloat($data[self::KEY_MAX_SCREEN_AIR_TEMP]);
         if (null === $value) {
             return;
         }
@@ -104,12 +104,12 @@ final class HourlyForecastTimeStepTransformer implements HourlyForecastTimeStepT
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyMinScreenAirTemp(HourlyForecastTimeStep $timeStep, array $data): void
+    private static function applyMinScreenAirTemp(HourlyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_MIN_SCREEN_AIR_TEMP])) {
             return;
         }
-        $value = $this->toFloat($data[self::KEY_MIN_SCREEN_AIR_TEMP]);
+        $value = self::toFloat($data[self::KEY_MIN_SCREEN_AIR_TEMP]);
         if (null === $value) {
             return;
         }
@@ -119,7 +119,7 @@ final class HourlyForecastTimeStepTransformer implements HourlyForecastTimeStepT
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyMslp(HourlyForecastTimeStep $timeStep, array $data): void
+    private static function applyMslp(HourlyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_MSLP])) {
             return;
@@ -133,12 +133,12 @@ final class HourlyForecastTimeStepTransformer implements HourlyForecastTimeStepT
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyPrecipitationRate(HourlyForecastTimeStep $timeStep, array $data): void
+    private static function applyPrecipitationRate(HourlyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_PRECIPITATION_RATE])) {
             return;
         }
-        $value = $this->toFloat($data[self::KEY_PRECIPITATION_RATE]);
+        $value = self::toFloat($data[self::KEY_PRECIPITATION_RATE]);
         if (null === $value) {
             return;
         }
@@ -148,7 +148,7 @@ final class HourlyForecastTimeStepTransformer implements HourlyForecastTimeStepT
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyProbOfPrecipitation(HourlyForecastTimeStep $timeStep, array $data): void
+    private static function applyProbOfPrecipitation(HourlyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_PROB_OF_PRECIPITATION])) {
             return;
@@ -162,12 +162,12 @@ final class HourlyForecastTimeStepTransformer implements HourlyForecastTimeStepT
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyScreenDewPointTemperature(HourlyForecastTimeStep $timeStep, array $data): void
+    private static function applyScreenDewPointTemperature(HourlyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_SCREEN_DEW_POINT_TEMPERATURE])) {
             return;
         }
-        $value = $this->toFloat($data[self::KEY_SCREEN_DEW_POINT_TEMPERATURE]);
+        $value = self::toFloat($data[self::KEY_SCREEN_DEW_POINT_TEMPERATURE]);
         if (null === $value) {
             return;
         }
@@ -177,12 +177,12 @@ final class HourlyForecastTimeStepTransformer implements HourlyForecastTimeStepT
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyScreenRelativeHumidity(HourlyForecastTimeStep $timeStep, array $data): void
+    private static function applyScreenRelativeHumidity(HourlyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_SCREEN_RELATIVE_HUMIDITY])) {
             return;
         }
-        $value = $this->toFloat($data[self::KEY_SCREEN_RELATIVE_HUMIDITY]);
+        $value = self::toFloat($data[self::KEY_SCREEN_RELATIVE_HUMIDITY]);
         if (null === $value) {
             return;
         }
@@ -192,12 +192,12 @@ final class HourlyForecastTimeStepTransformer implements HourlyForecastTimeStepT
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyScreenTemperature(HourlyForecastTimeStep $timeStep, array $data): void
+    private static function applyScreenTemperature(HourlyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_SCREEN_TEMPERATURE])) {
             return;
         }
-        $value = $this->toFloat($data[self::KEY_SCREEN_TEMPERATURE]);
+        $value = self::toFloat($data[self::KEY_SCREEN_TEMPERATURE]);
         if (null === $value) {
             return;
         }
@@ -207,7 +207,7 @@ final class HourlyForecastTimeStepTransformer implements HourlyForecastTimeStepT
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applySignificantWeatherCode(HourlyForecastTimeStep $timeStep, array $data): void
+    private static function applySignificantWeatherCode(HourlyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_SIGNIFICANT_WEATHER_CODE])) {
             return;
@@ -225,12 +225,12 @@ final class HourlyForecastTimeStepTransformer implements HourlyForecastTimeStepT
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyTotalPrecipAmount(HourlyForecastTimeStep $timeStep, array $data): void
+    private static function applyTotalPrecipAmount(HourlyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_TOTAL_PRECIP_AMOUNT])) {
             return;
         }
-        $value = $this->toFloat($data[self::KEY_TOTAL_PRECIP_AMOUNT]);
+        $value = self::toFloat($data[self::KEY_TOTAL_PRECIP_AMOUNT]);
         if (null === $value) {
             return;
         }
@@ -240,12 +240,12 @@ final class HourlyForecastTimeStepTransformer implements HourlyForecastTimeStepT
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyTotalSnowAmount(HourlyForecastTimeStep $timeStep, array $data): void
+    private static function applyTotalSnowAmount(HourlyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_TOTAL_SNOW_AMOUNT])) {
             return;
         }
-        $value = $this->toFloat($data[self::KEY_TOTAL_SNOW_AMOUNT]);
+        $value = self::toFloat($data[self::KEY_TOTAL_SNOW_AMOUNT]);
         if (null === $value) {
             return;
         }
@@ -255,7 +255,7 @@ final class HourlyForecastTimeStepTransformer implements HourlyForecastTimeStepT
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyUvIndex(HourlyForecastTimeStep $timeStep, array $data): void
+    private static function applyUvIndex(HourlyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_UV_INDEX])) {
             return;
@@ -269,7 +269,7 @@ final class HourlyForecastTimeStepTransformer implements HourlyForecastTimeStepT
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyVisibility(HourlyForecastTimeStep $timeStep, array $data): void
+    private static function applyVisibility(HourlyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_VISIBILITY])) {
             return;
@@ -283,7 +283,7 @@ final class HourlyForecastTimeStepTransformer implements HourlyForecastTimeStepT
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyWindDirectionFrom10m(HourlyForecastTimeStep $timeStep, array $data): void
+    private static function applyWindDirectionFrom10m(HourlyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_WIND_DIRECTION_FROM10M])) {
             return;
@@ -297,12 +297,12 @@ final class HourlyForecastTimeStepTransformer implements HourlyForecastTimeStepT
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyWindGustSpeed10m(HourlyForecastTimeStep $timeStep, array $data): void
+    private static function applyWindGustSpeed10m(HourlyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_WIND_GUST_SPEED10M])) {
             return;
         }
-        $value = $this->toFloat($data[self::KEY_WIND_GUST_SPEED10M]);
+        $value = self::toFloat($data[self::KEY_WIND_GUST_SPEED10M]);
         if (null === $value) {
             return;
         }
@@ -312,19 +312,19 @@ final class HourlyForecastTimeStepTransformer implements HourlyForecastTimeStepT
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyWindSpeed10m(HourlyForecastTimeStep $timeStep, array $data): void
+    private static function applyWindSpeed10m(HourlyForecastTimeStep $timeStep, array $data): void
     {
         if (!isset($data[self::KEY_WIND_SPEED10M])) {
             return;
         }
-        $value = $this->toFloat($data[self::KEY_WIND_SPEED10M]);
+        $value = self::toFloat($data[self::KEY_WIND_SPEED10M]);
         if (null === $value) {
             return;
         }
         $timeStep->setWindSpeed10m($value);
     }
 
-    private function toFloat(mixed $value): ?float
+    private static function toFloat(mixed $value): ?float
     {
         if (is_int($value)) {
             return (float) $value;

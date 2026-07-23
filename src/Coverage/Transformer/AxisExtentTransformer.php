@@ -18,10 +18,10 @@ final class AxisExtentTransformer implements AxisExtentTransformerInterface
     {
         $axisExtent = new AxisExtent();
 
-        $this->applyLabel($axisExtent, $data);
-        $this->applyLowerBound($axisExtent, $data);
-        $this->applyUomLabel($axisExtent, $data);
-        $this->applyUpperBound($axisExtent, $data);
+        self::applyLabel($axisExtent, $data);
+        self::applyLowerBound($axisExtent, $data);
+        self::applyUomLabel($axisExtent, $data);
+        self::applyUpperBound($axisExtent, $data);
 
         return $axisExtent;
     }
@@ -29,7 +29,7 @@ final class AxisExtentTransformer implements AxisExtentTransformerInterface
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyLabel(AxisExtent $axisExtent, array $data): void
+    private static function applyLabel(AxisExtent $axisExtent, array $data): void
     {
         if (empty($data[self::KEY_LABEL])) {
             return;
@@ -43,7 +43,7 @@ final class AxisExtentTransformer implements AxisExtentTransformerInterface
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyLowerBound(AxisExtent $axisExtent, array $data): void
+    private static function applyLowerBound(AxisExtent $axisExtent, array $data): void
     {
         if (empty($data[self::KEY_LOWER_BOUND])) {
             return;
@@ -57,7 +57,7 @@ final class AxisExtentTransformer implements AxisExtentTransformerInterface
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyUomLabel(AxisExtent $axisExtent, array $data): void
+    private static function applyUomLabel(AxisExtent $axisExtent, array $data): void
     {
         if (empty($data[self::KEY_UOM_LABEL])) {
             return;
@@ -71,7 +71,7 @@ final class AxisExtentTransformer implements AxisExtentTransformerInterface
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyUpperBound(AxisExtent $axisExtent, array $data): void
+    private static function applyUpperBound(AxisExtent $axisExtent, array $data): void
     {
         if (empty($data[self::KEY_UPPER_BOUND])) {
             return;

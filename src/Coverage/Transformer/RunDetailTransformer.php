@@ -31,8 +31,8 @@ final class RunDetailTransformer implements RunDetailTransformerInterface
         }
         $runDetail = new RunDetail($runDateTime);
 
-        $this->applyRun($runDetail, $data);
-        $this->applyRunFilter($runDetail, $data);
+        self::applyRun($runDetail, $data);
+        self::applyRunFilter($runDetail, $data);
 
         return $runDetail;
     }
@@ -40,7 +40,7 @@ final class RunDetailTransformer implements RunDetailTransformerInterface
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyRun(RunDetail $runDetail, array $data): void
+    private static function applyRun(RunDetail $runDetail, array $data): void
     {
         if (empty($data[self::KEY_RUN])) {
             return;
@@ -54,7 +54,7 @@ final class RunDetailTransformer implements RunDetailTransformerInterface
     /**
      * @phpstan-param mixed[] $data
      */
-    private function applyRunFilter(RunDetail $runDetail, array $data): void
+    private static function applyRunFilter(RunDetail $runDetail, array $data): void
     {
         if (empty($data[self::KEY_RUN_FILTER])) {
             return;

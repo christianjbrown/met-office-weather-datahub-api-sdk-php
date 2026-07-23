@@ -262,6 +262,9 @@ factory method. Anything genuinely shared across APIs stays at the top level.
   constructor body. Class members (properties then methods) are ordered **alphabetically**.
 - Import functions with `use function sprintf;` etc. (after class imports, blank line between), and
   call them unqualified.
+- **A method that does not use `$this` must be `static`** (called via `self::`) — a stateless helper is
+  static. Enforced for private methods by the shared `RequireStaticPrivateMethodRule` PHPStan rule (via
+  `php-code-quality-scripts`' `config/phpstan.neon`); interface/override methods stay instance.
 - **Models** are mutable DTOs: required fields (`time`) are constructor args; every other field
   defaults to `null`. Getters are `getX()`; fluent setters are `setX($value)` (parameter literally
   `$value`) returning `$this` typed as the interface. No `readonly`.
@@ -270,9 +273,9 @@ factory method. Anything genuinely shared across APIs stays at the top level.
   then a type check, each throwing `UnexpectedResponseException(sprintf(self::..._SPRINTF, self::KEY_...))`.
   Use `empty()` for string/array presence but **`isset()` for numeric fields** (so a legit `0`/`0.0`
   survives). Optional fields are silently skipped when absent or wrong-typed, applied via private
-  `applyX(Model $m, array $data): void` helpers.
+  `static applyX(Model $m, array $data): void` helpers.
 - **Numeric int/float handling:** the API serialises whole-number floats as JSON ints (e.g.
-  `screenTemperature: 24`). Float fields are normalised through the private `toFloat(mixed): ?float`
+  `screenTemperature: 24`). Float fields are normalised through the private `static toFloat(mixed): ?float`
   helper (accept `int` or `float`, cast to `float`, else `null`) — **not** a strict `is_float`. Int
   fields use `is_int` only. Weather-code ints map via `WeatherType::tryFrom()` (skip when `null`).
 - **The facade getters must stay PHPStan-safe**: `$this->container->get()` returns `mixed`, so assign
