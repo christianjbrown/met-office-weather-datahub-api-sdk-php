@@ -8,7 +8,7 @@ small, uniform, and highly opinionated, so new code should be indistinguishable 
 A thin, strongly-typed, read-only PHP 8.5+ client for the Met Office **Weather DataHub** APIs. It is
 structured to host multiple DataHub APIs side by side; its supported APIs are **Site-Specific**
 (Global Spot), **Site-Specific Blended Probabilistic Forecast** (OGC EDR / CoverageJSON), **Observation
-(Land)**, **Atmospheric Models** (Gridded), and **Map Images**. It builds on the generic `christianjbrown/php-api-client-lib`
+(Land)**, **Atmospheric Models** (Gridded), and **Map Images**. It builds on the generic `christianjbrown/api-client`
 (which wraps Guzzle and normalises transport exceptions) and wires each API's clients + transformer
 chains through a Symfony `ContainerBuilder`.
 
@@ -47,7 +47,7 @@ point forecast and returns typed model objects instead of raw GeoJSON arrays.
 
 Binaries install into `bin/` (Composer `bin-dir`), not `vendor/bin/`. Both `bin/` and `vendor/` are
 gitignored and Composer-installed, so run `composer install` first. The style tooling comes from the
-`christianjbrown/php-code-quality-scripts` dev dependency (PHP_CodeSniffer 4 with the
+`christianjbrown/code-quality-scripts` dev dependency (PHP_CodeSniffer 4 with the
 **`ChristianBrown` standard** — slevomat sniffs plus PSR/PEAR/Squiz/Generic — for linting via
 `check-style`, and php-cs-fixer with `@PhpCsFixer`/`@Symfony` for formatting), pulled from GitHub
 like the other sibling dependencies.
@@ -315,7 +315,7 @@ factory method. Anything genuinely shared across APIs stays at the top level.
   call them unqualified.
 - **A method that does not use `$this` must be `static`** (called via `self::`) — a stateless helper is
   static. Enforced for private methods by the shared `RequireStaticPrivateMethodRule` PHPStan rule (via
-  `php-code-quality-scripts`' `config/phpstan.neon`); interface/override methods stay instance.
+  `code-quality-scripts`' `config/phpstan.neon`); interface/override methods stay instance.
 - **Models** are mutable DTOs: required fields (`time`) are constructor args; every other field
   defaults to `null`. Getters are `getX()`; fluent setters are `setX($value)` (parameter literally
   `$value`) returning `$this` typed as the interface. No `readonly`.

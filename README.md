@@ -1,6 +1,6 @@
-# Met Office Weather DataHub API Client
+# Met Office Weather DataHub API SDK
 
-[![CI](https://github.com/christianjbrown/php-met-office-weather-datahub-api-lib/actions/workflows/ci.yml/badge.svg)](https://github.com/christianjbrown/php-met-office-weather-datahub-api-lib/actions/workflows/ci.yml)
+[![CI](https://github.com/christianjbrown/met-office-weather-datahub-api-sdk-php/actions/workflows/ci.yml/badge.svg)](https://github.com/christianjbrown/met-office-weather-datahub-api-sdk-php/actions/workflows/ci.yml)
 
 A strongly-typed, **read-only** PHP client for the [Met Office Weather DataHub](https://datahub.metoffice.gov.uk/) APIs. It returns plain, typed model objects rather than raw GeoJSON / CoverageJSON arrays. The library is structured to host multiple DataHub APIs side by side; its supported APIs are **Site-Specific** (Global Spot), **Site-Specific Blended Probabilistic Forecast**, **Observation (Land)**, **Atmospheric Models** (Gridded), and **Map Images**.
 
@@ -141,7 +141,7 @@ This library aims for full parity with the DataHub API **products**, but is deli
 For your composer-enabled project:
 
 ```bash
-composer require christianjbrown/php-met-office-weather-datahub-api-lib
+composer require christianjbrown/met-office-weather-datahub-api-sdk
 ```
 
 
@@ -237,9 +237,9 @@ There are two concrete types:
 - **`UnexpectedResponseException`** (extends `RuntimeException`) — the API returned a body the client or a transformer couldn't parse (a missing/mis-typed field, an empty `features` collection, an unparseable `time`).
 - **`MissingInputException`** (extends `InvalidArgumentException`) — reserved for bad caller input.
 
-Both live in `src/Exception/`. Request-level failures (network errors, non-2xx responses) still surface as `RequestExceptionInterface` from [`christianjbrown/php-api-client-lib`](https://github.com/christianjbrown/php-api-client-lib), which is outside this library's exception hierarchy.
+Both live in `src/Exception/`. Request-level failures (network errors, non-2xx responses) still surface as `RequestExceptionInterface` from [`christianjbrown/api-client`](https://github.com/christianjbrown/api-client-php), which is outside this library's exception hierarchy.
 
-Under the hood, `SiteSpecific` wires the clients and their transformer chains through a [Symfony dependency-injection](https://symfony.com/doc/current/components/dependency_injection.html) container. If you don't want the container, you can build the same chains by hand — as shown below. The HTTP request sender comes from [`christianjbrown/php-api-client-lib`](https://github.com/christianjbrown/php-api-client-lib).
+Under the hood, `SiteSpecific` wires the clients and their transformer chains through a [Symfony dependency-injection](https://symfony.com/doc/current/components/dependency_injection.html) container. If you don't want the container, you can build the same chains by hand — as shown below. The HTTP request sender comes from [`christianjbrown/api-client`](https://github.com/christianjbrown/api-client-php).
 
 <details id="wiring-the-clients">
 <summary><strong>Wiring the clients</strong></summary>
