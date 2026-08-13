@@ -150,6 +150,11 @@ namespace `SiteSpecificBlended\`, entry point `siteSpecificBlended()`) retires 1
 in place — v2 is a *different service on a different context path*, needs its own API key, and 404s on every
 v1 data URL. Do not reintroduce v1 paths or the `improver-*-spot-*` collection ids.
 
+Parameter ids were also renamed wholesale for v2 (snake_case → camelCase, plus height/level suffixes such as
+`1p5m` / `10m`). The full 159-row mapping is documented in `docs/bpf-v1-to-v2-parameter-names.md`. It is
+**documentation only** — parameter names are opaque strings everywhere in `src/`, so no enum, constant or
+lookup encodes them, and the authoritative per-collection list is the live `getParameters()` map.
+
 - **`BlendedProbForecast\BlendedProbForecast`** — the facade (same DI/ContainerBuilder pattern as the other
   modules, JSON sender only — CoverageJSON is JSON). Exposes `getCapabilitiesApi()`, `getCollectionsApi()`,
   `getInstancesApi()`, `getLocationsApi()`, `getPositionApi()`.
