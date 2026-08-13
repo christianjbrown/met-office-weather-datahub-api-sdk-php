@@ -6,20 +6,25 @@ namespace ChristianBrown\MetOffice;
 
 use ChristianBrown\MetOffice\AtmosphericModels\AtmosphericModels;
 use ChristianBrown\MetOffice\AtmosphericModels\AtmosphericModelsInterface;
+use ChristianBrown\MetOffice\BlendedProbForecast\BlendedProbForecast;
+use ChristianBrown\MetOffice\BlendedProbForecast\BlendedProbForecastInterface;
 use ChristianBrown\MetOffice\MapImages\MapImages;
 use ChristianBrown\MetOffice\MapImages\MapImagesInterface;
 use ChristianBrown\MetOffice\ObservationLand\ObservationLand;
 use ChristianBrown\MetOffice\ObservationLand\ObservationLandInterface;
 use ChristianBrown\MetOffice\SiteSpecific\SiteSpecific;
 use ChristianBrown\MetOffice\SiteSpecific\SiteSpecificInterface;
-use ChristianBrown\MetOffice\SiteSpecificBlended\SiteSpecificBlended;
-use ChristianBrown\MetOffice\SiteSpecificBlended\SiteSpecificBlendedInterface;
 
 final class MetOffice implements MetOfficeInterface
 {
     public function atmosphericModels(string $apiKey): AtmosphericModelsInterface
     {
         return new AtmosphericModels($apiKey);
+    }
+
+    public function blendedProbForecast(string $apiKey): BlendedProbForecastInterface
+    {
+        return new BlendedProbForecast($apiKey);
     }
 
     public function mapImages(string $apiKey): MapImagesInterface
@@ -35,10 +40,5 @@ final class MetOffice implements MetOfficeInterface
     public function siteSpecific(string $apiKey): SiteSpecificInterface
     {
         return new SiteSpecific($apiKey);
-    }
-
-    public function siteSpecificBlended(string $apiKey): SiteSpecificBlendedInterface
-    {
-        return new SiteSpecificBlended($apiKey);
     }
 }

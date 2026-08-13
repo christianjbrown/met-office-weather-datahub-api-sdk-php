@@ -7,18 +7,18 @@ small, uniform, and highly opinionated, so new code should be indistinguishable 
 
 A thin, strongly-typed, read-only PHP 8.5+ client for the Met Office **Weather DataHub** APIs. It is
 structured to host multiple DataHub APIs side by side; its supported APIs are **Site-Specific**
-(Global Spot), **Site-Specific Blended Probabilistic Forecast** (OGC EDR / CoverageJSON), **Observation
+(Global Spot), **Blended Probabilistic Forecast** (OGC EDR / CoverageJSON, v2), **Observation
 (Land)**, **Atmospheric Models** (Gridded), and **Map Images**. It builds on the generic `christianjbrown/api-client`
 (which wraps Guzzle and normalises transport exceptions) and wires each API's clients + transformer
 chains through a Symfony `ContainerBuilder`.
 
 The top-level entry point is the umbrella `MetOffice` facade (`src/MetOffice.php`): constructed with
 **no arguments**, it is a simple factory whose `siteSpecific(string $apiKey): SiteSpecific\SiteSpecificInterface`
-`siteSpecificBlended(string $apiKey): SiteSpecificBlended\SiteSpecificBlendedInterface`,
+`blendedProbForecast(string $apiKey): BlendedProbForecast\BlendedProbForecastInterface`,
 `observationLand(string $apiKey): ObservationLand\ObservationLandInterface`,
 `atmosphericModels(string $apiKey): AtmosphericModels\AtmosphericModelsInterface`, and
 `mapImages(string $apiKey): MapImages\MapImagesInterface` methods return the
-per-API clients. Each API's own facade (e.g. `SiteSpecific\SiteSpecific`, `SiteSpecificBlended\SiteSpecificBlended`,
+per-API clients. Each API's own facade (e.g. `SiteSpecific\SiteSpecific`, `BlendedProbForecast\BlendedProbForecast`,
 `ObservationLand\ObservationLand`, `AtmosphericModels\AtmosphericModels`, `MapImages\MapImages`, constructed with a
 `string $apiKey`) owns the DI container for that API. New DataHub APIs are added as new `siteSpecific()`-style
 factory methods returning new per-API facades.
@@ -136,50 +136,91 @@ Everything lives under the `ChristianBrown\MetOffice\` namespace (`src/`), mirro
   implement that interface and narrow their return type to their concrete step interface. These
   reference the shared `Enums\WeatherType`.
 
-### Site-Specific Blended Probabilistic Forecast (`ChristianBrown\MetOffice\SiteSpecificBlended\`)
+### Blended Probabilistic Forecast (`ChristianBrown\MetOffice\BlendedProbForecast\`)
 
-The newer probabilistic site-specific product. It is an **OGC EDR** API returning **CoverageJSON** —
-structurally unlike Global Spot's GeoJSON point forecast — so it is a **self-contained module** and shares
-nothing with `Coverage\` (that namespace is the Atmospheric/Map order schema; the name collision is
-coincidental). Base URL `https://data.hub.api.metoffice.gov.uk/mo-site-specific-blended-probabilistic-forecast/1.0.0`,
-same `apikey` header, `Accept: application/json`. Service-id prefix `met_office.site_specific_blended.`.
+The newer probabilistic site-specific product, targeting **BPF v2 only**. It is an **OGC EDR** API returning
+**CoverageJSON** — structurally unlike Global Spot's GeoJSON point forecast — so it is a **self-contained
+module** and shares nothing with `Coverage\` (that namespace is the Atmospheric/Map order schema; the name
+collision is coincidental). Base URL
+`https://data.hub.api.metoffice.gov.uk/mo-blended-prob-forecast-feature-svc/2.0.0`, same `apikey` header,
+`Accept: application/json`. Service-id prefix `met_office.blended_prob_forecast.`.
 
-- **`SiteSpecificBlended\SiteSpecificBlended`** — the facade (same DI/ContainerBuilder pattern as the other
+**v1 is gone from this codebase.** BPF v1 (`/mo-site-specific-blended-probabilistic-forecast/1.0.0`,
+namespace `SiteSpecificBlended\`, entry point `siteSpecificBlended()`) retires 11 Nov 2026 and was replaced
+in place — v2 is a *different service on a different context path*, needs its own API key, and 404s on every
+v1 data URL. Do not reintroduce v1 paths or the `improver-*-spot-*` collection ids.
+
+- **`BlendedProbForecast\BlendedProbForecast`** — the facade (same DI/ContainerBuilder pattern as the other
   modules, JSON sender only — CoverageJSON is JSON). Exposes `getCapabilitiesApi()`, `getCollectionsApi()`,
-  `getLocationsApi()`.
-- **`SiteSpecificBlended\Api/`** — `CapabilitiesApi` (`GET /` → `LandingPageInterface`; `GET /conformance`
-  → `string[]`), `CollectionsApi` (`GET /collections` → `CollectionInterface[]`; `GET /collections/{id}`
-  → `CollectionInterface`), and `LocationsApi` (`GET /collections/{id}/locations` → `LocationInterface[]`;
-  `GET /collections/{id}/locations/{locationId}` → **`CoverageCollectionInterface`**, with optional
-  `parameter-name` / `datetime` query params built only when supplied, and the location id `rawurlencode`d).
-  `Api\ApiInterface` extends the shared top-level `ApiInterface`. The four live collection ids are
-  `improver-percentiles-spot-global`, `improver-percentiles-spot-uk`, `improver-probabilities-spot-global`,
-  `improver-probabilities-spot-uk`.
-- **`SiteSpecificBlended\Model/`** — EDR + CoverageJSON DTOs: `Link`, `LandingPage`, `Collection`
-  (+ `Extent`), `Location`, and the CoverageJSON tree. The location-data endpoint returns a **CoverageJSON
-  `CoverageCollection`** (verified live — *not* a single `Coverage` as the OGC stub docs implied):
-  `CoverageCollection` holds `domainType`, a keyed map of `Parameter` (each with `observedPropertyLabel`
-  + `unit`), and an array of `Coverage` (**one sub-coverage per parameter**). `Coverage` holds a required
-  `Domain` + a keyed map of `NdArray` ranges. `Domain` holds a keyed map of `Axis` (axis names are dynamic —
-  `t`/`x`/`y`/`z`/`locationId` plus the statistical axis, which is `percentiles` for percentile collections
-  or a per-parameter `probabilityOf…Values` threshold axis for probability collections). `Axis` exposes
-  both `getFloatValues()` (`float[]`) and `getStringValues()` (`string[]`) — the transformer partitions each
-  axis's homogeneous values into whichever is non-empty, avoiding a mixed-type array. `NdArray::values` is
-  `array<int, ?float>` — mapped element-wise through a **nullable** `toFloat` (no `array_filter`) so `null`
-  gaps and positions stay aligned to `shape`.
-- **`SiteSpecificBlended\Transformer/`** — same guard/`applyX`/`toFloat`/indexed-`for` idioms. `parameters`,
+  `getInstancesApi()`, `getLocationsApi()`, `getPositionApi()`.
+- **`BlendedProbForecast\DataQuery`** (`src/BlendedProbForecast/DataQuery.php`) — a module-level value object
+  bundling the three optional data filters (`array<int,string> $parameterNames`, `array<int,string> $percentiles`,
+  `?string $datetime`, all defaulted). `toQuery(): array<string,string>` comma-joins the two list filters and
+  omits anything empty/null, built with sequential `if`s. Shared by `LocationsApi::getLocation()` and
+  `PositionApi::getPosition()` so the filter trio is one cohesive argument rather than three repeated nullable
+  params (same rationale as `Coordinates`/`ApiKey`). **Not a container service** — callers construct it.
+  `datetime` is passed through verbatim: v2 accepts a single instant, a comma list, `<start>/<end>`,
+  `<start>/..`, `../<end>`, or `R{n}/{start}/{duration}`, and validating that client-side is out of scope.
+- **`BlendedProbForecast\Api/`** — five clients. `CapabilitiesApi` (`GET /` → `LandingPageInterface`;
+  `GET /conformance` → `string[]`), `CollectionsApi` (`GET /collections` → `CollectionInterface[]`;
+  `GET /collections/{id}` → `CollectionInterface`), **`InstancesApi`** (`GET /collections/{id}/instances`
+  → `InstanceInterface[]`, unwrapping `instances`; `GET /collections/{id}/instances/{instanceId}` →
+  `InstanceInterface`), `LocationsApi` (`GET …/instances/{iid}/locations` → `LocationInterface[]`, unwrapping
+  `features`; `GET …/instances/{iid}/locations/{locationId}` → **`CoverageCollectionInterface`**), and
+  **`PositionApi`** (`GET …/instances/{iid}/position` → `CoverageCollectionInterface`). Ids are
+  `rawurlencode`d in paths. `PositionApi` takes the shared `CoordinatesInterface` and builds the **required**
+  `coords` param as WKT via `sprintf(COORDS_POINT_SPRINTF, longitude, latitude)` — **longitude first**;
+  omitting `coords` is a 400. `Api\ApiInterface` extends the shared top-level `ApiInterface`. The four live
+  collection ids are `global-spot-percentiles`, `global-spot-probabilities`, `uk-spot-percentiles`,
+  `uk-spot-probabilities`; the only live instance id is `blended`.
+- **`BlendedProbForecast\Model/`** — EDR + CoverageJSON DTOs: `Link`, `LandingPage`, `Collection`, `Instance`,
+  `Extent` (+ `ExtentCustom`), `Location`, `Parameter`, and the CoverageJSON tree (`CoverageCollection`,
+  `ReferenceSystem`, `Coverage`, `Domain`, `Axis`, `NdArray`). Shape notes, all live-verified:
+  - `Collection` and `Instance` are structurally parallel (both `final`, no abstract base) but the
+    **collection-level `extent` is empty in v2** — the populated extent lives on the `Instance`.
+  - `Collection::getParameters()` / `Instance::getParameters()` are keyed `array<string, ParameterInterface>`
+    built from the JSON `parameter_names` **map** (v1 exposed a flat `parameterNames: string[]`).
+    `getDataQueries()` is the `array_keys` of the JSON `data_queries` map.
+  - `Extent` adds `getCustom(): ExtentCustomInterface[]` (from `extent.custom`) — this is where the
+    statistical axis is published (`id` `percentile`, `values` `5`…`95`).
+  - `Location` has `altitude` (the 3rd element of `geometry.coordinates`) and **no `name`** — v2's
+    `properties` is an empty object.
+  - `Parameter` adds `height` / `fileSuffix` from `custom.height.label.en` / `custom.fileSuffix.label.en`.
+  - `CoverageCollection` holds `domainType`, `getReferencing(): ReferenceSystemInterface[]`, and
+    `getCoverages()` — **one sub-coverage per parameter**. It has **no top-level `parameters`** in v2; that
+    moved onto each `Coverage` (which also gained `getId()`, the parameter name).
+  - `ReferenceSystem` holds `coordinates` (required ctor arg) plus `type`/`id`/`label`/`calendar` and
+    `getIdentifiers()` — a map of axis value to human label (`50` → `50th percentile`), the only place those
+    labels are published. Typed `array<array-key, string>` because PHP coerces numeric-string keys to int.
+  - `Domain` holds a keyed map of `Axis` (axis names are dynamic — `t`/`x`/`y`/`z`/`locationId` plus the
+    statistical axis, which is `percentiles` for percentile collections or a per-parameter
+    `probabilityOf…Values` threshold axis for probability collections). `Axis` exposes both
+    `getFloatValues()` (`float[]`) and `getStringValues()` (`string[]`) — the transformer partitions each
+    axis's homogeneous values into whichever is non-empty, avoiding a mixed-type array — plus `getBounds()`
+    (`string[]`), present on `t` for **period** parameters (e.g. `airTemperature1p5mMaximumPt12h`): a flat
+    `2n` array, lower bound of step `i` at `2i`, upper at `2i + 1`.
+  - `NdArray::values` is `array<int, ?float>` — mapped element-wise through a **nullable** `toFloat` (no
+    `array_filter`) so `null` gaps and positions stay aligned to `shape`.
+- **`BlendedProbForecast\Transformer/`** — same guard/`applyX`/`toFloat`/indexed-`for` idioms. `parameters`,
   `ranges`, and domain `axes` are JSON **maps keyed by id/name** (the objects carry no id of their own): the
   `ParametersTransformer`/`RangesTransformer`/`AxesTransformer` iterate an indexed `for` over `array_keys`,
   **inject the key as the item's id/name**, and return a **key-preserving** result map. `CollectionTransformer`
-  composes `LinksTransformer` + `ExtentTransformer`; `CoverageCollectionTransformer` composes
-  `ParametersTransformer` + `CoveragesTransformer`; `CoveragesTransformer` (list) → `CoverageTransformer`
-  (`DomainTransformer` + `RangesTransformer`); `DomainTransformer` → `AxesTransformer` → `AxisTransformer`.
+  and `InstanceTransformer` each compose `LinksTransformer` + `ExtentTransformer` + `ParametersTransformer`;
+  `ExtentTransformer` composes `ExtentCustomsTransformer`; `CoverageCollectionTransformer` composes
+  `CoveragesTransformer` + `ReferencingTransformer`; `CoveragesTransformer` (list) → `CoverageTransformer`
+  (`DomainTransformer` + `ParametersTransformer` + `RangesTransformer`); `DomainTransformer` →
+  `AxesTransformer` → `AxisTransformer`; `ReferencingTransformer` (list) → `ReferenceSystemTransformer`.
   Real-payload quirks handled: link key is **`hreflang`** (lowercase); unit is `unit.symbol` (a string, e.g.
-  `Pa`), not `unit.label.en`; and `extent.spatial.bbox` is a **flat** `[minx,miny,maxx,maxy]` array while
-  `extent.temporal.interval` is nested `[[start,end]]`.
-- **Live-verified** against the BPF trial plan (the Global-Spot key is scoped only to `/sitespecific/v0`, so
-  a BPF-subscribed key is needed). The above CoverageCollection shape, dynamic axes, and unit/bbox/hreflang
-  quirks were all corrected from live payloads; mocked fixtures reproduce them and are the CI correctness gate.
+  `Pa`), not `unit.label.en`; and in v2 **both** `extent.spatial.bbox` and `extent.temporal.interval` are
+  **nested** (`[[…]]`) — the flat bbox was a v1 shape and unwrapping `bbox[0]` is required.
+- **Live-verified** against the v2 Free plan (55 calls/day; a v1 key does not authenticate). Everything above
+  — the instances layer, `position` WKT ordering, nested bbox, `extent.custom`, per-coverage `parameters`,
+  `referencing` identifier labels, `t.bounds`, and location `altitude` — was confirmed from live payloads;
+  mocked inline arrays in `tests/` reproduce them and are the CI correctness gate.
+- **Error shapes to know:** a filter that matches nothing returns **`204 No Content`** with an empty body, so
+  `JsonToArrayTransformer` raises `ParseJsonExceptionInterface` before this library sees it (documented in the
+  README rather than engineered around — the JSON sender owns the response). A `400` body is
+  `{"message", "transaction"}`; the `transaction` uuid is what the Met Office service desk asks for.
 
 ### Observation (Land) (`ChristianBrown\MetOffice\ObservationLand\`)
 

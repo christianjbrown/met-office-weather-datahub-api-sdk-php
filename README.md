@@ -2,14 +2,14 @@
 
 [![CI](https://github.com/christianjbrown/met-office-weather-datahub-api-sdk-php/actions/workflows/ci.yml/badge.svg)](https://github.com/christianjbrown/met-office-weather-datahub-api-sdk-php/actions/workflows/ci.yml)
 
-A strongly-typed, **read-only** PHP client for the [Met Office Weather DataHub](https://datahub.metoffice.gov.uk/) APIs. It returns plain, typed model objects rather than raw GeoJSON / CoverageJSON arrays. The library is structured to host multiple DataHub APIs side by side; its supported APIs are **Site-Specific** (Global Spot), **Site-Specific Blended Probabilistic Forecast**, **Observation (Land)**, **Atmospheric Models** (Gridded), and **Map Images**.
+A strongly-typed, **read-only** PHP client for the [Met Office Weather DataHub](https://datahub.metoffice.gov.uk/) APIs. It returns plain, typed model objects rather than raw GeoJSON / CoverageJSON arrays. The library is structured to host multiple DataHub APIs side by side; its supported APIs are **Site-Specific** (Global Spot), **Blended Probabilistic Forecast**, **Observation (Land)**, **Atmospheric Models** (Gridded), and **Map Images**.
 
 ## :satellite: Supported APIs
 
 | API | Entry point | Status |
 | --- | --- | --- |
 | **Site-Specific** (Global Spot) | `MetOffice::siteSpecific()` | ✅ Supported |
-| **Site-Specific Blended Probabilistic Forecast** | `MetOffice::siteSpecificBlended()` | ✅ Supported |
+| **Blended Probabilistic Forecast** | `MetOffice::blendedProbForecast()` | ✅ Supported |
 | **Observation (Land)** | `MetOffice::observationLand()` | ✅ Supported |
 | **Atmospheric Models** (Gridded) | `MetOffice::atmosphericModels()` | ✅ Supported |
 | **Map Images** | `MetOffice::mapImages()` | ✅ Supported |
@@ -34,12 +34,13 @@ Fetches recent (past 48 hours) hourly land surface observations. It exposes two 
 - **Observation** (`getObservationApi()`) — given a six-character geohash, `getByGeohash()` returns the array of hourly `ObservationInterface` values (datetime as a Unix timestamp, plus optional temperature, humidity, wind speed/gust/direction, weather code, visibility, mean sea-level pressure, and pressure tendency). Results are cached per geohash; pass `true` as the second argument to bypass the cache.
 
 ```php
+use ChristianBrown\MetOffice\Coordinates;
 use ChristianBrown\MetOffice\MetOffice;
 
 $observationLand = (new MetOffice())->observationLand('your-observation-land-apikey');
 
 // London: latitude 51.55, longitude -0.18.
-$nearest = $observationLand->getNearestApi()->getByCoordinates(51.55, -0.18);   // NearestLocationInterface[]
+$nearest = $observationLand->getNearestApi()->getByCoordinates(new Coordinates(51.55, -0.18));   // NearestLocationInterface[]
 
 $observations = $observationLand->getObservationApi()->getByGeohash('gcpvj0');   // ObservationInterface[]
 ```
@@ -78,39 +79,92 @@ $runs = $mapImages->getRunsApi()->getRuns();                              // Run
 $png = $mapImages->getOrdersApi()->getOrderFileData($orderId, $fileId);   // raw PNG bytes (string)
 ```
 
-### Site-Specific Blended Probabilistic Forecast
+### Blended Probabilistic Forecast
 
-The Met Office Site-Specific Blended Probabilistic Forecast (BPF) is a newer product for consuming site-specific forecasts **probabilistically** (a range of probabilities and percentiles rather than a single "most likely" value). Unlike Global Spot, it is an [OGC Environmental Data Retrieval (EDR)](https://ogcapi.ogc.org/edr/) API and returns [CoverageJSON](https://covjson.org/) — so it has its own module rather than reusing the Global Spot models. Base URL `https://data.hub.api.metoffice.gov.uk/mo-site-specific-blended-probabilistic-forecast/1.0.0`, same `apikey` header. It exposes three clients:
+The Met Office Blended Probabilistic Forecast (BPF) is a newer product for consuming site-specific forecasts **probabilistically** (a range of probabilities and percentiles rather than a single "most likely" value). Unlike Global Spot, it is an [OGC Environmental Data Retrieval (EDR)](https://ogcapi.ogc.org/edr/) API and returns [CoverageJSON](https://covjson.org/) — so it has its own module rather than reusing the Global Spot models. Base URL `https://data.hub.api.metoffice.gov.uk/mo-blended-prob-forecast-feature-svc/2.0.0`, same `apikey` header.
+
+> **v2 only.** This module targets BPF **v2**, which is a different service on a different context path — not a version bump. v1 (`/mo-site-specific-blended-probabilistic-forecast/1.0.0`) is retired on **11 November 2026**, its collection ids were renamed, and a v1 API key will not authenticate against v2. See [Migrating from BPF v1](#migrating-from-bpf-v1).
+
+Data is reached in four steps — **collection → instance → location → data** — and the two data queries accept an optional [`DataQuery`](#dataquery) filter so you fetch only what you need. It exposes five clients:
 
 - **Capabilities** (`getCapabilitiesApi()`) — `getLandingPage()` returns the API landing metadata (`LandingPageInterface`); `getConformance()` returns the conformance-class URIs (`string[]`).
-- **Collections** (`getCollectionsApi()`) — `getCollections()` lists the available collections (`CollectionInterface[]`; example ids `improver-percentiles-spot-global`, `improver-probabilities-spot-uk`, each carrying its `parameterNames`, `outputFormats`, `crs`, `links`, and `extent`); `getCollection(string $collectionId)` returns one collection's metadata.
-- **Locations** (`getLocationsApi()`) — `getLocations(string $collectionId)` lists the collection's available spot locations (`LocationInterface[]`, each with an `id`, latitude/longitude, and name; a collection has thousands of them); `getCoverage(string $collectionId, string $locationId, ?string $parameterName = null, ?string $datetime = null)` fetches one location's forecast as a typed **`CoverageCollectionInterface`** (the EDR endpoint returns a CoverageJSON *CoverageCollection*). It carries the shared `domainType`, a map of `ParameterInterface` metadata (each with an `observedPropertyLabel` and a `unit`), and an array of `CoverageInterface` — **one sub-coverage per parameter**. Each `CoverageInterface` has a `DomainInterface` exposing a map of named `AxisInterface` (`getAxes()` — e.g. `t`, `x`/`y`/`z`, `locationId`, and the statistical axis: `percentiles` for percentile collections, or a per-parameter `probabilityOf…Values` threshold axis for probability collections — each axis exposes `getFloatValues()` / `getStringValues()`), plus a map of `NdArrayInterface` ranges (`dataType`, `axisNames`, `shape`, and position-aligned `values` that may contain `null` gaps). The optional `parameter-name` and `datetime` query params are only sent when supplied.
+- **Collections** (`getCollectionsApi()`) — `getCollections()` lists the four available collections (`CollectionInterface[]`: `global-spot-percentiles`, `global-spot-probabilities`, `uk-spot-percentiles`, `uk-spot-probabilities`); `getCollection(string $collectionId)` returns one collection's metadata. Each carries its `crs`, `outputFormats`, `links`, `dataQueries`, and a keyed map of `ParameterInterface` (`getParameters()` — 73–79 parameters per collection, each with an `observedPropertyLabel`, `unit`, and the Met Office `height` / `fileSuffix` extras). Note the collection-level `extent` is empty in v2 — the real extent lives on the instance.
+- **Instances** (`getInstancesApi()`) — `getInstances(string $collectionId)` lists the model runs (`InstanceInterface[]`; in practice a single instance, `blended`); `getInstance(string $collectionId, string $instanceId)` returns one. The instance carries the populated `ExtentInterface`: `getSpatialBbox()`, `getTemporalInterval()` / `getTemporalValues()` (241 hourly steps), and `getCustom()` — an `ExtentCustomInterface[]` publishing the statistical axis (for percentile collections, `id` `percentile` with values `5`…`95`).
+- **Locations** (`getLocationsApi()`) — `getLocations(string $collectionId, string $instanceId)` lists the instance's spot sites (`LocationInterface[]`, thousands of them; each with an `id`, `latitude`, `longitude`, and `altitude`); `getLocation(string $collectionId, string $instanceId, string $locationId, ?DataQueryInterface $query = null)` fetches one site's forecast as a typed `CoverageCollectionInterface`.
+- **Position** (`getPositionApi()`) — `getPosition(string $collectionId, string $instanceId, CoordinatesInterface $coordinates, ?DataQueryInterface $query = null)` fetches the forecast for the **nearest site** to a latitude/longitude, skipping the locations lookup entirely. It sends the required `coords` parameter as WKT `POINT(longitude latitude)`, built for you from the shared `Coordinates` value object.
+
+Both data queries return a CoverageJSON **`CoverageCollectionInterface`**, which carries:
+
+- `getDomainType()` — `PointSeries`.
+- `getReferencing()` — a `ReferenceSystemInterface[]` describing each coordinate. The `IdentifierRS` entries expose `getIdentifiers()`, a map of axis value to human label (e.g. `50` → `50th percentile`), which is the only place those labels are published.
+- `getCoverages()` — **one `CoverageInterface` per requested parameter**, each with its own `getId()` (the parameter name), its own `getParameters()` map, a `DomainInterface`, and a map of `NdArrayInterface` ranges (`dataType`, `axisNames`, `shape`, and position-aligned `values` that may contain `null` gaps).
+
+`getDomain()->getAxes()` is a map of named `AxisInterface` — `t`, `x`/`y`/`z`, `locationId`, plus the statistical axis (`percentiles` for percentile collections, or a per-parameter `probabilityOf…Values` threshold axis for probability collections). Each axis exposes `getFloatValues()` / `getStringValues()` (the values are homogeneous, so exactly one is populated), and, for **period** parameters such as `airTemperature1p5mMaximumPt12h`, `getBounds()` — a flat array of `2n` timestamps where the lower bound of step `i` is at index `2i` and the upper at `2i + 1`.
+
+#### DataQuery
+
+`DataQuery` bundles the three optional filters shared by `getLocation()` and `getPosition()`. Every argument is optional; omitted filters are simply not sent.
 
 ```php
+use ChristianBrown\MetOffice\BlendedProbForecast\DataQuery;
+
+new DataQuery(
+    ['airTemperature1p5m', 'airTemperature1p5mMaximumPt12h'],   // parameter-name  (comma-joined for you)
+    ['50', '90'],                                               // percentiles     (comma-joined for you)
+    '2026-08-13T00:00:00Z/2026-08-14T00:00:00Z',                // datetime
+);
+```
+
+`datetime` is passed through verbatim and accepts the full v2 grammar: a single instant, a comma-separated list, a closed range `<start>/<end>`, an open-ended range (`<start>/..` or `../<end>`), or a repeating interval `R{n}/{start}/{duration}`.
+
+```php
+use ChristianBrown\MetOffice\BlendedProbForecast\DataQuery;
+use ChristianBrown\MetOffice\Coordinates;
 use ChristianBrown\MetOffice\MetOffice;
 
-$blended = (new MetOffice())->siteSpecificBlended('your-blended-probabilistic-apikey');
+$blended = (new MetOffice())->blendedProbForecast('your-blended-prob-forecast-apikey');
 
-$collections = $blended->getCollectionsApi()->getCollections();                     // CollectionInterface[]
-$locations   = $blended->getLocationsApi()->getLocations('improver-percentiles-spot-global');   // LocationInterface[]
+$collections = $blended->getCollectionsApi()->getCollections();                        // CollectionInterface[]
+$instances   = $blended->getInstancesApi()->getInstances('uk-spot-percentiles');       // InstanceInterface[]
 
-$coverageCollection = $blended->getLocationsApi()->getCoverage(
-    'improver-percentiles-spot-global',
-    $locations[0]->getId(),
-    'feels_like_temperature',   // optional parameter-name filter
-    '2026-07-23T11:00:00Z',     // optional datetime filter
+$query = new DataQuery(['airTemperature1p5m'], ['50', '90'], '2026-08-13T00:00:00Z/2026-08-14T00:00:00Z');
+
+// Nearest site to London, no locations lookup needed.
+$coverageCollection = $blended->getPositionApi()->getPosition(
+    'uk-spot-percentiles',
+    'blended',
+    new Coordinates(51.55, -0.18),
+    $query,
 );   // CoverageCollectionInterface
 
 foreach ($coverageCollection->getCoverages() as $coverage) {
     $timeAxis = $coverage->getDomain()->getAxes()['t'] ?? null;   // AxisInterface|null
     foreach ($coverage->getRanges() as $parameterId => $range) {
         // $range->getValues() is a flat float array aligned to $range->getShape()
-        // (e.g. shape [15, 206] = 15 percentiles x 206 time steps); nulls mark gaps.
-        $unit = $coverageCollection->getParameters()[$parameterId]?->getUnit();
+        // (e.g. shape [2, 25] = 2 percentiles x 25 time steps); nulls mark gaps.
+        $unit = $coverage->getParameters()[$parameterId]?->getUnit();
         printf("%s: %d values in %s\n", $parameterId, count($range->getValues()), $unit ?? '?');
     }
 }
 ```
+
+#### Migrating from BPF v1
+
+| | v1 (retired 11 Nov 2026) | v2 |
+| --- | --- | --- |
+| Entry point | `MetOffice::siteSpecificBlended()` | `MetOffice::blendedProbForecast()` |
+| Namespace | `…\SiteSpecificBlended\` | `…\BlendedProbForecast\` |
+| Base path | `/mo-site-specific-blended-probabilistic-forecast/1.0.0` | `/mo-blended-prob-forecast-feature-svc/2.0.0` |
+| API key | v1 subscription key | **new v2 key required** |
+| Collection ids | `improver-percentiles-spot-global`, … | `global-spot-percentiles`, `global-spot-probabilities`, `uk-spot-percentiles`, `uk-spot-probabilities` |
+| Locations | `getLocations($collectionId)` | `getLocations($collectionId, $instanceId)` |
+| Location data | `getCoverage($collectionId, $locationId, ?$parameterName, ?$datetime)` | `getLocation($collectionId, $instanceId, $locationId, ?DataQueryInterface)` |
+| Nearest point | — | `getPositionApi()->getPosition(…)` |
+| Parameter names | `Collection::getParameterNames(): string[]` | `Collection::getParameters(): ParameterInterface[]` (keyed) |
+| Coverage parameters | `CoverageCollection::getParameters()` | `Coverage::getParameters()` (per coverage) plus `CoverageCollection::getReferencing()` |
+| Parameter ids | snake_case (`feels_like_temperature`) | camelCase (`feelsLikeTemperature1p5m`) |
+
+Parameter ids were renamed wholesale for v2; the Met Office publishes the full mapping as a [v1 → v2 parameter name changes PDF](https://datahub.metoffice.gov.uk/downloads/bpf-v2-parameter-name-changes). This library treats parameter names as opaque strings, so no code change is needed beyond updating the names you pass to `DataQuery`.
 
 
 
@@ -120,7 +174,7 @@ This library aims for full parity with the DataHub API **products**, but is deli
 
 - **Radar** — the Met Office radar composites (UK / NW-European surface rain-rate, HDF5) are **not** part of the DataHub REST API; they are distributed separately via [AWS Open Data](https://registry.opendata.aws/met-office-uk-radar-observations/) (an S3 object store, no `apikey` header). They are out of scope for this DataHub client.
 - **Order creation / management** — the library is **read-only**. For Atmospheric Models and Map Images it reads existing orders (`/orders`, `/orders/{id}/latest`, files, and file data) but never creates, modifies, or deletes orders (there are no `POST`/`PUT`/`DELETE` calls). Orders are configured in the DataHub portal.
-- **No binary decoding** — Atmospheric Models GRIB and Map Images PNG payloads are returned as **raw bytes**; the library does not parse GRIB or decode images. (Blended Probabilistic data is JSON/CoverageJSON and *is* returned as typed models.)
+- **No binary decoding** — Atmospheric Models GRIB and Map Images PNG payloads are returned as **raw bytes**; the library does not parse GRIB or decode images. (Blended Probabilistic Forecast data is JSON/CoverageJSON/GeoJSON and *is* returned as typed models.)
 - **Global Spot returns forecast values only** — `dataSource` is fixed to `BD1` (the API's only permitted value). Per-parameter **metadata** (units, descriptions) is intentionally not surfaced — the library treats units as a presentation concern (the same rationale as shipping the `WeatherType` enum without display wording); the forecast values themselves are complete.
 - **Map Images has no per-model runs endpoint** — only `getRuns()` is available (there is no `getRunsByModel()`); this mirrors the real API, where Map Images genuinely lacks `/runs/{modelId}`.
 
@@ -172,11 +226,13 @@ $hourlyForecastApi = $siteSpecific->getHourlyForecastApi();
 
 If you'd rather wire the clients by hand, see [Wiring the clients](#wiring-the-clients) below.
 
-Each client exposes a single `getForecast(float $latitude, float $longitude, bool $skipCache = false)` method returning a `ForecastInterface`. Results are cached per `"latitude,longitude"` pair; pass `true` as the third argument to bypass the cache and re-fetch.
+Each client exposes a single `getForecast(CoordinatesInterface $coordinates, bool $skipCache = false)` method returning a `ForecastInterface`. The lat/lon pair is a single `Coordinates` value object rather than two positional floats, so it cannot be silently transposed. Results are cached per `"latitude,longitude"` pair; pass `true` as the second argument to bypass the cache and re-fetch.
 
 ```php
+use ChristianBrown\MetOffice\Coordinates;
+
 // London: latitude 51.5074, longitude -0.1278.
-$forecast = $hourlyForecastApi->getForecast(51.5074, -0.1278);   // ForecastInterface
+$forecast = $hourlyForecastApi->getForecast(new Coordinates(51.5074, -0.1278));   // ForecastInterface
 
 echo $forecast->getLocationName(), "\n";                         // e.g. "London"
 echo date('c', $forecast->getModelRunDate() ?? 0), "\n";         // model run date (Unix -> ISO)
@@ -223,10 +279,11 @@ echo $type->name;    // "SUNNY_DAY"  (stable token to map to a display string / 
 Everything this library throws implements `ChristianBrown\MetOffice\Exception\ExceptionInterface`, so a single `catch` covers it all:
 
 ```php
+use ChristianBrown\MetOffice\Coordinates;
 use ChristianBrown\MetOffice\Exception\ExceptionInterface;
 
 try {
-    $forecast = $hourlyForecastApi->getForecast(51.5074, -0.1278);
+    $forecast = $hourlyForecastApi->getForecast(new Coordinates(51.5074, -0.1278));
 } catch (ExceptionInterface $exception) {
     // Anything this library throws lands here.
 }
@@ -238,6 +295,11 @@ There are two concrete types:
 - **`MissingInputException`** (extends `InvalidArgumentException`) — reserved for bad caller input.
 
 Both live in `src/Exception/`. Request-level failures (network errors, non-2xx responses) still surface as `RequestExceptionInterface` from [`christianjbrown/api-client`](https://github.com/christianjbrown/api-client-php), which is outside this library's exception hierarchy.
+
+Two Blended Probabilistic Forecast responses are worth calling out:
+
+- **`204 No Content`** — returned by `getLocation()` / `getPosition()` when a `parameter-name` or `percentiles` filter matches nothing. The body is empty, so the JSON request sender raises `ChristianBrown\ApiClient\Exception\Parse\ParseJsonExceptionInterface` rather than returning an empty `CoverageCollectionInterface`. Treat it as "no data for that filter", and check your parameter names against the collection's `getParameters()` map.
+- **`400 Bad Request`** — the body is `{"message": "…", "transaction": "<uuid>"}`. The Met Office service desk asks for that `transaction` id when reporting a problem, so capture it from the response before discarding the error.
 
 Under the hood, `SiteSpecific` wires the clients and their transformer chains through a [Symfony dependency-injection](https://symfony.com/doc/current/components/dependency_injection.html) container. If you don't want the container, you can build the same chains by hand — as shown below. The HTTP request sender comes from [`christianjbrown/api-client`](https://github.com/christianjbrown/api-client-php).
 
