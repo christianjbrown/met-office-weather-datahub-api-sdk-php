@@ -164,7 +164,7 @@ foreach ($coverageCollection->getCoverages() as $coverage) {
 | Coverage parameters | `CoverageCollection::getParameters()` | `Coverage::getParameters()` (per coverage) plus `CoverageCollection::getReferencing()` |
 | Parameter ids | snake_case (`feels_like_temperature`) | camelCase (`feelsLikeTemperature1p5m`) |
 
-Parameter ids were renamed wholesale for v2; the Met Office publishes the full mapping as a [v1 → v2 parameter name changes PDF](https://datahub.metoffice.gov.uk/downloads/bpf-v2-parameter-name-changes). This library treats parameter names as opaque strings, so no code change is needed beyond updating the names you pass to `DataQuery`.
+Parameter ids were renamed wholesale for v2. The full 159-row mapping is reproduced as a searchable table in [docs/bpf-v1-to-v2-parameter-names.md](docs/bpf-v1-to-v2-parameter-names.md), transcribed from the Met Office's [v1 → v2 parameter name changes PDF](https://datahub.metoffice.gov.uk/downloads/bpf-v2-parameter-name-changes). This library treats parameter names as opaque strings, so no code change is needed beyond updating the names you pass to `DataQuery`.
 
 
 
