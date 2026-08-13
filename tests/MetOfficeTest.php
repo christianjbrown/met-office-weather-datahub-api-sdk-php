@@ -6,6 +6,8 @@ namespace ChristianBrown\MetOffice\Tests;
 
 use ChristianBrown\MetOffice\AtmosphericModels\AtmosphericModels;
 use ChristianBrown\MetOffice\AtmosphericModels\AtmosphericModelsInterface;
+use ChristianBrown\MetOffice\BlendedProbForecast\BlendedProbForecast;
+use ChristianBrown\MetOffice\BlendedProbForecast\BlendedProbForecastInterface;
 use ChristianBrown\MetOffice\MapImages\MapImages;
 use ChristianBrown\MetOffice\MapImages\MapImagesInterface;
 use ChristianBrown\MetOffice\MetOffice;
@@ -13,8 +15,6 @@ use ChristianBrown\MetOffice\ObservationLand\ObservationLand;
 use ChristianBrown\MetOffice\ObservationLand\ObservationLandInterface;
 use ChristianBrown\MetOffice\SiteSpecific\SiteSpecific;
 use ChristianBrown\MetOffice\SiteSpecific\SiteSpecificInterface;
-use ChristianBrown\MetOffice\SiteSpecificBlended\SiteSpecificBlended;
-use ChristianBrown\MetOffice\SiteSpecificBlended\SiteSpecificBlendedInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
@@ -24,7 +24,7 @@ use PHPUnit\Framework\TestCase;
 #[UsesClass(MapImages::class)]
 #[UsesClass(ObservationLand::class)]
 #[UsesClass(SiteSpecific::class)]
-#[UsesClass(SiteSpecificBlended::class)]
+#[UsesClass(BlendedProbForecast::class)]
 final class MetOfficeTest extends TestCase
 {
     public function testAtmosphericModels(): void
@@ -32,6 +32,13 @@ final class MetOfficeTest extends TestCase
         $metOffice = new MetOffice();
 
         self::assertInstanceOf(AtmosphericModelsInterface::class, $metOffice->atmosphericModels('key'));
+    }
+
+    public function testBlendedProbForecast(): void
+    {
+        $metOffice = new MetOffice();
+
+        self::assertInstanceOf(BlendedProbForecastInterface::class, $metOffice->blendedProbForecast('key'));
     }
 
     public function testMapImages(): void
@@ -53,12 +60,5 @@ final class MetOfficeTest extends TestCase
         $metOffice = new MetOffice();
 
         self::assertInstanceOf(SiteSpecificInterface::class, $metOffice->siteSpecific('key'));
-    }
-
-    public function testSiteSpecificBlended(): void
-    {
-        $metOffice = new MetOffice();
-
-        self::assertInstanceOf(SiteSpecificBlendedInterface::class, $metOffice->siteSpecificBlended('key'));
     }
 }
