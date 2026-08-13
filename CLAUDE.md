@@ -151,7 +151,8 @@ in place — v2 is a *different service on a different context path*, needs its 
 v1 data URL. Do not reintroduce v1 paths or the `improver-*-spot-*` collection ids.
 
 Parameter ids were also renamed wholesale for v2 (snake_case → camelCase, plus height/level suffixes such as
-`1p5m` / `10m`). The full 159-row mapping is documented in `docs/bpf-v1-to-v2-parameter-names.md`. It is
+`1p5m` / `10m`). The full mapping is documented in `docs/bpf-v1-to-v2-parameter-names.md` — 157 entries,
+verified to match the live `parameter_names` union exactly (the source PDF lists two spurious rows). It is
 **documentation only** — parameter names are opaque strings everywhere in `src/`, so no enum, constant or
 lookup encodes them, and the authoritative per-collection list is the live `getParameters()` map.
 

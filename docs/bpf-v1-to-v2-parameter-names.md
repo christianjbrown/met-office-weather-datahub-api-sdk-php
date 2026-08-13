@@ -12,14 +12,27 @@ the live API rather than from this file.
 
 `.` is encoded as `p` throughout (`1p5m` = 1.5 m, `5p555556e-7ms-1` = 5.555556e-7 m s⁻¹).
 
-**159 mappings.**
+**157 mappings.**
 
-> **One known inconsistency in the source PDF.** Two v1 labels each appear twice, mapping to different v2
-> keys that differ only by `Sum` (marked † below). The v1 column is byte-identical in both rows of each pair,
-> so either the PDF has a typo in the v1 label — most likely a missing `_sum_`, matching the
-> `..._above_threshold_Sum_PT01H` rows immediately above — or the rename is genuinely one-to-many. Both rows
-> are reproduced here verbatim rather than silently resolved. Check against the collection's live
-> `getParameters()` map before relying on either.
+**Verified against the live API on 2026-08-13.** Every one of the 157 v2 keys below exists in the live v2
+`parameter_names` map, and conversely the live API exposed no parameter outside this table — the union
+across all four collections was exactly these 157 names.
+
+### Corrections to the source PDF
+
+The PDF lists **159** rows, two of which are spurious. Two v1 labels each appear twice, mapping to v2 keys
+differing only by `Sum`; the non-`Sum` variants do not exist in the live API and have been omitted here:
+
+| Omitted (not in the live API) | Correct v2 key |
+| --- | --- |
+| `probabilityOfNumberOfLightningFlashesPerUnitAreaInVicinityAboveThreshold15000mPt01h` | `probabilityOfNumberOfLightningFlashesPerUnitAreaInVicinityAboveThreshold15000mSumPt01h` |
+| `probabilityOfNumberOfLightningFlashesPerUnitAreaInVicinityAboveThreshold15000mPt03h` | `probabilityOfNumberOfLightningFlashesPerUnitAreaInVicinityAboveThreshold15000mSumPt03h` |
+
+Both surviving keys live in `uk-spot-probabilities`.
+
+One caveat on volatility: the parameter counts for the two UK collections were each one higher when first
+sampled on 2026-08-12 (`uk-spot-percentiles` 78 → 77, `uk-spot-probabilities` 79 → 78), so the live set is
+not perfectly static. Always prefer a collection's own `getParameters()` map over this file.
 
 | V1 parameter label | V2 parameter key |
 | --- | --- |
@@ -124,10 +137,8 @@ the live API rather than from this file.
 | `probability_of_lwe_thickness_of_snowfall_amount_above_threshold_sum_PT03H` | `probabilityOfLweThicknessOfSnowfallAmountAboveThresholdSumPt03h` |
 | `probability_of_number_of_lightning_flashes_per_unit_area_above_threshold_Sum_PT01H` | `probabilityOfNumberOfLightningFlashesPerUnitAreaAboveThresholdSumPt01h` |
 | `probability_of_number_of_lightning_flashes_per_unit_area_above_threshold_Sum_PT03H` | `probabilityOfNumberOfLightningFlashesPerUnitAreaAboveThresholdSumPt03h` |
-| `probability_of_number_of_lightning_flashes_per_unit_area_in_vicinity_above_threshold_15000_m_PT01H` † | `probabilityOfNumberOfLightningFlashesPerUnitAreaInVicinityAboveThreshold15000mPt01h` |
-| `probability_of_number_of_lightning_flashes_per_unit_area_in_vicinity_above_threshold_15000_m_PT01H` † | `probabilityOfNumberOfLightningFlashesPerUnitAreaInVicinityAboveThreshold15000mSumPt01h` |
-| `probability_of_number_of_lightning_flashes_per_unit_area_in_vicinity_above_threshold_15000_m_PT03H` † | `probabilityOfNumberOfLightningFlashesPerUnitAreaInVicinityAboveThreshold15000mPt03h` |
-| `probability_of_number_of_lightning_flashes_per_unit_area_in_vicinity_above_threshold_15000_m_PT03H` † | `probabilityOfNumberOfLightningFlashesPerUnitAreaInVicinityAboveThreshold15000mSumPt03h` |
+| `probability_of_number_of_lightning_flashes_per_unit_area_in_vicinity_above_threshold_15000_m_PT01H` | `probabilityOfNumberOfLightningFlashesPerUnitAreaInVicinityAboveThreshold15000mSumPt01h` |
+| `probability_of_number_of_lightning_flashes_per_unit_area_in_vicinity_above_threshold_15000_m_PT03H` | `probabilityOfNumberOfLightningFlashesPerUnitAreaInVicinityAboveThreshold15000mSumPt03h` |
 | `probability_of_rainfall_rate_above_threshold` | `probabilityOfRainfallRateAboveThreshold` |
 | `probability_of_relative_humidity_above_threshold` | `probabilityOfRelativeHumidityAboveThreshold1p5m` |
 | `probability_of_thickness_of_rainfall_amount_above_threshold_sum_PT01H` | `probabilityOfThicknessOfRainfallAmountAboveThresholdSumPt01h` |
