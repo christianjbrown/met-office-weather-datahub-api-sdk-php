@@ -6,13 +6,20 @@ A strongly-typed, **read-only** PHP client for the [Met Office Weather DataHub](
 
 ## :satellite: Supported APIs
 
-| API | Entry point | Status |
-| --- | --- | --- |
-| **Site-Specific** (Global Spot) | `MetOffice::siteSpecific()` | ✅ Supported |
-| **Blended Probabilistic Forecast** | `MetOffice::blendedProbForecast()` | ✅ Supported |
-| **Observation (Land)** | `MetOffice::observationLand()` | ✅ Supported |
-| **Atmospheric Models** (Gridded) | `MetOffice::atmosphericModels()` | ✅ Supported |
-| **Map Images** | `MetOffice::mapImages()` | ✅ Supported |
+| API | Entry point | API version | Status |
+| --- | --- | --- | --- |
+| **Site-Specific** (Global Spot) | `MetOffice::siteSpecific()` | `v0` | ✅ Supported |
+| **Blended Probabilistic Forecast** | `MetOffice::blendedProbForecast()` | `2.0.0` | ✅ Supported |
+| **Observation (Land)** | `MetOffice::observationLand()` | `1` | ✅ Supported |
+| **Atmospheric Models** (Gridded) | `MetOffice::atmosphericModels()` | `1.0.0` | ✅ Supported |
+| **Map Images** | `MetOffice::mapImages()` | `1.0.0` | ✅ Supported |
+
+The **API version** column is the DataHub API version each module targets, taken verbatim from the upstream
+URL path — the Met Office versions each product independently and inconsistently, hence the mix of `v0`, `1`
+and `1.0.0`. It is **not** related to this package's own version: the package version describes the PHP
+contract (class names, method signatures, return types), which is what breaks your build, while the upstream
+version is an implementation detail living only in each module's `Api\ApiInterface` URL constants. A new
+upstream major does not imply a new package major, or vice versa.
 
 See [Coverage & limitations](#coverage--limitations) for what this library deliberately does **not** cover.
 
