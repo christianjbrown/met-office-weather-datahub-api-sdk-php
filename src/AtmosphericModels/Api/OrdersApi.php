@@ -15,6 +15,7 @@ use ChristianBrown\MetOffice\Coverage\Transformer\OrderFileDetailsTransformerInt
 use ChristianBrown\MetOffice\Coverage\Transformer\OrderFilesTransformerInterface;
 use ChristianBrown\MetOffice\Coverage\Transformer\OrdersTransformerInterface;
 use ChristianBrown\MetOffice\Exception\UnexpectedResponseException;
+use ChristianBrown\MetOffice\Host\ApiHostInterface;
 
 use function is_array;
 use function rawurlencode;
@@ -22,6 +23,7 @@ use function sprintf;
 
 final class OrdersApi implements OrdersApiInterface
 {
+    private ApiHostInterface $apiHost;
     private ApiKeyInterface $apiKey;
     private OrderFileDetailsTransformerInterface $orderFileDetailsTransformer;
     private OrderFilesTransformerInterface $orderFilesTransformer;
@@ -29,7 +31,7 @@ final class OrdersApi implements OrdersApiInterface
     private ApiRequestSenderInterface $rawRequestSender;
     private JsonApiRequestSenderInterface $requestSender;
 
-    public function __construct(JsonApiRequestSenderInterface $requestSender, ApiRequestSenderInterface $rawRequestSender, OrdersTransformerInterface $ordersTransformer, OrderFilesTransformerInterface $orderFilesTransformer, OrderFileDetailsTransformerInterface $orderFileDetailsTransformer, ApiKeyInterface $apiKey)
+    public function __construct(JsonApiRequestSenderInterface $requestSender, ApiRequestSenderInterface $rawRequestSender, OrdersTransformerInterface $ordersTransformer, OrderFilesTransformerInterface $orderFilesTransformer, OrderFileDetailsTransformerInterface $orderFileDetailsTransformer, ApiKeyInterface $apiKey, ApiHostInterface $apiHost)
     {
         $this->requestSender = $requestSender;
         $this->rawRequestSender = $rawRequestSender;
@@ -37,6 +39,7 @@ final class OrdersApi implements OrdersApiInterface
         $this->orderFilesTransformer = $orderFilesTransformer;
         $this->orderFileDetailsTransformer = $orderFileDetailsTransformer;
         $this->apiKey = $apiKey;
+        $this->apiHost = $apiHost;
     }
 
     /**
@@ -49,7 +52,7 @@ final class OrdersApi implements OrdersApiInterface
             ...$this->apiKey->toHeaders(),
             self::HEADER_KEY_ACCEPT => self::HEADER_VALUE_ACCEPT_JSON,
         ];
-        $data = $this->requestSender->get(sprintf(self::API_URL_ORDER_FILE_SPRINTF, $orderId, $fileId), [], $headers);
+        $data = $this->requestSender->get($this->apiHost->rewrite(sprintf(self::API_URL_ORDER_FILE_SPRINTF, $orderId, $fileId)), [], $headers);
 
         if (!isset($data[self::KEY_FILE_DETAILS])) {
             throw new UnexpectedResponseException(sprintf(self::UNEXPECTED_RESPONSE_SPRINTF, self::KEY_FILE_DETAILS));
@@ -71,7 +74,7 @@ final class OrdersApi implements OrdersApiInterface
             self::HEADER_KEY_ACCEPT => self::HEADER_VALUE_ACCEPT_GRIB,
         ];
 
-        return $this->rawRequestSender->get(sprintf(self::API_URL_ORDER_FILE_DATA_SPRINTF, $orderId, rawurlencode($fileId)), [], $headers);
+        return $this->rawRequestSender->get($this->apiHost->rewrite(sprintf(self::API_URL_ORDER_FILE_DATA_SPRINTF, $orderId, rawurlencode($fileId))), [], $headers);
     }
 
     /**
@@ -86,7 +89,7 @@ final class OrdersApi implements OrdersApiInterface
             ...$this->apiKey->toHeaders(),
             self::HEADER_KEY_ACCEPT => self::HEADER_VALUE_ACCEPT_JSON,
         ];
-        $data = $this->requestSender->get(sprintf(self::API_URL_ORDER_LATEST_SPRINTF, $orderId), self::buildFilesQuery($detail, $runFilter), $headers);
+        $data = $this->requestSender->get($this->apiHost->rewrite(sprintf(self::API_URL_ORDER_LATEST_SPRINTF, $orderId)), self::buildFilesQuery($detail, $runFilter), $headers);
 
         return $this->orderFilesTransformer->transform(self::extractFiles($data));
     }
@@ -103,7 +106,7 @@ final class OrdersApi implements OrdersApiInterface
             ...$this->apiKey->toHeaders(),
             self::HEADER_KEY_ACCEPT => self::HEADER_VALUE_ACCEPT_JSON,
         ];
-        $data = $this->requestSender->get(self::API_URL_ORDERS, [], $headers);
+        $data = $this->requestSender->get($this->apiHost->rewrite(self::API_URL_ORDERS), [], $headers);
 
         return $this->ordersTransformer->transform(self::extractOrders($data));
     }

@@ -11,6 +11,7 @@ use ChristianBrown\MetOffice\BlendedProbForecast\Model\InstanceInterface;
 use ChristianBrown\MetOffice\BlendedProbForecast\Transformer\InstancesTransformerInterface;
 use ChristianBrown\MetOffice\BlendedProbForecast\Transformer\InstanceTransformerInterface;
 use ChristianBrown\MetOffice\Exception\UnexpectedResponseException;
+use ChristianBrown\MetOffice\Host\ApiHostInterface;
 
 use function is_array;
 use function rawurlencode;
@@ -18,17 +19,19 @@ use function sprintf;
 
 final class InstancesApi implements InstancesApiInterface
 {
+    private ApiHostInterface $apiHost;
     private ApiKeyInterface $apiKey;
     private InstancesTransformerInterface $instancesTransformer;
     private InstanceTransformerInterface $instanceTransformer;
     private JsonApiRequestSenderInterface $requestSender;
 
-    public function __construct(JsonApiRequestSenderInterface $requestSender, InstancesTransformerInterface $instancesTransformer, InstanceTransformerInterface $instanceTransformer, ApiKeyInterface $apiKey)
+    public function __construct(JsonApiRequestSenderInterface $requestSender, InstancesTransformerInterface $instancesTransformer, InstanceTransformerInterface $instanceTransformer, ApiKeyInterface $apiKey, ApiHostInterface $apiHost)
     {
         $this->requestSender = $requestSender;
         $this->instancesTransformer = $instancesTransformer;
         $this->instanceTransformer = $instanceTransformer;
         $this->apiKey = $apiKey;
+        $this->apiHost = $apiHost;
     }
 
     /**
@@ -40,7 +43,7 @@ final class InstancesApi implements InstancesApiInterface
             ...$this->apiKey->toHeaders(),
             self::HEADER_KEY_ACCEPT => self::HEADER_VALUE_ACCEPT_JSON,
         ];
-        $data = $this->requestSender->get(sprintf(self::API_URL_INSTANCE_SPRINTF, $collectionId, rawurlencode($instanceId)), [], $headers);
+        $data = $this->requestSender->get($this->apiHost->rewrite(sprintf(self::API_URL_INSTANCE_SPRINTF, $collectionId, rawurlencode($instanceId))), [], $headers);
 
         return $this->instanceTransformer->transform($data);
     }
@@ -57,7 +60,7 @@ final class InstancesApi implements InstancesApiInterface
             ...$this->apiKey->toHeaders(),
             self::HEADER_KEY_ACCEPT => self::HEADER_VALUE_ACCEPT_JSON,
         ];
-        $data = $this->requestSender->get(sprintf(self::API_URL_INSTANCES_SPRINTF, $collectionId), [], $headers);
+        $data = $this->requestSender->get($this->apiHost->rewrite(sprintf(self::API_URL_INSTANCES_SPRINTF, $collectionId)), [], $headers);
 
         return $this->instancesTransformer->transform(self::extractInstances($data));
     }

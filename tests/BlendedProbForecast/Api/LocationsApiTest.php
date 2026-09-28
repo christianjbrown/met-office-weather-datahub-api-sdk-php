@@ -17,6 +17,7 @@ use ChristianBrown\MetOffice\BlendedProbForecast\Model\LocationInterface;
 use ChristianBrown\MetOffice\BlendedProbForecast\Transformer\CoverageCollectionTransformerInterface;
 use ChristianBrown\MetOffice\BlendedProbForecast\Transformer\LocationsTransformerInterface;
 use ChristianBrown\MetOffice\Exception\UnexpectedResponseException;
+use ChristianBrown\MetOffice\Host\ApiHost;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\TestWith;
@@ -28,6 +29,7 @@ use function rawurlencode;
 use function sprintf;
 
 #[CoversClass(LocationsApi::class)]
+#[UsesClass(ApiHost::class)]
 #[UsesClass(ApiKey::class)]
 #[UsesClass(DataQuery::class)]
 final class LocationsApiTest extends TestCase
@@ -67,7 +69,7 @@ final class LocationsApiTest extends TestCase
             ->with($responseData)
             ->willReturn($coverageCollection);
 
-        $api = new LocationsApi($requestSender, $locationsTransformer, $coverageCollectionTransformer, new ApiKey('test-api-key'));
+        $api = new LocationsApi($requestSender, $locationsTransformer, $coverageCollectionTransformer, new ApiKey('test-api-key'), new ApiHost());
 
         self::assertSame($coverageCollection, $api->getLocation('uk-spot-percentiles', 'blended', '00099139', $query));
     }
@@ -127,7 +129,7 @@ final class LocationsApiTest extends TestCase
         $coverageCollectionTransformer = self::createMock(CoverageCollectionTransformerInterface::class);
         $coverageCollectionTransformer->expects(self::never())->method('transform');
 
-        $api = new LocationsApi($requestSender, $locationsTransformer, $coverageCollectionTransformer, new ApiKey('test-api-key'));
+        $api = new LocationsApi($requestSender, $locationsTransformer, $coverageCollectionTransformer, new ApiKey('test-api-key'), new ApiHost());
 
         self::assertSame($locations, $api->getLocations('uk-spot-percentiles', 'blended'));
     }
@@ -150,7 +152,7 @@ final class LocationsApiTest extends TestCase
 
         $coverageCollectionTransformer = self::createStub(CoverageCollectionTransformerInterface::class);
 
-        $api = new LocationsApi($requestSender, $locationsTransformer, $coverageCollectionTransformer, new ApiKey('test-api-key'));
+        $api = new LocationsApi($requestSender, $locationsTransformer, $coverageCollectionTransformer, new ApiKey('test-api-key'), new ApiHost());
 
         $this->expectException(UnexpectedResponseException::class);
         $this->expectExceptionMessage(sprintf(LocationsApiInterface::UNEXPECTED_RESPONSE_SPRINTF, LocationsApiInterface::KEY_FEATURES));

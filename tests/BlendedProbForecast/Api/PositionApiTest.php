@@ -15,6 +15,7 @@ use ChristianBrown\MetOffice\BlendedProbForecast\DataQueryInterface;
 use ChristianBrown\MetOffice\BlendedProbForecast\Model\CoverageCollectionInterface;
 use ChristianBrown\MetOffice\BlendedProbForecast\Transformer\CoverageCollectionTransformerInterface;
 use ChristianBrown\MetOffice\Coordinates;
+use ChristianBrown\MetOffice\Host\ApiHost;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -25,6 +26,7 @@ use function rawurlencode;
 use function sprintf;
 
 #[CoversClass(PositionApi::class)]
+#[UsesClass(ApiHost::class)]
 #[UsesClass(ApiKey::class)]
 #[UsesClass(Coordinates::class)]
 #[UsesClass(DataQuery::class)]
@@ -62,7 +64,7 @@ final class PositionApiTest extends TestCase
             ->with($responseData)
             ->willReturn($coverageCollection);
 
-        $api = new PositionApi($requestSender, $coverageCollectionTransformer, new ApiKey('test-api-key'));
+        $api = new PositionApi($requestSender, $coverageCollectionTransformer, new ApiKey('test-api-key'), new ApiHost());
 
         self::assertSame($coverageCollection, $api->getPosition('uk-spot-percentiles', 'blended', new Coordinates(51.55, -0.18), $query));
     }

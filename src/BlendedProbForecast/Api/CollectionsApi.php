@@ -11,23 +11,26 @@ use ChristianBrown\MetOffice\BlendedProbForecast\Model\CollectionInterface;
 use ChristianBrown\MetOffice\BlendedProbForecast\Transformer\CollectionsTransformerInterface;
 use ChristianBrown\MetOffice\BlendedProbForecast\Transformer\CollectionTransformerInterface;
 use ChristianBrown\MetOffice\Exception\UnexpectedResponseException;
+use ChristianBrown\MetOffice\Host\ApiHostInterface;
 
 use function is_array;
 use function sprintf;
 
 final class CollectionsApi implements CollectionsApiInterface
 {
+    private ApiHostInterface $apiHost;
     private ApiKeyInterface $apiKey;
     private CollectionsTransformerInterface $collectionsTransformer;
     private CollectionTransformerInterface $collectionTransformer;
     private JsonApiRequestSenderInterface $requestSender;
 
-    public function __construct(JsonApiRequestSenderInterface $requestSender, CollectionsTransformerInterface $collectionsTransformer, CollectionTransformerInterface $collectionTransformer, ApiKeyInterface $apiKey)
+    public function __construct(JsonApiRequestSenderInterface $requestSender, CollectionsTransformerInterface $collectionsTransformer, CollectionTransformerInterface $collectionTransformer, ApiKeyInterface $apiKey, ApiHostInterface $apiHost)
     {
         $this->requestSender = $requestSender;
         $this->collectionsTransformer = $collectionsTransformer;
         $this->collectionTransformer = $collectionTransformer;
         $this->apiKey = $apiKey;
+        $this->apiHost = $apiHost;
     }
 
     /**
@@ -39,7 +42,7 @@ final class CollectionsApi implements CollectionsApiInterface
             ...$this->apiKey->toHeaders(),
             self::HEADER_KEY_ACCEPT => self::HEADER_VALUE_ACCEPT_JSON,
         ];
-        $data = $this->requestSender->get(sprintf(self::API_URL_COLLECTION_SPRINTF, $collectionId), [], $headers);
+        $data = $this->requestSender->get($this->apiHost->rewrite(sprintf(self::API_URL_COLLECTION_SPRINTF, $collectionId)), [], $headers);
 
         return $this->collectionTransformer->transform($data);
     }
@@ -56,7 +59,7 @@ final class CollectionsApi implements CollectionsApiInterface
             ...$this->apiKey->toHeaders(),
             self::HEADER_KEY_ACCEPT => self::HEADER_VALUE_ACCEPT_JSON,
         ];
-        $data = $this->requestSender->get(self::API_URL_COLLECTIONS, [], $headers);
+        $data = $this->requestSender->get($this->apiHost->rewrite(self::API_URL_COLLECTIONS), [], $headers);
 
         return $this->collectionsTransformer->transform(self::extractCollections($data));
     }

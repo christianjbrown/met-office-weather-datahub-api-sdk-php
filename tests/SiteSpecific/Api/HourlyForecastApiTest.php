@@ -6,6 +6,7 @@ namespace ChristianBrown\MetOffice\Tests\SiteSpecific\Api;
 
 use ChristianBrown\ApiClient\Exception\Request\RequestExceptionInterface;
 use ChristianBrown\MetOffice\Coordinates;
+use ChristianBrown\MetOffice\Host\ApiHost;
 use ChristianBrown\MetOffice\SiteSpecific\Api\ForecastApiInterface;
 use ChristianBrown\MetOffice\SiteSpecific\Api\HourlyForecastApi;
 use ChristianBrown\MetOffice\SiteSpecific\Api\HourlyForecastApiInterface;
@@ -16,6 +17,7 @@ use PHPUnit\Framework\MockObject\Exception;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(HourlyForecastApi::class)]
+#[UsesClass(ApiHost::class)]
 #[UsesClass(Coordinates::class)]
 final class HourlyForecastApiTest extends TestCase
 {
@@ -35,7 +37,7 @@ final class HourlyForecastApiTest extends TestCase
             ->with(HourlyForecastApiInterface::API_URL, $coordinates, true)
             ->willReturn($forecast);
 
-        $api = new HourlyForecastApi($forecastApi);
+        $api = new HourlyForecastApi($forecastApi, new ApiHost());
 
         self::assertSame($forecast, $api->getForecast($coordinates, true));
     }
