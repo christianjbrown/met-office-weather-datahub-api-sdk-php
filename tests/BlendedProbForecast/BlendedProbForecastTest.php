@@ -11,6 +11,15 @@ use ChristianBrown\MetOffice\BlendedProbForecast\Api\InstancesApi;
 use ChristianBrown\MetOffice\BlendedProbForecast\Api\LocationsApi;
 use ChristianBrown\MetOffice\BlendedProbForecast\Api\PositionApi;
 use ChristianBrown\MetOffice\BlendedProbForecast\BlendedProbForecast;
+use ChristianBrown\MetOffice\BlendedProbForecast\Container\CapabilitiesApiRegistrar;
+use ChristianBrown\MetOffice\BlendedProbForecast\Container\CollectionsApiRegistrar;
+use ChristianBrown\MetOffice\BlendedProbForecast\Container\CoverageTransformerRegistrar;
+use ChristianBrown\MetOffice\BlendedProbForecast\Container\ExtentTransformerRegistrar;
+use ChristianBrown\MetOffice\BlendedProbForecast\Container\InstancesApiRegistrar;
+use ChristianBrown\MetOffice\BlendedProbForecast\Container\LinksTransformerRegistrar;
+use ChristianBrown\MetOffice\BlendedProbForecast\Container\LocationsApiRegistrar;
+use ChristianBrown\MetOffice\BlendedProbForecast\Container\ParametersTransformerRegistrar;
+use ChristianBrown\MetOffice\BlendedProbForecast\Container\PositionApiRegistrar;
 use ChristianBrown\MetOffice\BlendedProbForecast\Transformer\AxesTransformer;
 use ChristianBrown\MetOffice\BlendedProbForecast\Transformer\AxisTransformer;
 use ChristianBrown\MetOffice\BlendedProbForecast\Transformer\CollectionsTransformer;
@@ -36,12 +45,27 @@ use ChristianBrown\MetOffice\BlendedProbForecast\Transformer\RangesTransformer;
 use ChristianBrown\MetOffice\BlendedProbForecast\Transformer\RangeTransformer;
 use ChristianBrown\MetOffice\BlendedProbForecast\Transformer\ReferenceSystemTransformer;
 use ChristianBrown\MetOffice\BlendedProbForecast\Transformer\ReferencingTransformer;
+use ChristianBrown\MetOffice\Container\CoreRegistrar;
+use ChristianBrown\MetOffice\Container\RegistrarContainerFactory;
+use ChristianBrown\MetOffice\Host\ApiHost;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(BlendedProbForecast::class)]
+#[UsesClass(ApiHost::class)]
 #[UsesClass(ApiKey::class)]
+#[UsesClass(CoreRegistrar::class)]
+#[UsesClass(RegistrarContainerFactory::class)]
+#[UsesClass(LinksTransformerRegistrar::class)]
+#[UsesClass(ExtentTransformerRegistrar::class)]
+#[UsesClass(ParametersTransformerRegistrar::class)]
+#[UsesClass(CoverageTransformerRegistrar::class)]
+#[UsesClass(CapabilitiesApiRegistrar::class)]
+#[UsesClass(CollectionsApiRegistrar::class)]
+#[UsesClass(InstancesApiRegistrar::class)]
+#[UsesClass(LocationsApiRegistrar::class)]
+#[UsesClass(PositionApiRegistrar::class)]
 #[UsesClass(CapabilitiesApi::class)]
 #[UsesClass(CollectionsApi::class)]
 #[UsesClass(InstancesApi::class)]
