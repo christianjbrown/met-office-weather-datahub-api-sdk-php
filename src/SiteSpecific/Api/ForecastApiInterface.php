@@ -15,5 +15,5 @@ interface ForecastApiInterface extends ApiInterface
      * @throws RequestExceptionInterface
      * @throws UnexpectedResponseException
      */
-    public function getForecast(string $apiUrl, CoordinatesInterface $coordinates, bool $skipCache = false): ForecastInterface;
+    public function getForecast(string $apiUrl, CoordinatesInterface $coordinates, bool $skipCache = false, bool $includeParameterMetadata = false): ForecastInterface;
 }

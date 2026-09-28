@@ -13,4 +13,5 @@ interface ApiInterface extends BaseApiInterface
     public const string QUERY_KEY_GEOHASH = 'geohash';
     public const string QUERY_KEY_LAT = 'lat';
     public const string QUERY_KEY_LON = 'lon';
+    public const string QUERY_KEY_MAX = 'max';
 }

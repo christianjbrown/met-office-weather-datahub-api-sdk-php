@@ -25,6 +25,27 @@ final class DailyForecastApiTest extends TestCase
      * @throws RequestExceptionInterface
      * @throws Exception
      */
+    public function testGetForecastDelegatesIncludeParameterMetadata(): void
+    {
+        $forecast = self::createStub(ForecastInterface::class);
+
+        $coordinates = new Coordinates(51.5, -0.1);
+
+        $forecastApi = self::createMock(ForecastApiInterface::class);
+        $forecastApi->expects(self::once())
+            ->method('getForecast')
+            ->with(DailyForecastApiInterface::API_URL, $coordinates, false, true)
+            ->willReturn($forecast);
+
+        $api = new DailyForecastApi($forecastApi, new ApiHost());
+
+        self::assertSame($forecast, $api->getForecast($coordinates, false, true));
+    }
+
+    /**
+     * @throws RequestExceptionInterface
+     * @throws Exception
+     */
     public function testGetForecastDelegatesWithTheEndpointUrl(): void
     {
         $forecast = self::createStub(ForecastInterface::class);
@@ -34,7 +55,7 @@ final class DailyForecastApiTest extends TestCase
         $forecastApi = self::createMock(ForecastApiInterface::class);
         $forecastApi->expects(self::once())
             ->method('getForecast')
-            ->with(DailyForecastApiInterface::API_URL, $coordinates, true)
+            ->with(DailyForecastApiInterface::API_URL, $coordinates, true, false)
             ->willReturn($forecast);
 
         $api = new DailyForecastApi($forecastApi, new ApiHost());

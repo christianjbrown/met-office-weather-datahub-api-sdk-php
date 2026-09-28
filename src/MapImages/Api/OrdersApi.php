@@ -67,14 +67,14 @@ final class OrdersApi implements OrdersApiInterface
     /**
      * @throws RequestExceptionInterface
      */
-    public function getOrderFileData(string $orderId, string $fileId): string
+    public function getOrderFileData(string $orderId, string $fileId, ?bool $includeLand = null, ?bool $legend = null): string
     {
         $headers = [
             ...$this->apiKey->toHeaders(),
             self::HEADER_KEY_ACCEPT => self::HEADER_VALUE_ACCEPT_PNG,
         ];
 
-        return $this->rawRequestSender->get($this->apiHost->rewrite(sprintf(self::API_URL_ORDER_FILE_DATA_SPRINTF, $orderId, rawurlencode($fileId))), [], $headers);
+        return $this->rawRequestSender->get($this->apiHost->rewrite(sprintf(self::API_URL_ORDER_FILE_DATA_SPRINTF, $orderId, rawurlencode($fileId))), self::buildOrderFileDataQuery($includeLand, $legend), $headers);
     }
 
     /**
@@ -122,6 +122,22 @@ final class OrdersApi implements OrdersApiInterface
         }
         if (null !== $runFilter) {
             $query[self::QUERY_KEY_RUNFILTER] = $runFilter;
+        }
+
+        return $query;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private static function buildOrderFileDataQuery(?bool $includeLand, ?bool $legend): array
+    {
+        $query = [];
+        if (null !== $includeLand) {
+            $query[self::QUERY_KEY_INCLUDE_LAND] = $includeLand ? self::QUERY_VALUE_TRUE : self::QUERY_VALUE_FALSE;
+        }
+        if (null !== $legend) {
+            $query[self::QUERY_KEY_LEGEND] = $legend ? self::QUERY_VALUE_TRUE : self::QUERY_VALUE_FALSE;
         }
 
         return $query;

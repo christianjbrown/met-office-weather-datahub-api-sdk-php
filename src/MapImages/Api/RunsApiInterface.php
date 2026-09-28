@@ -11,5 +11,5 @@ interface RunsApiInterface extends ApiInterface
     /**
      * @return array<int, RunInterface>
      */
-    public function getRuns(): array;
+    public function getRuns(?string $sort = null): array;
 }

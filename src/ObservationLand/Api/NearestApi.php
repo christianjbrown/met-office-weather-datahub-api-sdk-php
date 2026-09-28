@@ -36,13 +36,16 @@ final class NearestApi implements NearestApiInterface
      *
      * @return array<int, NearestLocationInterface>
      */
-    public function getByCoordinates(CoordinatesInterface $coordinates): array
+    public function getByCoordinates(CoordinatesInterface $coordinates, ?int $max = null): array
     {
         $headers = $this->apiKey->toHeaders();
-        $query = [
-            self::QUERY_KEY_LAT => self::formatCoordinate($coordinates->getLatitude()),
-            self::QUERY_KEY_LON => self::formatCoordinate($coordinates->getLongitude()),
-        ];
+        $query = self::withMax(
+            [
+                self::QUERY_KEY_LAT => self::formatCoordinate($coordinates->getLatitude()),
+                self::QUERY_KEY_LON => self::formatCoordinate($coordinates->getLongitude()),
+            ],
+            $max
+        );
         $data = $this->requestSender->get($this->apiHost->rewrite(self::API_URL_NEAREST), $query, $headers);
 
         return $this->nearestLocationsTransformer->transform($data);
@@ -54,12 +57,15 @@ final class NearestApi implements NearestApiInterface
      *
      * @return array<int, NearestLocationInterface>
      */
-    public function getByGeohash(string $geohash): array
+    public function getByGeohash(string $geohash, ?int $max = null): array
     {
         $headers = $this->apiKey->toHeaders();
-        $query = [
-            self::QUERY_KEY_GEOHASH => $geohash,
-        ];
+        $query = self::withMax(
+            [
+                self::QUERY_KEY_GEOHASH => $geohash,
+            ],
+            $max
+        );
         $data = $this->requestSender->get($this->apiHost->rewrite(self::API_URL_NEAREST), $query, $headers);
 
         return $this->nearestLocationsTransformer->transform($data);
@@ -68,5 +74,20 @@ final class NearestApi implements NearestApiInterface
     private static function formatCoordinate(float $value): string
     {
         return (string) round($value, 2);
+    }
+
+    /**
+     * @param array<string, string> $query
+     *
+     * @return array<string, string>
+     */
+    private static function withMax(array $query, ?int $max): array
+    {
+        if (null === $max) {
+            return $query;
+        }
+        $query[self::QUERY_KEY_MAX] = (string) $max;
+
+        return $query;
     }
 }

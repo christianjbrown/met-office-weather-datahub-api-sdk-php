@@ -321,4 +321,48 @@ final class OrdersApiTest extends TestCase
 
         $api->getOrders();
     }
+
+    /**
+     * @throws RequestExceptionInterface
+     * @throws Exception
+     */
+    public function testGetOrdersWithDetail(): void
+    {
+        $ordersData = [['test-order']];
+        $data = [OrdersApiInterface::KEY_ORDERS => $ordersData];
+
+        $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
+        $requestSender->expects(self::once())
+            ->method('get')
+            ->with(
+                OrdersApiInterface::API_URL_ORDERS,
+                [OrdersApiInterface::QUERY_KEY_DETAIL => 'MINIMAL'],
+                [
+                    ApiKeyInterface::HEADER_KEY_API_KEY => 'test-api-key',
+                    OrdersApiInterface::HEADER_KEY_ACCEPT => OrdersApiInterface::HEADER_VALUE_ACCEPT_JSON,
+                ]
+            )
+            ->willReturn($data);
+
+        $order = self::createStub(OrderInterface::class);
+        $orders = [$order];
+
+        $ordersTransformer = self::createMock(OrdersTransformerInterface::class);
+        $ordersTransformer->expects(self::once())
+            ->method('transform')
+            ->with($ordersData)
+            ->willReturn($orders);
+
+        $api = new OrdersApi(
+            $requestSender,
+            self::createStub(ApiRequestSenderInterface::class),
+            $ordersTransformer,
+            self::createStub(OrderFilesTransformerInterface::class),
+            self::createStub(OrderFileDetailsTransformerInterface::class),
+            new ApiKey('test-api-key'),
+            new ApiHost()
+        );
+
+        self::assertSame($orders, $api->getOrders('MINIMAL'));
+    }
 }

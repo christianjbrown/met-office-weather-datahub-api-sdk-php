@@ -8,9 +8,14 @@ use ChristianBrown\MetOffice\SiteSpecific\Model\ForecastInterface;
 
 interface ForecastTransformerInterface
 {
+    public const string KEY_COORDINATES = 'coordinates';
+    public const string KEY_GEOMETRY = 'geometry';
+    public const string KEY_LICENCE = 'licence';
     public const string KEY_LOCATION = 'location';
     public const string KEY_MODEL_RUN_DATE = 'modelRunDate';
     public const string KEY_NAME = 'name';
+    public const string KEY_PARAMETERS = 'parameters';
+    public const string KEY_REQUEST_POINT_DISTANCE = 'requestPointDistance';
     public const string KEY_TIME_SERIES = 'timeSeries';
 
     /**

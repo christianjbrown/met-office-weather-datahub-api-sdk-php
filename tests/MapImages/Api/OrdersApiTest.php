@@ -112,6 +112,298 @@ final class OrdersApiTest extends TestCase
     }
 
     /**
+     * @throws RequestExceptionInterface
+     * @throws Exception
+     */
+    public function testGetOrderFileDataWithIncludeLandAndLegend(): void
+    {
+        $png = "\x89PNG\x0d\x0a\x1a\x0abinary-bytes";
+
+        $rawRequestSender = self::createMock(ApiRequestSenderInterface::class);
+        $rawRequestSender->expects(self::once())
+            ->method('get')
+            ->with(
+                sprintf(OrdersApiInterface::API_URL_ORDER_FILE_DATA_SPRINTF, 'myorder', rawurlencode('isbl_temperature_100000_+00')),
+                [
+                    OrdersApiInterface::QUERY_KEY_INCLUDE_LAND => OrdersApiInterface::QUERY_VALUE_TRUE,
+                    OrdersApiInterface::QUERY_KEY_LEGEND => OrdersApiInterface::QUERY_VALUE_FALSE,
+                ],
+                [
+                    ApiKeyInterface::HEADER_KEY_API_KEY => 'test-api-key',
+                    OrdersApiInterface::HEADER_KEY_ACCEPT => OrdersApiInterface::HEADER_VALUE_ACCEPT_PNG,
+                ]
+            )
+            ->willReturn($png);
+
+        $api = new OrdersApi(
+            self::createStub(JsonApiRequestSenderInterface::class),
+            $rawRequestSender,
+            self::createStub(OrdersTransformerInterface::class),
+            self::createStub(OrderFilesTransformerInterface::class),
+            self::createStub(OrderFileDetailsTransformerInterface::class),
+            new ApiKey('test-api-key'),
+            new ApiHost()
+        );
+
+        self::assertSame($png, $api->getOrderFileData('myorder', 'isbl_temperature_100000_+00', true, false));
+    }
+
+    /**
+     * @throws RequestExceptionInterface
+     * @throws Exception
+     */
+    public function testGetOrderFileDataWithIncludeLandFalseAndLegendFalse(): void
+    {
+        $png = "\x89PNG\x0d\x0a\x1a\x0abinary-bytes";
+
+        $rawRequestSender = self::createMock(ApiRequestSenderInterface::class);
+        $rawRequestSender->expects(self::once())
+            ->method('get')
+            ->with(
+                sprintf(OrdersApiInterface::API_URL_ORDER_FILE_DATA_SPRINTF, 'myorder', rawurlencode('isbl_temperature_100000_+00')),
+                [
+                    OrdersApiInterface::QUERY_KEY_INCLUDE_LAND => OrdersApiInterface::QUERY_VALUE_FALSE,
+                    OrdersApiInterface::QUERY_KEY_LEGEND => OrdersApiInterface::QUERY_VALUE_FALSE,
+                ],
+                [
+                    ApiKeyInterface::HEADER_KEY_API_KEY => 'test-api-key',
+                    OrdersApiInterface::HEADER_KEY_ACCEPT => OrdersApiInterface::HEADER_VALUE_ACCEPT_PNG,
+                ]
+            )
+            ->willReturn($png);
+
+        $api = new OrdersApi(
+            self::createStub(JsonApiRequestSenderInterface::class),
+            $rawRequestSender,
+            self::createStub(OrdersTransformerInterface::class),
+            self::createStub(OrderFilesTransformerInterface::class),
+            self::createStub(OrderFileDetailsTransformerInterface::class),
+            new ApiKey('test-api-key'),
+            new ApiHost()
+        );
+
+        self::assertSame($png, $api->getOrderFileData('myorder', 'isbl_temperature_100000_+00', false, false));
+    }
+
+    /**
+     * @throws RequestExceptionInterface
+     * @throws Exception
+     */
+    public function testGetOrderFileDataWithIncludeLandFalseAndLegendTrue(): void
+    {
+        $png = "\x89PNG\x0d\x0a\x1a\x0abinary-bytes";
+
+        $rawRequestSender = self::createMock(ApiRequestSenderInterface::class);
+        $rawRequestSender->expects(self::once())
+            ->method('get')
+            ->with(
+                sprintf(OrdersApiInterface::API_URL_ORDER_FILE_DATA_SPRINTF, 'myorder', rawurlencode('isbl_temperature_100000_+00')),
+                [
+                    OrdersApiInterface::QUERY_KEY_INCLUDE_LAND => OrdersApiInterface::QUERY_VALUE_FALSE,
+                    OrdersApiInterface::QUERY_KEY_LEGEND => OrdersApiInterface::QUERY_VALUE_TRUE,
+                ],
+                [
+                    ApiKeyInterface::HEADER_KEY_API_KEY => 'test-api-key',
+                    OrdersApiInterface::HEADER_KEY_ACCEPT => OrdersApiInterface::HEADER_VALUE_ACCEPT_PNG,
+                ]
+            )
+            ->willReturn($png);
+
+        $api = new OrdersApi(
+            self::createStub(JsonApiRequestSenderInterface::class),
+            $rawRequestSender,
+            self::createStub(OrdersTransformerInterface::class),
+            self::createStub(OrderFilesTransformerInterface::class),
+            self::createStub(OrderFileDetailsTransformerInterface::class),
+            new ApiKey('test-api-key'),
+            new ApiHost()
+        );
+
+        self::assertSame($png, $api->getOrderFileData('myorder', 'isbl_temperature_100000_+00', false, true));
+    }
+
+    /**
+     * @throws RequestExceptionInterface
+     * @throws Exception
+     */
+    public function testGetOrderFileDataWithIncludeLandFalseOnly(): void
+    {
+        $png = "\x89PNG\x0d\x0a\x1a\x0abinary-bytes";
+
+        $rawRequestSender = self::createMock(ApiRequestSenderInterface::class);
+        $rawRequestSender->expects(self::once())
+            ->method('get')
+            ->with(
+                sprintf(OrdersApiInterface::API_URL_ORDER_FILE_DATA_SPRINTF, 'myorder', rawurlencode('isbl_temperature_100000_+00')),
+                [
+                    OrdersApiInterface::QUERY_KEY_INCLUDE_LAND => OrdersApiInterface::QUERY_VALUE_FALSE,
+                ],
+                [
+                    ApiKeyInterface::HEADER_KEY_API_KEY => 'test-api-key',
+                    OrdersApiInterface::HEADER_KEY_ACCEPT => OrdersApiInterface::HEADER_VALUE_ACCEPT_PNG,
+                ]
+            )
+            ->willReturn($png);
+
+        $api = new OrdersApi(
+            self::createStub(JsonApiRequestSenderInterface::class),
+            $rawRequestSender,
+            self::createStub(OrdersTransformerInterface::class),
+            self::createStub(OrderFilesTransformerInterface::class),
+            self::createStub(OrderFileDetailsTransformerInterface::class),
+            new ApiKey('test-api-key'),
+            new ApiHost()
+        );
+
+        self::assertSame($png, $api->getOrderFileData('myorder', 'isbl_temperature_100000_+00', false, null));
+    }
+
+    /**
+     * @throws RequestExceptionInterface
+     * @throws Exception
+     */
+    public function testGetOrderFileDataWithIncludeLandTrueAndLegendTrue(): void
+    {
+        $png = "\x89PNG\x0d\x0a\x1a\x0abinary-bytes";
+
+        $rawRequestSender = self::createMock(ApiRequestSenderInterface::class);
+        $rawRequestSender->expects(self::once())
+            ->method('get')
+            ->with(
+                sprintf(OrdersApiInterface::API_URL_ORDER_FILE_DATA_SPRINTF, 'myorder', rawurlencode('isbl_temperature_100000_+00')),
+                [
+                    OrdersApiInterface::QUERY_KEY_INCLUDE_LAND => OrdersApiInterface::QUERY_VALUE_TRUE,
+                    OrdersApiInterface::QUERY_KEY_LEGEND => OrdersApiInterface::QUERY_VALUE_TRUE,
+                ],
+                [
+                    ApiKeyInterface::HEADER_KEY_API_KEY => 'test-api-key',
+                    OrdersApiInterface::HEADER_KEY_ACCEPT => OrdersApiInterface::HEADER_VALUE_ACCEPT_PNG,
+                ]
+            )
+            ->willReturn($png);
+
+        $api = new OrdersApi(
+            self::createStub(JsonApiRequestSenderInterface::class),
+            $rawRequestSender,
+            self::createStub(OrdersTransformerInterface::class),
+            self::createStub(OrderFilesTransformerInterface::class),
+            self::createStub(OrderFileDetailsTransformerInterface::class),
+            new ApiKey('test-api-key'),
+            new ApiHost()
+        );
+
+        self::assertSame($png, $api->getOrderFileData('myorder', 'isbl_temperature_100000_+00', true, true));
+    }
+
+    /**
+     * @throws RequestExceptionInterface
+     * @throws Exception
+     */
+    public function testGetOrderFileDataWithIncludeLandTrueOnly(): void
+    {
+        $png = "\x89PNG\x0d\x0a\x1a\x0abinary-bytes";
+
+        $rawRequestSender = self::createMock(ApiRequestSenderInterface::class);
+        $rawRequestSender->expects(self::once())
+            ->method('get')
+            ->with(
+                sprintf(OrdersApiInterface::API_URL_ORDER_FILE_DATA_SPRINTF, 'myorder', rawurlencode('isbl_temperature_100000_+00')),
+                [
+                    OrdersApiInterface::QUERY_KEY_INCLUDE_LAND => OrdersApiInterface::QUERY_VALUE_TRUE,
+                ],
+                [
+                    ApiKeyInterface::HEADER_KEY_API_KEY => 'test-api-key',
+                    OrdersApiInterface::HEADER_KEY_ACCEPT => OrdersApiInterface::HEADER_VALUE_ACCEPT_PNG,
+                ]
+            )
+            ->willReturn($png);
+
+        $api = new OrdersApi(
+            self::createStub(JsonApiRequestSenderInterface::class),
+            $rawRequestSender,
+            self::createStub(OrdersTransformerInterface::class),
+            self::createStub(OrderFilesTransformerInterface::class),
+            self::createStub(OrderFileDetailsTransformerInterface::class),
+            new ApiKey('test-api-key'),
+            new ApiHost()
+        );
+
+        self::assertSame($png, $api->getOrderFileData('myorder', 'isbl_temperature_100000_+00', true, null));
+    }
+
+    /**
+     * @throws RequestExceptionInterface
+     * @throws Exception
+     */
+    public function testGetOrderFileDataWithLegendOnly(): void
+    {
+        $png = "\x89PNG\x0d\x0a\x1a\x0abinary-bytes";
+
+        $rawRequestSender = self::createMock(ApiRequestSenderInterface::class);
+        $rawRequestSender->expects(self::once())
+            ->method('get')
+            ->with(
+                sprintf(OrdersApiInterface::API_URL_ORDER_FILE_DATA_SPRINTF, 'myorder', rawurlencode('isbl_temperature_100000_+00')),
+                [
+                    OrdersApiInterface::QUERY_KEY_LEGEND => OrdersApiInterface::QUERY_VALUE_FALSE,
+                ],
+                [
+                    ApiKeyInterface::HEADER_KEY_API_KEY => 'test-api-key',
+                    OrdersApiInterface::HEADER_KEY_ACCEPT => OrdersApiInterface::HEADER_VALUE_ACCEPT_PNG,
+                ]
+            )
+            ->willReturn($png);
+
+        $api = new OrdersApi(
+            self::createStub(JsonApiRequestSenderInterface::class),
+            $rawRequestSender,
+            self::createStub(OrdersTransformerInterface::class),
+            self::createStub(OrderFilesTransformerInterface::class),
+            self::createStub(OrderFileDetailsTransformerInterface::class),
+            new ApiKey('test-api-key'),
+            new ApiHost()
+        );
+
+        self::assertSame($png, $api->getOrderFileData('myorder', 'isbl_temperature_100000_+00', null, false));
+    }
+
+    /**
+     * @throws RequestExceptionInterface
+     * @throws Exception
+     */
+    public function testGetOrderFileDataWithLegendTrueOnly(): void
+    {
+        $png = "\x89PNG\x0d\x0a\x1a\x0abinary-bytes";
+
+        $rawRequestSender = self::createMock(ApiRequestSenderInterface::class);
+        $rawRequestSender->expects(self::once())
+            ->method('get')
+            ->with(
+                sprintf(OrdersApiInterface::API_URL_ORDER_FILE_DATA_SPRINTF, 'myorder', rawurlencode('isbl_temperature_100000_+00')),
+                [
+                    OrdersApiInterface::QUERY_KEY_LEGEND => OrdersApiInterface::QUERY_VALUE_TRUE,
+                ],
+                [
+                    ApiKeyInterface::HEADER_KEY_API_KEY => 'test-api-key',
+                    OrdersApiInterface::HEADER_KEY_ACCEPT => OrdersApiInterface::HEADER_VALUE_ACCEPT_PNG,
+                ]
+            )
+            ->willReturn($png);
+
+        $api = new OrdersApi(
+            self::createStub(JsonApiRequestSenderInterface::class),
+            $rawRequestSender,
+            self::createStub(OrdersTransformerInterface::class),
+            self::createStub(OrderFilesTransformerInterface::class),
+            self::createStub(OrderFileDetailsTransformerInterface::class),
+            new ApiKey('test-api-key'),
+            new ApiHost()
+        );
+
+        self::assertSame($png, $api->getOrderFileData('myorder', 'isbl_temperature_100000_+00', null, true));
+    }
+
+    /**
      * @phpstan-param array<string, string> $expectedQuery
      *
      * @throws RequestExceptionInterface
