@@ -308,29 +308,52 @@ Two Blended Probabilistic Forecast responses are worth calling out:
 - **`204 No Content`** — returned by `getLocation()` / `getPosition()` when a `parameter-name` or `percentiles` filter matches nothing. The body is empty, so the JSON request sender raises `ChristianBrown\ApiClient\Exception\Parse\ParseJsonExceptionInterface` rather than returning an empty `CoverageCollectionInterface`. Treat it as "no data for that filter", and check your parameter names against the collection's `getParameters()` map.
 - **`400 Bad Request`** — the body is `{"message": "…", "transaction": "<uuid>"}`. The Met Office service desk asks for that `transaction` id when reporting a problem, so capture it from the response before discarding the error.
 
-Under the hood, `SiteSpecific` wires the clients and their transformer chains through a [Symfony dependency-injection](https://symfony.com/doc/current/components/dependency_injection.html) container. If you don't want the container, you can build the same chains by hand — as shown below. The HTTP request sender comes from [`christianjbrown/api-client`](https://github.com/christianjbrown/api-client-php).
+Under the hood, every facade (`SiteSpecific`, `ObservationLand`, `AtmosphericModels`, `MapImages`, `BlendedProbForecast`) builds a [Symfony dependency-injection](https://symfony.com/doc/current/components/dependency_injection.html) container from a fixed, ordered list of small **registrar** classes, run through a shared `RegistrarContainerFactory`. See [Composition root and registrars](#composition-root-and-registrars) for how that's put together, and [Wiring the clients by hand](#wiring-the-clients) if you don't want the container at all.
+
+### Composition root and registrars
+
+Each facade's constructor is its composition root: it builds an `ApiHost` (or takes the one you passed in), lists the registrars for that product in dependency order, and hands them to `RegistrarContainerFactory`. A registrar is anything implementing `ChristianBrown\MetOffice\Container\ServiceRegistrarInterface`, a single-method interface (`register(ContainerBuilder $container): void`). Two kinds are shared across every product:
+
+- **`CoreRegistrar`** — the boilerplate every facade needs regardless of product: the transport-wrapping `ApiClient`, the JSON request sender built from it, and the `ApiKey` credential value object. This exists exactly once and every facade's registrar list starts with it.
+- **`RawRequestSenderRegistrar`** — the raw (non-JSON) request sender used only by the two coverage-order products (Atmospheric Models, Map Images) to download binary GRIB/PNG order files.
+
+Everything else is a small, `final` registrar scoped to one API resource group or one cohesive transformer chain within a product — for example `SiteSpecific\Container\HourlyForecastRegistrar` wires the hourly time-step transformer, the shared `ForecastApi`, and the `HourlyForecastApi` wrapper; `BlendedProbForecast\Container\CoverageTransformerRegistrar` wires the CoverageJSON transformer chain shared by `LocationsApi` and `PositionApi`. **Adding a new DataHub API to an existing product, or a new DataHub product entirely, means adding a registrar (or a new product namespace with its own registrars and facade) and listing it in the composition root — never editing an existing registrar's `register()` method.**
+
+### Injectable API host
+
+Every product's base URL is a `public const string API_URL...` on its `Api\ApiInterface`, defaulting to the real DataHub host (`ChristianBrown\MetOffice\ApiInterface::API_HOST`). Each facade's constructor takes an **optional, last** `?ChristianBrown\MetOffice\Host\ApiHostInterface $apiHost = null` parameter; when omitted, it defaults to production, so every existing call site that only passes an API key is unaffected. Pass your own `ApiHost` to point a facade at a different host — a sandbox, a local stub server, a test double — without touching any of the URL constants:
+
+```php
+use ChristianBrown\MetOffice\Host\ApiHost;
+use ChristianBrown\MetOffice\SiteSpecific\SiteSpecific;
+
+$siteSpecific = new SiteSpecific('your-site-specific-apikey', new ApiHost('https://sandbox.example'));
+```
+
+`ApiHost::rewrite(string $url): string` replaces the production host prefix on a URL with the configured one and leaves the path and query untouched, so it works uniformly across every product's URL constants (all of which share the same `data.hub.api.metoffice.gov.uk` prefix). The Met Office DataHub itself does not publish a separate sandbox host at the time of writing — this exists for local/CI stubs and for whenever one is introduced.
 
 <details id="wiring-the-clients">
-<summary><strong>Wiring the clients</strong></summary>
+<summary><strong>Wiring the clients by hand</strong></summary>
+
+If you don't want the container, you can build the same chain yourself. The HTTP request sender comes from [`christianjbrown/api-client`](https://github.com/christianjbrown/api-client-php); `ApiHost` defaults to production when omitted.
 
 ```php
 use ChristianBrown\ApiClient\ApiClient;
-use ChristianBrown\MetOffice\SiteSpecific\Api\DailyForecastApi;
+use ChristianBrown\MetOffice\ApiKey;
+use ChristianBrown\MetOffice\Host\ApiHost;
+use ChristianBrown\MetOffice\SiteSpecific\Api\ForecastApi;
 use ChristianBrown\MetOffice\SiteSpecific\Api\HourlyForecastApi;
-use ChristianBrown\MetOffice\SiteSpecific\Api\ThreeHourlyForecastApi;
-use ChristianBrown\MetOffice\SiteSpecific\Transformer\DailyForecastTimeStepTransformer;
 use ChristianBrown\MetOffice\SiteSpecific\Transformer\ForecastTimeStepsTransformer;
 use ChristianBrown\MetOffice\SiteSpecific\Transformer\ForecastTransformer;
 use ChristianBrown\MetOffice\SiteSpecific\Transformer\HourlyForecastTimeStepTransformer;
-use ChristianBrown\MetOffice\SiteSpecific\Transformer\ThreeHourlyForecastTimeStepTransformer;
 
-$apiKey = 'your-site-specific-apikey';
+$apiKey = new ApiKey('your-site-specific-apikey');
 
 // Shared JSON request sender (wires Guzzle for you).
 $requestSender = (new ApiClient())->getJsonApiRequestSender();
 
-// Hourly client (the same "instant" ForecastTransformer chain also serves three-hourly).
-$hourlyForecastApi = new HourlyForecastApi(
+// The resolution-agnostic forecast client, given the hourly transformer chain.
+$forecastApi = new ForecastApi(
     $requestSender,
     new ForecastTransformer(
         new ForecastTimeStepsTransformer(
@@ -340,28 +363,11 @@ $hourlyForecastApi = new HourlyForecastApi(
     $apiKey
 );
 
-// Three-hourly client.
-$threeHourlyForecastApi = new ThreeHourlyForecastApi(
-    $requestSender,
-    new ForecastTransformer(
-        new ForecastTimeStepsTransformer(
-            new ThreeHourlyForecastTimeStepTransformer()
-        )
-    ),
-    $apiKey
-);
-
-// Daily client.
-$dailyForecastApi = new DailyForecastApi(
-    $requestSender,
-    new ForecastTransformer(
-        new ForecastTimeStepsTransformer(
-            new DailyForecastTimeStepTransformer()
-        )
-    ),
-    $apiKey
-);
+// The thin hourly wrapper: supplies the hourly URL and lets you override the host.
+$hourlyForecastApi = new HourlyForecastApi($forecastApi, new ApiHost());
 ```
+
+The three-hourly and daily clients follow the same shape with their own time-step transformer and wrapper class.
 
 </details>
 

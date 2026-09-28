@@ -9,6 +9,7 @@ use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
 use ChristianBrown\MetOffice\ApiKey;
 use ChristianBrown\MetOffice\ApiKeyInterface;
 use ChristianBrown\MetOffice\Coordinates;
+use ChristianBrown\MetOffice\Host\ApiHost;
 use ChristianBrown\MetOffice\ObservationLand\Api\NearestApi;
 use ChristianBrown\MetOffice\ObservationLand\Api\NearestApiInterface;
 use ChristianBrown\MetOffice\ObservationLand\Model\NearestLocationInterface;
@@ -20,6 +21,7 @@ use PHPUnit\Framework\TestCase;
 
 #[CoversClass(NearestApi::class)]
 #[UsesClass(Coordinates::class)]
+#[UsesClass(ApiHost::class)]
 #[UsesClass(ApiKey::class)]
 final class NearestApiTest extends TestCase
 {
@@ -55,7 +57,7 @@ final class NearestApiTest extends TestCase
             ->with($data)
             ->willReturn($locations);
 
-        $api = new NearestApi($requestSender, $transformer, new ApiKey('test-api-key'));
+        $api = new NearestApi($requestSender, $transformer, new ApiKey('test-api-key'), new ApiHost());
 
         self::assertSame($locations, $api->getByCoordinates(new Coordinates(51.554, -0.181)));
     }
@@ -91,7 +93,7 @@ final class NearestApiTest extends TestCase
             ->with($data)
             ->willReturn($locations);
 
-        $api = new NearestApi($requestSender, $transformer, new ApiKey('test-api-key'));
+        $api = new NearestApi($requestSender, $transformer, new ApiKey('test-api-key'), new ApiHost());
 
         self::assertSame($locations, $api->getByGeohash('gcpvj0'));
     }

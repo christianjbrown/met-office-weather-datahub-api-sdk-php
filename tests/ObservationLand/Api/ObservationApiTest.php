@@ -8,6 +8,7 @@ use ChristianBrown\ApiClient\Exception\Request\RequestExceptionInterface;
 use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
 use ChristianBrown\MetOffice\ApiKey;
 use ChristianBrown\MetOffice\ApiKeyInterface;
+use ChristianBrown\MetOffice\Host\ApiHost;
 use ChristianBrown\MetOffice\ObservationLand\Api\ObservationApi;
 use ChristianBrown\MetOffice\ObservationLand\Api\ObservationApiInterface;
 use ChristianBrown\MetOffice\ObservationLand\Model\ObservationInterface;
@@ -20,6 +21,7 @@ use PHPUnit\Framework\TestCase;
 use function sprintf;
 
 #[CoversClass(ObservationApi::class)]
+#[UsesClass(ApiHost::class)]
 #[UsesClass(ApiKey::class)]
 final class ObservationApiTest extends TestCase
 {
@@ -52,7 +54,7 @@ final class ObservationApiTest extends TestCase
             ->with($data)
             ->willReturn($observations);
 
-        $api = new ObservationApi($requestSender, $transformer, new ApiKey('test-api-key'));
+        $api = new ObservationApi($requestSender, $transformer, new ApiKey('test-api-key'), new ApiHost());
 
         self::assertSame($observations, $api->getByGeohash('gcpvj0'));
     }
@@ -79,11 +81,15 @@ final class ObservationApiTest extends TestCase
             ->with($data)
             ->willReturn($observations);
 
-        $api = new ObservationApi($requestSender, $transformer, new ApiKey('test-api-key'));
+        $api = new ObservationApi($requestSender, $transformer, new ApiKey('test-api-key'), new ApiHost());
+
+        $firstCall = $api->getByGeohash('gcpvj0');
 
         // Second call for the same geohash is served from the cache without hitting the API.
-        self::assertSame($observations, $api->getByGeohash('gcpvj0'));
-        self::assertSame($observations, $api->getByGeohash('gcpvj0'));
+        $secondCall = $api->getByGeohash('gcpvj0');
+
+        self::assertSame($observations, $firstCall);
+        self::assertSame($firstCall, $secondCall);
     }
 
     /**
@@ -108,7 +114,7 @@ final class ObservationApiTest extends TestCase
             ->with($data)
             ->willReturn($observations);
 
-        $api = new ObservationApi($requestSender, $transformer, new ApiKey('test-api-key'));
+        $api = new ObservationApi($requestSender, $transformer, new ApiKey('test-api-key'), new ApiHost());
 
         // First call populates the cache; the second bypasses it and hits the API again.
         self::assertSame($observations, $api->getByGeohash('gcpvj0'));

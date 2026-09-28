@@ -8,6 +8,12 @@ use ChristianBrown\MetOffice\ApiKey;
 use ChristianBrown\MetOffice\AtmosphericModels\Api\OrdersApi;
 use ChristianBrown\MetOffice\AtmosphericModels\Api\RunsApi;
 use ChristianBrown\MetOffice\AtmosphericModels\AtmosphericModels;
+use ChristianBrown\MetOffice\AtmosphericModels\Container\OrdersApiRegistrar;
+use ChristianBrown\MetOffice\AtmosphericModels\Container\RunsApiRegistrar;
+use ChristianBrown\MetOffice\AtmosphericModels\Container\TransformersRegistrar;
+use ChristianBrown\MetOffice\Container\CoreRegistrar;
+use ChristianBrown\MetOffice\Container\RawRequestSenderRegistrar;
+use ChristianBrown\MetOffice\Container\RegistrarContainerFactory;
 use ChristianBrown\MetOffice\Coverage\Transformer\AxisExtentTransformer;
 use ChristianBrown\MetOffice\Coverage\Transformer\OrderFileDetailsTransformer;
 use ChristianBrown\MetOffice\Coverage\Transformer\OrderFilesTransformer;
@@ -22,12 +28,20 @@ use ChristianBrown\MetOffice\Coverage\Transformer\RunDetailsTransformer;
 use ChristianBrown\MetOffice\Coverage\Transformer\RunDetailTransformer;
 use ChristianBrown\MetOffice\Coverage\Transformer\RunsTransformer;
 use ChristianBrown\MetOffice\Coverage\Transformer\RunTransformer;
+use ChristianBrown\MetOffice\Host\ApiHost;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(AtmosphericModels::class)]
+#[UsesClass(ApiHost::class)]
 #[UsesClass(ApiKey::class)]
+#[UsesClass(CoreRegistrar::class)]
+#[UsesClass(RawRequestSenderRegistrar::class)]
+#[UsesClass(RegistrarContainerFactory::class)]
+#[UsesClass(TransformersRegistrar::class)]
+#[UsesClass(RunsApiRegistrar::class)]
+#[UsesClass(OrdersApiRegistrar::class)]
 #[UsesClass(RunsApi::class)]
 #[UsesClass(OrdersApi::class)]
 #[UsesClass(AxisExtentTransformer::class)]

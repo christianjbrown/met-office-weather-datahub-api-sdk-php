@@ -37,6 +37,8 @@ final class ForecastApi implements ForecastApiInterface
     /**
      * @throws RequestExceptionInterface
      * @throws UnexpectedResponseException
+     *
+     * @phpstan-impure
      */
     public function getForecast(string $apiUrl, CoordinatesInterface $coordinates, bool $skipCache = false): ForecastInterface
     {

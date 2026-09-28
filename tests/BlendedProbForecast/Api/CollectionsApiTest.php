@@ -14,6 +14,7 @@ use ChristianBrown\MetOffice\BlendedProbForecast\Model\CollectionInterface;
 use ChristianBrown\MetOffice\BlendedProbForecast\Transformer\CollectionsTransformerInterface;
 use ChristianBrown\MetOffice\BlendedProbForecast\Transformer\CollectionTransformerInterface;
 use ChristianBrown\MetOffice\Exception\UnexpectedResponseException;
+use ChristianBrown\MetOffice\Host\ApiHost;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -23,6 +24,7 @@ use PHPUnit\Framework\TestCase;
 use function sprintf;
 
 #[CoversClass(CollectionsApi::class)]
+#[UsesClass(ApiHost::class)]
 #[UsesClass(ApiKey::class)]
 final class CollectionsApiTest extends TestCase
 {
@@ -58,7 +60,7 @@ final class CollectionsApiTest extends TestCase
             ->with($data)
             ->willReturn($collection);
 
-        $api = new CollectionsApi($requestSender, $collectionsTransformer, $collectionTransformer, new ApiKey('test-api-key'));
+        $api = new CollectionsApi($requestSender, $collectionsTransformer, $collectionTransformer, new ApiKey('test-api-key'), new ApiHost());
 
         self::assertSame($collection, $api->getCollection('improver-percentiles-spot-global'));
     }
@@ -97,7 +99,7 @@ final class CollectionsApiTest extends TestCase
         $collectionTransformer = self::createMock(CollectionTransformerInterface::class);
         $collectionTransformer->expects(self::never())->method('transform');
 
-        $api = new CollectionsApi($requestSender, $collectionsTransformer, $collectionTransformer, new ApiKey('test-api-key'));
+        $api = new CollectionsApi($requestSender, $collectionsTransformer, $collectionTransformer, new ApiKey('test-api-key'), new ApiHost());
 
         self::assertSame($collections, $api->getCollections());
     }
@@ -120,7 +122,7 @@ final class CollectionsApiTest extends TestCase
 
         $collectionTransformer = self::createStub(CollectionTransformerInterface::class);
 
-        $api = new CollectionsApi($requestSender, $collectionsTransformer, $collectionTransformer, new ApiKey('test-api-key'));
+        $api = new CollectionsApi($requestSender, $collectionsTransformer, $collectionTransformer, new ApiKey('test-api-key'), new ApiHost());
 
         $this->expectException(UnexpectedResponseException::class);
         $this->expectExceptionMessage(sprintf(CollectionsApiInterface::UNEXPECTED_RESPONSE_SPRINTF, CollectionsApiInterface::KEY_COLLECTIONS));

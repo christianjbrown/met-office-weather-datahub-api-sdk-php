@@ -8,6 +8,7 @@ use ChristianBrown\ApiClient\Exception\Request\RequestExceptionInterface;
 use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
 use ChristianBrown\MetOffice\ApiKeyInterface;
 use ChristianBrown\MetOffice\Exception\UnexpectedResponseException;
+use ChristianBrown\MetOffice\Host\ApiHostInterface;
 use ChristianBrown\MetOffice\ObservationLand\Model\ObservationInterface;
 use ChristianBrown\MetOffice\ObservationLand\Transformer\ObservationsTransformerInterface;
 
@@ -15,6 +16,7 @@ use function sprintf;
 
 final class ObservationApi implements ObservationApiInterface
 {
+    private ApiHostInterface $apiHost;
     private ApiKeyInterface $apiKey;
 
     /**
@@ -24,11 +26,12 @@ final class ObservationApi implements ObservationApiInterface
     private ObservationsTransformerInterface $observationsTransformer;
     private JsonApiRequestSenderInterface $requestSender;
 
-    public function __construct(JsonApiRequestSenderInterface $requestSender, ObservationsTransformerInterface $observationsTransformer, ApiKeyInterface $apiKey)
+    public function __construct(JsonApiRequestSenderInterface $requestSender, ObservationsTransformerInterface $observationsTransformer, ApiKeyInterface $apiKey, ApiHostInterface $apiHost)
     {
         $this->requestSender = $requestSender;
         $this->observationsTransformer = $observationsTransformer;
         $this->apiKey = $apiKey;
+        $this->apiHost = $apiHost;
     }
 
     /**
@@ -36,6 +39,8 @@ final class ObservationApi implements ObservationApiInterface
      * @throws UnexpectedResponseException
      *
      * @return array<int, ObservationInterface>
+     *
+     * @phpstan-impure
      */
     public function getByGeohash(string $geohash, bool $skipCache = false): array
     {
@@ -46,7 +51,7 @@ final class ObservationApi implements ObservationApiInterface
         }
 
         $headers = $this->apiKey->toHeaders();
-        $data = $this->requestSender->get(sprintf(self::API_URL_OBSERVATION_SPRINTF, $geohash), [], $headers);
+        $data = $this->requestSender->get($this->apiHost->rewrite(sprintf(self::API_URL_OBSERVATION_SPRINTF, $geohash)), [], $headers);
 
         $observations = $this->observationsTransformer->transform($data);
         $this->cache[$geohash] = $observations;

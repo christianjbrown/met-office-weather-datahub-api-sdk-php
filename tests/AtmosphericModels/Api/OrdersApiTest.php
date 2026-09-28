@@ -18,6 +18,7 @@ use ChristianBrown\MetOffice\Coverage\Transformer\OrderFileDetailsTransformerInt
 use ChristianBrown\MetOffice\Coverage\Transformer\OrderFilesTransformerInterface;
 use ChristianBrown\MetOffice\Coverage\Transformer\OrdersTransformerInterface;
 use ChristianBrown\MetOffice\Exception\UnexpectedResponseException;
+use ChristianBrown\MetOffice\Host\ApiHost;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\TestWith;
@@ -29,6 +30,7 @@ use function rawurlencode;
 use function sprintf;
 
 #[CoversClass(OrdersApi::class)]
+#[UsesClass(ApiHost::class)]
 #[UsesClass(ApiKey::class)]
 final class OrdersApiTest extends TestCase
 {
@@ -68,7 +70,8 @@ final class OrdersApiTest extends TestCase
             self::createStub(OrdersTransformerInterface::class),
             self::createStub(OrderFilesTransformerInterface::class),
             $orderFileDetailsTransformer,
-            new ApiKey('test-api-key')
+            new ApiKey('test-api-key'),
+            new ApiHost()
         );
 
         self::assertSame($orderFileDetails, $api->getOrderFile('myorder', 'isbl_temperature_100000_+00'));
@@ -101,7 +104,8 @@ final class OrdersApiTest extends TestCase
             self::createStub(OrdersTransformerInterface::class),
             self::createStub(OrderFilesTransformerInterface::class),
             self::createStub(OrderFileDetailsTransformerInterface::class),
-            new ApiKey('test-api-key')
+            new ApiKey('test-api-key'),
+            new ApiHost()
         );
 
         self::assertSame($grib, $api->getOrderFileData('myorder', 'isbl_temperature_100000_+00'));
@@ -151,7 +155,8 @@ final class OrdersApiTest extends TestCase
             self::createStub(OrdersTransformerInterface::class),
             $orderFilesTransformer,
             self::createStub(OrderFileDetailsTransformerInterface::class),
-            new ApiKey('test-api-key')
+            new ApiKey('test-api-key'),
+            new ApiHost()
         );
 
         self::assertSame($files, $api->getOrderFiles('myorder', $detail, $runFilter));
@@ -199,7 +204,8 @@ final class OrdersApiTest extends TestCase
             self::createStub(OrdersTransformerInterface::class),
             $orderFilesTransformer,
             self::createStub(OrderFileDetailsTransformerInterface::class),
-            new ApiKey('test-api-key')
+            new ApiKey('test-api-key'),
+            new ApiHost()
         );
 
         $this->expectException(UnexpectedResponseException::class);
@@ -230,7 +236,8 @@ final class OrdersApiTest extends TestCase
             self::createStub(OrdersTransformerInterface::class),
             self::createStub(OrderFilesTransformerInterface::class),
             $orderFileDetailsTransformer,
-            new ApiKey('test-api-key')
+            new ApiKey('test-api-key'),
+            new ApiHost()
         );
 
         $this->expectException(UnexpectedResponseException::class);
@@ -276,7 +283,8 @@ final class OrdersApiTest extends TestCase
             $ordersTransformer,
             self::createStub(OrderFilesTransformerInterface::class),
             self::createStub(OrderFileDetailsTransformerInterface::class),
-            new ApiKey('test-api-key')
+            new ApiKey('test-api-key'),
+            new ApiHost()
         );
 
         self::assertSame($orders, $api->getOrders());
@@ -304,7 +312,8 @@ final class OrdersApiTest extends TestCase
             $ordersTransformer,
             self::createStub(OrderFilesTransformerInterface::class),
             self::createStub(OrderFileDetailsTransformerInterface::class),
-            new ApiKey('test-api-key')
+            new ApiKey('test-api-key'),
+            new ApiHost()
         );
 
         $this->expectException(UnexpectedResponseException::class);

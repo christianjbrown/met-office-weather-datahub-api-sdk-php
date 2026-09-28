@@ -14,6 +14,7 @@ use ChristianBrown\MetOffice\BlendedProbForecast\Model\InstanceInterface;
 use ChristianBrown\MetOffice\BlendedProbForecast\Transformer\InstancesTransformerInterface;
 use ChristianBrown\MetOffice\BlendedProbForecast\Transformer\InstanceTransformerInterface;
 use ChristianBrown\MetOffice\Exception\UnexpectedResponseException;
+use ChristianBrown\MetOffice\Host\ApiHost;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -24,6 +25,7 @@ use function rawurlencode;
 use function sprintf;
 
 #[CoversClass(InstancesApi::class)]
+#[UsesClass(ApiHost::class)]
 #[UsesClass(ApiKey::class)]
 final class InstancesApiTest extends TestCase
 {
@@ -59,7 +61,7 @@ final class InstancesApiTest extends TestCase
             ->with($data)
             ->willReturn($instance);
 
-        $api = new InstancesApi($requestSender, $instancesTransformer, $instanceTransformer, new ApiKey('test-api-key'));
+        $api = new InstancesApi($requestSender, $instancesTransformer, $instanceTransformer, new ApiKey('test-api-key'), new ApiHost());
 
         self::assertSame($instance, $api->getInstance('uk-spot-percentiles', 'blended'));
     }
@@ -97,7 +99,7 @@ final class InstancesApiTest extends TestCase
         $instanceTransformer = self::createMock(InstanceTransformerInterface::class);
         $instanceTransformer->expects(self::never())->method('transform');
 
-        $api = new InstancesApi($requestSender, $instancesTransformer, $instanceTransformer, new ApiKey('test-api-key'));
+        $api = new InstancesApi($requestSender, $instancesTransformer, $instanceTransformer, new ApiKey('test-api-key'), new ApiHost());
 
         self::assertSame($instances, $api->getInstances('uk-spot-percentiles'));
     }
@@ -120,7 +122,7 @@ final class InstancesApiTest extends TestCase
 
         $instanceTransformer = self::createStub(InstanceTransformerInterface::class);
 
-        $api = new InstancesApi($requestSender, $instancesTransformer, $instanceTransformer, new ApiKey('test-api-key'));
+        $api = new InstancesApi($requestSender, $instancesTransformer, $instanceTransformer, new ApiKey('test-api-key'), new ApiHost());
 
         $this->expectException(UnexpectedResponseException::class);
         $this->expectExceptionMessage(sprintf(InstancesApiInterface::UNEXPECTED_RESPONSE_SPRINTF, InstancesApiInterface::KEY_INSTANCES));

@@ -9,6 +9,7 @@ use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
 use ChristianBrown\MetOffice\ApiKeyInterface;
 use ChristianBrown\MetOffice\CoordinatesInterface;
 use ChristianBrown\MetOffice\Exception\UnexpectedResponseException;
+use ChristianBrown\MetOffice\Host\ApiHostInterface;
 use ChristianBrown\MetOffice\ObservationLand\Model\NearestLocationInterface;
 use ChristianBrown\MetOffice\ObservationLand\Transformer\NearestLocationsTransformerInterface;
 
@@ -16,15 +17,17 @@ use function round;
 
 final class NearestApi implements NearestApiInterface
 {
+    private ApiHostInterface $apiHost;
     private ApiKeyInterface $apiKey;
     private NearestLocationsTransformerInterface $nearestLocationsTransformer;
     private JsonApiRequestSenderInterface $requestSender;
 
-    public function __construct(JsonApiRequestSenderInterface $requestSender, NearestLocationsTransformerInterface $nearestLocationsTransformer, ApiKeyInterface $apiKey)
+    public function __construct(JsonApiRequestSenderInterface $requestSender, NearestLocationsTransformerInterface $nearestLocationsTransformer, ApiKeyInterface $apiKey, ApiHostInterface $apiHost)
     {
         $this->requestSender = $requestSender;
         $this->nearestLocationsTransformer = $nearestLocationsTransformer;
         $this->apiKey = $apiKey;
+        $this->apiHost = $apiHost;
     }
 
     /**
@@ -40,7 +43,7 @@ final class NearestApi implements NearestApiInterface
             self::QUERY_KEY_LAT => self::formatCoordinate($coordinates->getLatitude()),
             self::QUERY_KEY_LON => self::formatCoordinate($coordinates->getLongitude()),
         ];
-        $data = $this->requestSender->get(self::API_URL_NEAREST, $query, $headers);
+        $data = $this->requestSender->get($this->apiHost->rewrite(self::API_URL_NEAREST), $query, $headers);
 
         return $this->nearestLocationsTransformer->transform($data);
     }
@@ -57,7 +60,7 @@ final class NearestApi implements NearestApiInterface
         $query = [
             self::QUERY_KEY_GEOHASH => $geohash,
         ];
-        $data = $this->requestSender->get(self::API_URL_NEAREST, $query, $headers);
+        $data = $this->requestSender->get($this->apiHost->rewrite(self::API_URL_NEAREST), $query, $headers);
 
         return $this->nearestLocationsTransformer->transform($data);
     }

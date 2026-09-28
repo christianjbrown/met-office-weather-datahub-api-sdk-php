@@ -7,15 +7,18 @@ namespace ChristianBrown\MetOffice\SiteSpecific\Api;
 use ChristianBrown\ApiClient\Exception\Request\RequestExceptionInterface;
 use ChristianBrown\MetOffice\CoordinatesInterface;
 use ChristianBrown\MetOffice\Exception\UnexpectedResponseException;
+use ChristianBrown\MetOffice\Host\ApiHostInterface;
 use ChristianBrown\MetOffice\SiteSpecific\Model\ForecastInterface;
 
 final class HourlyForecastApi implements HourlyForecastApiInterface
 {
+    private ApiHostInterface $apiHost;
     private ForecastApiInterface $forecastApi;
 
-    public function __construct(ForecastApiInterface $forecastApi)
+    public function __construct(ForecastApiInterface $forecastApi, ApiHostInterface $apiHost)
     {
         $this->forecastApi = $forecastApi;
+        $this->apiHost = $apiHost;
     }
 
     /**
@@ -24,6 +27,6 @@ final class HourlyForecastApi implements HourlyForecastApiInterface
      */
     public function getForecast(CoordinatesInterface $coordinates, bool $skipCache = false): ForecastInterface
     {
-        return $this->forecastApi->getForecast(self::API_URL, $coordinates, $skipCache);
+        return $this->forecastApi->getForecast($this->apiHost->rewrite(self::API_URL), $coordinates, $skipCache);
     }
 }

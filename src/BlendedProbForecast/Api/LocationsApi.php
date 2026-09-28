@@ -13,6 +13,7 @@ use ChristianBrown\MetOffice\BlendedProbForecast\Model\LocationInterface;
 use ChristianBrown\MetOffice\BlendedProbForecast\Transformer\CoverageCollectionTransformerInterface;
 use ChristianBrown\MetOffice\BlendedProbForecast\Transformer\LocationsTransformerInterface;
 use ChristianBrown\MetOffice\Exception\UnexpectedResponseException;
+use ChristianBrown\MetOffice\Host\ApiHostInterface;
 
 use function is_array;
 use function rawurlencode;
@@ -20,17 +21,19 @@ use function sprintf;
 
 final class LocationsApi implements LocationsApiInterface
 {
+    private ApiHostInterface $apiHost;
     private ApiKeyInterface $apiKey;
     private CoverageCollectionTransformerInterface $coverageCollectionTransformer;
     private LocationsTransformerInterface $locationsTransformer;
     private JsonApiRequestSenderInterface $requestSender;
 
-    public function __construct(JsonApiRequestSenderInterface $requestSender, LocationsTransformerInterface $locationsTransformer, CoverageCollectionTransformerInterface $coverageCollectionTransformer, ApiKeyInterface $apiKey)
+    public function __construct(JsonApiRequestSenderInterface $requestSender, LocationsTransformerInterface $locationsTransformer, CoverageCollectionTransformerInterface $coverageCollectionTransformer, ApiKeyInterface $apiKey, ApiHostInterface $apiHost)
     {
         $this->requestSender = $requestSender;
         $this->locationsTransformer = $locationsTransformer;
         $this->coverageCollectionTransformer = $coverageCollectionTransformer;
         $this->apiKey = $apiKey;
+        $this->apiHost = $apiHost;
     }
 
     /**
@@ -42,7 +45,7 @@ final class LocationsApi implements LocationsApiInterface
             ...$this->apiKey->toHeaders(),
             self::HEADER_KEY_ACCEPT => self::HEADER_VALUE_ACCEPT_JSON,
         ];
-        $data = $this->requestSender->get(sprintf(self::API_URL_LOCATION_SPRINTF, $collectionId, rawurlencode($instanceId), rawurlencode($locationId)), self::buildQuery($query), $headers);
+        $data = $this->requestSender->get($this->apiHost->rewrite(sprintf(self::API_URL_LOCATION_SPRINTF, $collectionId, rawurlencode($instanceId), rawurlencode($locationId))), self::buildQuery($query), $headers);
 
         return $this->coverageCollectionTransformer->transform($data);
     }
@@ -59,7 +62,7 @@ final class LocationsApi implements LocationsApiInterface
             ...$this->apiKey->toHeaders(),
             self::HEADER_KEY_ACCEPT => self::HEADER_VALUE_ACCEPT_JSON,
         ];
-        $data = $this->requestSender->get(sprintf(self::API_URL_LOCATIONS_SPRINTF, $collectionId, rawurlencode($instanceId)), [], $headers);
+        $data = $this->requestSender->get($this->apiHost->rewrite(sprintf(self::API_URL_LOCATIONS_SPRINTF, $collectionId, rawurlencode($instanceId))), [], $headers);
 
         return $this->locationsTransformer->transform(self::extractFeatures($data));
     }

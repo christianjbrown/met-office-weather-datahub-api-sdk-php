@@ -104,9 +104,13 @@ final class ForecastApiTest extends TestCase
 
         $api = new ForecastApi($requestSender, $forecastTransformer, new ApiKey('test-api-key'));
 
+        $firstCall = $api->getForecast(self::TEST_API_URL, new Coordinates(51.5, -0.1));
+
         // Second call for the same coordinates is served from the cache without hitting the API.
-        self::assertSame($forecast, $api->getForecast(self::TEST_API_URL, new Coordinates(51.5, -0.1)));
-        self::assertSame($forecast, $api->getForecast(self::TEST_API_URL, new Coordinates(51.5, -0.1)));
+        $secondCall = $api->getForecast(self::TEST_API_URL, new Coordinates(51.5, -0.1));
+
+        self::assertSame($forecast, $firstCall);
+        self::assertSame($firstCall, $secondCall);
     }
 
     /**

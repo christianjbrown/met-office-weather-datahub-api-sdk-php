@@ -10,21 +10,24 @@ use ChristianBrown\MetOffice\ApiKeyInterface;
 use ChristianBrown\MetOffice\Coverage\Model\RunInterface;
 use ChristianBrown\MetOffice\Coverage\Transformer\RunsTransformerInterface;
 use ChristianBrown\MetOffice\Exception\UnexpectedResponseException;
+use ChristianBrown\MetOffice\Host\ApiHostInterface;
 
 use function is_array;
 use function sprintf;
 
 final class RunsApi implements RunsApiInterface
 {
+    private ApiHostInterface $apiHost;
     private ApiKeyInterface $apiKey;
     private JsonApiRequestSenderInterface $requestSender;
     private RunsTransformerInterface $runsTransformer;
 
-    public function __construct(JsonApiRequestSenderInterface $requestSender, RunsTransformerInterface $runsTransformer, ApiKeyInterface $apiKey)
+    public function __construct(JsonApiRequestSenderInterface $requestSender, RunsTransformerInterface $runsTransformer, ApiKeyInterface $apiKey, ApiHostInterface $apiHost)
     {
         $this->requestSender = $requestSender;
         $this->runsTransformer = $runsTransformer;
         $this->apiKey = $apiKey;
+        $this->apiHost = $apiHost;
     }
 
     /**
@@ -39,7 +42,7 @@ final class RunsApi implements RunsApiInterface
             ...$this->apiKey->toHeaders(),
             self::HEADER_KEY_ACCEPT => self::HEADER_VALUE_ACCEPT_JSON,
         ];
-        $data = $this->requestSender->get(self::API_URL_RUNS, [], $headers);
+        $data = $this->requestSender->get($this->apiHost->rewrite(self::API_URL_RUNS), [], $headers);
 
         return $this->runsTransformer->transform(self::extractRuns($data));
     }
@@ -56,7 +59,7 @@ final class RunsApi implements RunsApiInterface
             ...$this->apiKey->toHeaders(),
             self::HEADER_KEY_ACCEPT => self::HEADER_VALUE_ACCEPT_JSON,
         ];
-        $data = $this->requestSender->get(sprintf(self::API_URL_RUNS_BY_MODEL_SPRINTF, $modelId), [], $headers);
+        $data = $this->requestSender->get($this->apiHost->rewrite(sprintf(self::API_URL_RUNS_BY_MODEL_SPRINTF, $modelId)), [], $headers);
 
         return $this->runsTransformer->transform(self::extractRuns($data));
     }

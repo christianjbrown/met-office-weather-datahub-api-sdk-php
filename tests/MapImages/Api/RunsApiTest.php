@@ -11,6 +11,7 @@ use ChristianBrown\MetOffice\ApiKeyInterface;
 use ChristianBrown\MetOffice\Coverage\Model\RunInterface;
 use ChristianBrown\MetOffice\Coverage\Transformer\RunsTransformerInterface;
 use ChristianBrown\MetOffice\Exception\UnexpectedResponseException;
+use ChristianBrown\MetOffice\Host\ApiHost;
 use ChristianBrown\MetOffice\MapImages\Api\RunsApi;
 use ChristianBrown\MetOffice\MapImages\Api\RunsApiInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -22,6 +23,7 @@ use PHPUnit\Framework\TestCase;
 use function sprintf;
 
 #[CoversClass(RunsApi::class)]
+#[UsesClass(ApiHost::class)]
 #[UsesClass(ApiKey::class)]
 final class RunsApiTest extends TestCase
 {
@@ -56,7 +58,7 @@ final class RunsApiTest extends TestCase
             ->with($runsData)
             ->willReturn($runs);
 
-        $api = new RunsApi($requestSender, $transformer, new ApiKey('test-api-key'));
+        $api = new RunsApi($requestSender, $transformer, new ApiKey('test-api-key'), new ApiHost());
 
         self::assertSame($runs, $api->getRuns());
     }
@@ -77,7 +79,7 @@ final class RunsApiTest extends TestCase
         $transformer = self::createMock(RunsTransformerInterface::class);
         $transformer->expects(self::never())->method('transform');
 
-        $api = new RunsApi($requestSender, $transformer, new ApiKey('test-api-key'));
+        $api = new RunsApi($requestSender, $transformer, new ApiKey('test-api-key'), new ApiHost());
 
         $this->expectException(UnexpectedResponseException::class);
         $this->expectExceptionMessage(sprintf(RunsApiInterface::UNEXPECTED_RESPONSE_SPRINTF, RunsApiInterface::KEY_RUNS));

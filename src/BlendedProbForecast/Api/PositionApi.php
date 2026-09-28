@@ -11,21 +11,24 @@ use ChristianBrown\MetOffice\BlendedProbForecast\DataQueryInterface;
 use ChristianBrown\MetOffice\BlendedProbForecast\Model\CoverageCollectionInterface;
 use ChristianBrown\MetOffice\BlendedProbForecast\Transformer\CoverageCollectionTransformerInterface;
 use ChristianBrown\MetOffice\CoordinatesInterface;
+use ChristianBrown\MetOffice\Host\ApiHostInterface;
 
 use function rawurlencode;
 use function sprintf;
 
 final class PositionApi implements PositionApiInterface
 {
+    private ApiHostInterface $apiHost;
     private ApiKeyInterface $apiKey;
     private CoverageCollectionTransformerInterface $coverageCollectionTransformer;
     private JsonApiRequestSenderInterface $requestSender;
 
-    public function __construct(JsonApiRequestSenderInterface $requestSender, CoverageCollectionTransformerInterface $coverageCollectionTransformer, ApiKeyInterface $apiKey)
+    public function __construct(JsonApiRequestSenderInterface $requestSender, CoverageCollectionTransformerInterface $coverageCollectionTransformer, ApiKeyInterface $apiKey, ApiHostInterface $apiHost)
     {
         $this->requestSender = $requestSender;
         $this->coverageCollectionTransformer = $coverageCollectionTransformer;
         $this->apiKey = $apiKey;
+        $this->apiHost = $apiHost;
     }
 
     /**
@@ -37,7 +40,7 @@ final class PositionApi implements PositionApiInterface
             ...$this->apiKey->toHeaders(),
             self::HEADER_KEY_ACCEPT => self::HEADER_VALUE_ACCEPT_JSON,
         ];
-        $data = $this->requestSender->get(sprintf(self::API_URL_POSITION_SPRINTF, $collectionId, rawurlencode($instanceId)), self::buildQuery($coordinates, $query), $headers);
+        $data = $this->requestSender->get($this->apiHost->rewrite(sprintf(self::API_URL_POSITION_SPRINTF, $collectionId, rawurlencode($instanceId))), self::buildQuery($coordinates, $query), $headers);
 
         return $this->coverageCollectionTransformer->transform($data);
     }

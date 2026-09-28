@@ -4,36 +4,36 @@ declare(strict_types=1);
 
 namespace ChristianBrown\MetOffice\SiteSpecific;
 
-use ChristianBrown\ApiClient\ApiClient;
-use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
-use ChristianBrown\MetOffice\ApiKey;
-use ChristianBrown\MetOffice\SiteSpecific\Api\DailyForecastApi;
+use ChristianBrown\MetOffice\Container\CoreRegistrar;
+use ChristianBrown\MetOffice\Container\RegistrarContainerFactory;
+use ChristianBrown\MetOffice\Host\ApiHost;
+use ChristianBrown\MetOffice\Host\ApiHostInterface;
 use ChristianBrown\MetOffice\SiteSpecific\Api\DailyForecastApiInterface;
-use ChristianBrown\MetOffice\SiteSpecific\Api\ForecastApi;
-use ChristianBrown\MetOffice\SiteSpecific\Api\HourlyForecastApi;
 use ChristianBrown\MetOffice\SiteSpecific\Api\HourlyForecastApiInterface;
-use ChristianBrown\MetOffice\SiteSpecific\Api\ThreeHourlyForecastApi;
 use ChristianBrown\MetOffice\SiteSpecific\Api\ThreeHourlyForecastApiInterface;
-use ChristianBrown\MetOffice\SiteSpecific\Transformer\DailyForecastTimeStepTransformer;
-use ChristianBrown\MetOffice\SiteSpecific\Transformer\ForecastTimeStepsTransformer;
-use ChristianBrown\MetOffice\SiteSpecific\Transformer\ForecastTransformer;
-use ChristianBrown\MetOffice\SiteSpecific\Transformer\HourlyForecastTimeStepTransformer;
-use ChristianBrown\MetOffice\SiteSpecific\Transformer\ThreeHourlyForecastTimeStepTransformer;
+use ChristianBrown\MetOffice\SiteSpecific\Container\DailyForecastRegistrar;
+use ChristianBrown\MetOffice\SiteSpecific\Container\HourlyForecastRegistrar;
+use ChristianBrown\MetOffice\SiteSpecific\Container\ThreeHourlyForecastRegistrar;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Reference;
 
 final class SiteSpecific implements SiteSpecificInterface
 {
-    private string $apiKey;
     private ContainerBuilder $container;
 
-    public function __construct(string $apiKey)
+    public function __construct(string $apiKey, ?ApiHostInterface $apiHost = null)
     {
-        $this->apiKey = $apiKey;
-        $this->container = new ContainerBuilder();
-        $this->init();
+        $host = $apiHost ?? new ApiHost();
+        $factory = new RegistrarContainerFactory(
+            [
+                new CoreRegistrar(self::SERVICE_API_CLIENT, self::SERVICE_JSON_API_REQUEST_SENDER, self::SERVICE_API_KEY, $apiKey),
+                new HourlyForecastRegistrar($host),
+                new ThreeHourlyForecastRegistrar($host),
+                new DailyForecastRegistrar($host),
+            ]
+        );
+        $this->container = $factory->build();
     }
 
     /**
@@ -76,106 +76,5 @@ final class SiteSpecific implements SiteSpecificInterface
         $service = $this->container->get(self::SERVICE_THREE_HOURLY_FORECAST_API);
 
         return $service;
-    }
-
-    private function init(): void
-    {
-        $this->container->register(self::SERVICE_API_CLIENT, ApiClient::class);
-        $this->container->register(self::SERVICE_JSON_API_REQUEST_SENDER, JsonApiRequestSenderInterface::class)
-            ->setFactory([new Reference(self::SERVICE_API_CLIENT), 'getJsonApiRequestSender']);
-
-        $this->container->register(self::SERVICE_API_KEY, ApiKey::class)
-            ->setArguments(
-                [
-                    $this->apiKey,
-                ]
-            );
-
-        $this->container->register(self::SERVICE_HOURLY_FORECAST_TIME_STEP_TRANSFORMER, HourlyForecastTimeStepTransformer::class);
-        $this->container->register(self::SERVICE_HOURLY_FORECAST_TIME_STEPS_TRANSFORMER, ForecastTimeStepsTransformer::class)
-            ->setArguments(
-                [
-                    $this->container->getDefinition(self::SERVICE_HOURLY_FORECAST_TIME_STEP_TRANSFORMER),
-                ]
-            );
-        $this->container->register(self::SERVICE_HOURLY_FORECAST_TRANSFORMER, ForecastTransformer::class)
-            ->setArguments(
-                [
-                    $this->container->getDefinition(self::SERVICE_HOURLY_FORECAST_TIME_STEPS_TRANSFORMER),
-                ]
-            );
-
-        $this->container->register(self::SERVICE_THREE_HOURLY_FORECAST_TIME_STEP_TRANSFORMER, ThreeHourlyForecastTimeStepTransformer::class);
-        $this->container->register(self::SERVICE_THREE_HOURLY_FORECAST_TIME_STEPS_TRANSFORMER, ForecastTimeStepsTransformer::class)
-            ->setArguments(
-                [
-                    $this->container->getDefinition(self::SERVICE_THREE_HOURLY_FORECAST_TIME_STEP_TRANSFORMER),
-                ]
-            );
-        $this->container->register(self::SERVICE_THREE_HOURLY_FORECAST_TRANSFORMER, ForecastTransformer::class)
-            ->setArguments(
-                [
-                    $this->container->getDefinition(self::SERVICE_THREE_HOURLY_FORECAST_TIME_STEPS_TRANSFORMER),
-                ]
-            );
-
-        $this->container->register(self::SERVICE_DAILY_FORECAST_TIME_STEP_TRANSFORMER, DailyForecastTimeStepTransformer::class);
-        $this->container->register(self::SERVICE_DAILY_FORECAST_TIME_STEPS_TRANSFORMER, ForecastTimeStepsTransformer::class)
-            ->setArguments(
-                [
-                    $this->container->getDefinition(self::SERVICE_DAILY_FORECAST_TIME_STEP_TRANSFORMER),
-                ]
-            );
-        $this->container->register(self::SERVICE_DAILY_FORECAST_TRANSFORMER, ForecastTransformer::class)
-            ->setArguments(
-                [
-                    $this->container->getDefinition(self::SERVICE_DAILY_FORECAST_TIME_STEPS_TRANSFORMER),
-                ]
-            );
-
-        $this->container->register(self::SERVICE_HOURLY_FORECAST, ForecastApi::class)
-            ->setArguments(
-                [
-                    $this->container->getDefinition(self::SERVICE_JSON_API_REQUEST_SENDER),
-                    $this->container->getDefinition(self::SERVICE_HOURLY_FORECAST_TRANSFORMER),
-                    $this->container->getDefinition(self::SERVICE_API_KEY),
-                ]
-            );
-        $this->container->register(self::SERVICE_HOURLY_FORECAST_API, HourlyForecastApi::class)
-            ->setArguments(
-                [
-                    $this->container->getDefinition(self::SERVICE_HOURLY_FORECAST),
-                ]
-            );
-
-        $this->container->register(self::SERVICE_THREE_HOURLY_FORECAST, ForecastApi::class)
-            ->setArguments(
-                [
-                    $this->container->getDefinition(self::SERVICE_JSON_API_REQUEST_SENDER),
-                    $this->container->getDefinition(self::SERVICE_THREE_HOURLY_FORECAST_TRANSFORMER),
-                    $this->container->getDefinition(self::SERVICE_API_KEY),
-                ]
-            );
-        $this->container->register(self::SERVICE_THREE_HOURLY_FORECAST_API, ThreeHourlyForecastApi::class)
-            ->setArguments(
-                [
-                    $this->container->getDefinition(self::SERVICE_THREE_HOURLY_FORECAST),
-                ]
-            );
-
-        $this->container->register(self::SERVICE_DAILY_FORECAST, ForecastApi::class)
-            ->setArguments(
-                [
-                    $this->container->getDefinition(self::SERVICE_JSON_API_REQUEST_SENDER),
-                    $this->container->getDefinition(self::SERVICE_DAILY_FORECAST_TRANSFORMER),
-                    $this->container->getDefinition(self::SERVICE_API_KEY),
-                ]
-            );
-        $this->container->register(self::SERVICE_DAILY_FORECAST_API, DailyForecastApi::class)
-            ->setArguments(
-                [
-                    $this->container->getDefinition(self::SERVICE_DAILY_FORECAST),
-                ]
-            );
     }
 }

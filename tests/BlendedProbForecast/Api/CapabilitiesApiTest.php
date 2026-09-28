@@ -14,6 +14,7 @@ use ChristianBrown\MetOffice\BlendedProbForecast\Model\LandingPageInterface;
 use ChristianBrown\MetOffice\BlendedProbForecast\Transformer\ConformanceTransformerInterface;
 use ChristianBrown\MetOffice\BlendedProbForecast\Transformer\LandingPageTransformerInterface;
 use ChristianBrown\MetOffice\Exception\UnexpectedResponseException;
+use ChristianBrown\MetOffice\Host\ApiHost;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -23,6 +24,7 @@ use PHPUnit\Framework\TestCase;
 use function sprintf;
 
 #[CoversClass(CapabilitiesApi::class)]
+#[UsesClass(ApiHost::class)]
 #[UsesClass(ApiKey::class)]
 final class CapabilitiesApiTest extends TestCase
 {
@@ -59,7 +61,7 @@ final class CapabilitiesApiTest extends TestCase
             ->with($conformsToData)
             ->willReturn($conformance);
 
-        $api = new CapabilitiesApi($requestSender, $landingPageTransformer, $conformanceTransformer, new ApiKey('test-api-key'));
+        $api = new CapabilitiesApi($requestSender, $landingPageTransformer, $conformanceTransformer, new ApiKey('test-api-key'), new ApiHost());
 
         self::assertSame($conformance, $api->getConformance());
     }
@@ -82,7 +84,7 @@ final class CapabilitiesApiTest extends TestCase
         $conformanceTransformer = self::createMock(ConformanceTransformerInterface::class);
         $conformanceTransformer->expects(self::never())->method('transform');
 
-        $api = new CapabilitiesApi($requestSender, $landingPageTransformer, $conformanceTransformer, new ApiKey('test-api-key'));
+        $api = new CapabilitiesApi($requestSender, $landingPageTransformer, $conformanceTransformer, new ApiKey('test-api-key'), new ApiHost());
 
         $this->expectException(UnexpectedResponseException::class);
         $this->expectExceptionMessage(sprintf(CapabilitiesApiInterface::UNEXPECTED_RESPONSE_SPRINTF, CapabilitiesApiInterface::KEY_CONFORMS_TO));
@@ -122,7 +124,7 @@ final class CapabilitiesApiTest extends TestCase
         $conformanceTransformer = self::createMock(ConformanceTransformerInterface::class);
         $conformanceTransformer->expects(self::never())->method('transform');
 
-        $api = new CapabilitiesApi($requestSender, $landingPageTransformer, $conformanceTransformer, new ApiKey('test-api-key'));
+        $api = new CapabilitiesApi($requestSender, $landingPageTransformer, $conformanceTransformer, new ApiKey('test-api-key'), new ApiHost());
 
         self::assertSame($landingPage, $api->getLandingPage());
     }
