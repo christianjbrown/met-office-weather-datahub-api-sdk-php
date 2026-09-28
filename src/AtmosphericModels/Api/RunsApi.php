@@ -36,13 +36,13 @@ final class RunsApi implements RunsApiInterface
      *
      * @return array<int, RunInterface>
      */
-    public function getRuns(): array
+    public function getRuns(?string $sort = null): array
     {
         $headers = [
             ...$this->apiKey->toHeaders(),
             self::HEADER_KEY_ACCEPT => self::HEADER_VALUE_ACCEPT_JSON,
         ];
-        $data = $this->requestSender->get($this->apiHost->rewrite(self::API_URL_RUNS), [], $headers);
+        $data = $this->requestSender->get($this->apiHost->rewrite(self::API_URL_RUNS), self::buildRunsQuery($sort), $headers);
 
         return $this->runsTransformer->transform(self::extractRuns($data));
     }
@@ -53,15 +53,28 @@ final class RunsApi implements RunsApiInterface
      *
      * @return array<int, RunInterface>
      */
-    public function getRunsByModel(string $modelId): array
+    public function getRunsByModel(string $modelId, ?string $sort = null): array
     {
         $headers = [
             ...$this->apiKey->toHeaders(),
             self::HEADER_KEY_ACCEPT => self::HEADER_VALUE_ACCEPT_JSON,
         ];
-        $data = $this->requestSender->get($this->apiHost->rewrite(sprintf(self::API_URL_RUNS_BY_MODEL_SPRINTF, $modelId)), [], $headers);
+        $data = $this->requestSender->get($this->apiHost->rewrite(sprintf(self::API_URL_RUNS_BY_MODEL_SPRINTF, $modelId)), self::buildRunsQuery($sort), $headers);
 
         return $this->runsTransformer->transform(self::extractRuns($data));
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private static function buildRunsQuery(?string $sort): array
+    {
+        $query = [];
+        if (null !== $sort) {
+            $query[self::QUERY_KEY_SORT] = $sort;
+        }
+
+        return $query;
     }
 
     /**

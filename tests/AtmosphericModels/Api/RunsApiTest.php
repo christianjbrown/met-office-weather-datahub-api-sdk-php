@@ -100,6 +100,42 @@ final class RunsApiTest extends TestCase
     }
 
     /**
+     * @throws RequestExceptionInterface
+     * @throws Exception
+     */
+    public function testGetRunsByModelWithSort(): void
+    {
+        $runsData = [['test-run']];
+        $data = [RunsApiInterface::KEY_RUNS => $runsData];
+
+        $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
+        $requestSender->expects(self::once())
+            ->method('get')
+            ->with(
+                sprintf(RunsApiInterface::API_URL_RUNS_BY_MODEL_SPRINTF, 'mo-uk'),
+                [RunsApiInterface::QUERY_KEY_SORT => 'RUN'],
+                [
+                    ApiKeyInterface::HEADER_KEY_API_KEY => 'test-api-key',
+                    RunsApiInterface::HEADER_KEY_ACCEPT => RunsApiInterface::HEADER_VALUE_ACCEPT_JSON,
+                ]
+            )
+            ->willReturn($data);
+
+        $run = self::createStub(RunInterface::class);
+        $runs = [$run];
+
+        $transformer = self::createMock(RunsTransformerInterface::class);
+        $transformer->expects(self::once())
+            ->method('transform')
+            ->with($runsData)
+            ->willReturn($runs);
+
+        $api = new RunsApi($requestSender, $transformer, new ApiKey('test-api-key'), new ApiHost());
+
+        self::assertSame($runs, $api->getRunsByModel('mo-uk', 'RUN'));
+    }
+
+    /**
      * @param array<string, mixed> $data
      *
      * @throws RequestExceptionInterface
@@ -121,5 +157,41 @@ final class RunsApiTest extends TestCase
         $this->expectExceptionMessage(sprintf(RunsApiInterface::UNEXPECTED_RESPONSE_SPRINTF, RunsApiInterface::KEY_RUNS));
 
         $api->getRuns();
+    }
+
+    /**
+     * @throws RequestExceptionInterface
+     * @throws Exception
+     */
+    public function testGetRunsWithSort(): void
+    {
+        $runsData = [['test-run']];
+        $data = [RunsApiInterface::KEY_RUNS => $runsData];
+
+        $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
+        $requestSender->expects(self::once())
+            ->method('get')
+            ->with(
+                RunsApiInterface::API_URL_RUNS,
+                [RunsApiInterface::QUERY_KEY_SORT => 'RUNDATETIME'],
+                [
+                    ApiKeyInterface::HEADER_KEY_API_KEY => 'test-api-key',
+                    RunsApiInterface::HEADER_KEY_ACCEPT => RunsApiInterface::HEADER_VALUE_ACCEPT_JSON,
+                ]
+            )
+            ->willReturn($data);
+
+        $run = self::createStub(RunInterface::class);
+        $runs = [$run];
+
+        $transformer = self::createMock(RunsTransformerInterface::class);
+        $transformer->expects(self::once())
+            ->method('transform')
+            ->with($runsData)
+            ->willReturn($runs);
+
+        $api = new RunsApi($requestSender, $transformer, new ApiKey('test-api-key'), new ApiHost());
+
+        self::assertSame($runs, $api->getRuns('RUNDATETIME'));
     }
 }

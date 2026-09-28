@@ -24,5 +24,6 @@ interface ApiInterface extends BaseApiInterface
     public const string KEY_RUNS = 'runs';
     public const string QUERY_KEY_DETAIL = 'detail';
     public const string QUERY_KEY_RUNFILTER = 'runfilter';
+    public const string QUERY_KEY_SORT = 'sort';
     public const string UNEXPECTED_RESPONSE_SPRINTF = '%s not set or not an array';
 }

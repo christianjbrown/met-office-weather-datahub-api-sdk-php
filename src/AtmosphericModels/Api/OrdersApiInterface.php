@@ -22,5 +22,5 @@ interface OrdersApiInterface extends ApiInterface
     /**
      * @return array<int, OrderInterface>
      */
-    public function getOrders(): array;
+    public function getOrders(?string $detail = null): array;
 }

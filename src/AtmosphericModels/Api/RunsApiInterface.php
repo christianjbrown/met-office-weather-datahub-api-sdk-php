@@ -11,10 +11,10 @@ interface RunsApiInterface extends ApiInterface
     /**
      * @return array<int, RunInterface>
      */
-    public function getRuns(): array;
+    public function getRuns(?string $sort = null): array;
 
     /**
      * @return array<int, RunInterface>
      */
-    public function getRunsByModel(string $modelId): array;
+    public function getRunsByModel(string $modelId, ?string $sort = null): array;
 }

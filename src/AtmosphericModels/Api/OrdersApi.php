@@ -100,13 +100,13 @@ final class OrdersApi implements OrdersApiInterface
      *
      * @return array<int, OrderInterface>
      */
-    public function getOrders(): array
+    public function getOrders(?string $detail = null): array
     {
         $headers = [
             ...$this->apiKey->toHeaders(),
             self::HEADER_KEY_ACCEPT => self::HEADER_VALUE_ACCEPT_JSON,
         ];
-        $data = $this->requestSender->get($this->apiHost->rewrite(self::API_URL_ORDERS), [], $headers);
+        $data = $this->requestSender->get($this->apiHost->rewrite(self::API_URL_ORDERS), self::buildOrdersQuery($detail), $headers);
 
         return $this->ordersTransformer->transform(self::extractOrders($data));
     }
@@ -122,6 +122,19 @@ final class OrdersApi implements OrdersApiInterface
         }
         if (null !== $runFilter) {
             $query[self::QUERY_KEY_RUNFILTER] = $runFilter;
+        }
+
+        return $query;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private static function buildOrdersQuery(?string $detail): array
+    {
+        $query = [];
+        if (null !== $detail) {
+            $query[self::QUERY_KEY_DETAIL] = $detail;
         }
 
         return $query;
