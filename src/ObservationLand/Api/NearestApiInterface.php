@@ -12,10 +12,10 @@ interface NearestApiInterface extends ApiInterface
     /**
      * @return array<int, NearestLocationInterface>
      */
-    public function getByCoordinates(CoordinatesInterface $coordinates): array;
+    public function getByCoordinates(CoordinatesInterface $coordinates, ?int $max = null): array;
 
     /**
      * @return array<int, NearestLocationInterface>
      */
-    public function getByGeohash(string $geohash): array;
+    public function getByGeohash(string $geohash, ?int $max = null): array;
 }
