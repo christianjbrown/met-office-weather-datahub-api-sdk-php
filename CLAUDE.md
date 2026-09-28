@@ -64,10 +64,19 @@ point forecast and returns typed model objects instead of raw GeoJSON arrays.
   on the **shared** `ChristianBrown\MetOffice\ApiInterface` (`src/ApiInterface.php`), which every API's
   `Api\ApiInterface` extends.
 - **Query params** (all strings): `latitude`, `longitude`, `dataSource=BD1`,
-  `excludeParameterMetadata=true`, `includeLocationName=true`.
-- **Response:** GeoJSON — `features[0].properties` holds `location.name`, `modelRunDate` (ISO-8601),
-  and `timeSeries` (an array of per-step objects). Each step has a `time` (ISO-8601) plus its weather
-  fields. The three resolutions have **three distinct step schemas** (see `src/SiteSpecific/Model/`).
+  `excludeParameterMetadata` (`true` unless `getForecast()`'s third argument requests metadata, in
+  which case `false`), `includeLocationName=true`.
+- **Response:** GeoJSON — `features[0].properties` holds `location.name`, `location.licence`,
+  `modelRunDate` (ISO-8601), `requestPointDistance`, and `timeSeries` (an array of per-step objects).
+  `features[0].geometry.coordinates` holds `[longitude, latitude, elevation]`. Each step has a `time`
+  (ISO-8601) plus its weather fields. The three resolutions have **three distinct step schemas** (see
+  `src/SiteSpecific/Model/`). The top-level `parameters` array (per-parameter unit/description
+  metadata, keyed by parameter name once flattened) is only populated when
+  `excludeParameterMetadata=false`; `ForecastApi::extractProperties()` merges both `geometry` and the
+  top-level `parameters` into the `properties` array handed to `ForecastTransformer`, which parses
+  them via the optional, injected `ParameterMetadataTransformerInterface` (nullable constructor
+  argument, defaulting to `null` so hand-wired callers are unaffected) into
+  `Forecast::getParameters(): array<string, ParameterMetadataInterface>`.
 
 ## Commands
 
@@ -153,17 +162,26 @@ Everything lives under the `ChristianBrown\MetOffice\` namespace (`src/`), mirro
   the Site-Specific constants (query keys, `KEY_FEATURES`, `KEY_PROPERTIES`, `CACHE_KEY_SPRINTF`,
   `UNEXPECTED_RESPONSE_SPRINTF`); `ForecastApiInterface` extends it, and each endpoint interface adds its
   own `API_URL`.
-- **`SiteSpecific\Model/`** — plain mutable DTOs. `Forecast` holds `locationName`, `modelRunDate` (Unix),
-  and an array of `ForecastTimeStepInterface`. `ForecastTimeStepInterface` is the marker (`getTime(): int`)
-  implemented by the three step models — `HourlyForecastTimeStep`, `ThreeHourlyForecastTimeStep`,
-  `DailyForecastTimeStep` — which have **distinct field sets** (the hourly "instant" schema, the
-  three-hourly schema, and the daily day/night schema). Weather codes are stored as `?WeatherType` (the
-  shared enum), wind direction as raw `?int` degrees.
+- **`SiteSpecific\Model/`** — plain mutable DTOs. `Forecast` holds `locationName`, `locationLicence`,
+  `modelRunDate` (Unix), `requestPointDistance` (metres, `?float`), `elevation` (metres, `?float`, from
+  the response geometry), an array of `ForecastTimeStepInterface`, and a keyed
+  `array<string, ParameterMetadataInterface> $parameters` (empty unless parameter metadata was
+  requested). `ForecastTimeStepInterface` is the marker (`getTime(): int`) implemented by the three
+  step models — `HourlyForecastTimeStep`, `ThreeHourlyForecastTimeStep`, `DailyForecastTimeStep` —
+  which have **distinct field sets** (the hourly "instant" schema, the three-hourly schema, and the
+  daily day/night schema). Weather codes are stored as `?WeatherType` (the shared enum), wind direction
+  as raw `?int` degrees. `ParameterMetadata` holds `description`, `type`, and the flattened
+  `unitLabel`/`unitSymbolType`/`unitSymbolValue` (from the response `unit.label` /
+  `unit.symbol.{type,value}`).
 - **`SiteSpecific\Transformer/`** — `ForecastTransformer` builds a `Forecast`, applies optional
-  `location.name` and `modelRunDate`, and delegates `timeSeries` to `ForecastTimeStepsTransformer` (a
-  collection wrapping one `ForecastTimeStepTransformerInterface`). The three step transformers each
-  implement that interface and narrow their return type to their concrete step interface. These
-  reference the shared `Enums\WeatherType`.
+  `location.name`, `location.licence`, `modelRunDate`, `requestPointDistance`, and the geometry-derived
+  `elevation`, and delegates `timeSeries` to `ForecastTimeStepsTransformer` (a collection wrapping one
+  `ForecastTimeStepTransformerInterface`). The three step transformers each implement that interface
+  and narrow their return type to their concrete step interface. These reference the shared
+  `Enums\WeatherType`. `ForecastTransformer` also takes an **optional, nullable, appended**
+  `?ParameterMetadataTransformerInterface` constructor argument (`null` unless a facade wires one in);
+  when present, it flattens the top-level `parameters` (an array of parameter-name-keyed maps) into
+  `Forecast::parameters` via `ParameterMetadataTransformer`.
 
 ### Blended Probabilistic Forecast (`ChristianBrown\MetOffice\BlendedProbForecast\`)
 
@@ -275,8 +293,9 @@ same `apikey` header.
   `ObservationLandInterface`, **`met_office.observation_land.` prefix**). Exposes `getNearestApi()` and
   `getObservationApi()`.
 - **`ObservationLand\Api/`** — `NearestApi` (`GET /nearest`, query is either `geohash` **or** `lat`+`lon`,
-  each formatted to ≤2 decimal places) with `getByCoordinates(CoordinatesInterface $coordinates)` and
-  `getByGeohash(string $geohash)` returning `NearestLocationInterface[]`; and `ObservationApi`
+  each formatted to ≤2 decimal places, plus an optional `max` 1–5) with
+  `getByCoordinates(CoordinatesInterface $coordinates, ?int $max = null)` and
+  `getByGeohash(string $geohash, ?int $max = null)` returning `NearestLocationInterface[]`; and `ObservationApi`
   (`GET /{geohash}`, geohash is a path segment) with `getByGeohash(string $geohash, bool $skipCache = false)`
   returning `ObservationInterface[]`, cached per geohash. Both build the `apikey` header, call the sender,
   and delegate the response array to their collection transformer. `Api\ApiInterface` extends the shared
@@ -328,9 +347,11 @@ as a `string`** for a download — **no GRIB parsing is performed**. Base URL
   chain), and `Container\RunsApiRegistrar` + `Container\OrdersApiRegistrar` (ids are `SERVICE_*` constants
   on `AtmosphericModelsInterface`, **`met_office.atmospheric_models.` prefix**). Exposes `getRunsApi()` and
   `getOrdersApi()`.
-- **`AtmosphericModels\Api/`** — `RunsApi` (`GET /runs`, `GET /runs/{modelId}`) with `getRuns()` and
-  `getRunsByModel(string $modelId)` returning `RunInterface[]`; and `OrdersApi` with `getOrders()`
-  (`GET /orders` → `OrderInterface[]`), `getOrderFiles(string $orderId, ?string $detail = null, ?string $runFilter = null)`
+- **`AtmosphericModels\Api/`** — `RunsApi` (`GET /runs`, `GET /runs/{modelId}`, both with an optional
+  `sort` query param, `RUN` or `RUNDATETIME`) with `getRuns(?string $sort = null)` and
+  `getRunsByModel(string $modelId, ?string $sort = null)` returning `RunInterface[]`; and `OrdersApi`
+  with `getOrders(?string $detail = null)` (`GET /orders`, optional `MINIMAL`/`FULL` → `OrderInterface[]`),
+  `getOrderFiles(string $orderId, ?string $detail = null, ?string $runFilter = null)`
   (`GET /orders/{orderId}/latest`, query built only for supplied params, unwraps `orderDetails.files` →
   `OrderFileInterface[]`), `getOrderFile(string $orderId, string $fileId)` (`GET /orders/{orderId}/latest/{fileId}`,
   unwraps `fileDetails` → `OrderFileDetailsInterface`), and `getOrderFileData(string $orderId, string $fileId): string`
@@ -360,13 +381,18 @@ download — **no image decoding is performed**. Base URL
   `Container\RunsApiRegistrar` + `Container\OrdersApiRegistrar` — the registrar classes are per-product
   even though the transformer classes they wire are shared via `Coverage\`; `SERVICE_*` ids on
   `MapImagesInterface`, **`met_office.map_images.` prefix**). Exposes `getRunsApi()` and `getOrdersApi()`.
-- **`MapImages\Api/`** — **two differences from Atmospheric Models.** (1) Map Images has **no
-  `/runs/{modelId}` endpoint**, so `RunsApi` exposes only `getRuns()` (there is no `getRunsByModel()`
-  and no `API_URL_RUNS_BY_MODEL_SPRINTF`). (2) The binary `getOrderFileData()` sends
-  `Accept: image/png` (`HEADER_VALUE_ACCEPT_PNG = 'image/png'`) rather than GRIB, and returns the raw
-  PNG body string (302 redirects followed, file id URL-encoded). `OrdersApi` is otherwise identical
-  (`getOrders()`, `getOrderFiles()`, `getOrderFile()`). **Accept header is mandatory** — the gateway
-  returns `406` without it, so every JSON endpoint sends `Accept: application/json` and the raw
+- **`MapImages\Api/`** — **differences from Atmospheric Models.** (1) Map Images has **no
+  `/runs/{modelId}` endpoint**, so `RunsApi` exposes only `getRuns(?string $sort = null)` (there is no
+  `getRunsByModel()` and no `API_URL_RUNS_BY_MODEL_SPRINTF`); `sort` (`RUN`/`RUNDATETIME`) is still
+  supported, same as Atmospheric Models. (2) The binary `getOrderFileData(string $orderId, string $fileId, ?bool $includeLand = null, ?bool $legend = null)`
+  sends `Accept: image/png` (`HEADER_VALUE_ACCEPT_PNG = 'image/png'`) rather than GRIB, and returns the
+  raw PNG body string (302 redirects followed, file id URL-encoded); `$includeLand` and `$legend` are
+  Map-Images-only boolean query params (merged land-cover base layer, and an in-image legend), both
+  omitted by default to match the API's own `false` default. `OrdersApi` is otherwise identical
+  (`getOrders()`, `getOrderFiles()`, `getOrderFile()`) — note Map Images' own OpenAPI spec does not list
+  `detail`/`runfilter` on `/orders/{orderId}/latest` (unlike Atmospheric Models), but the SDK sends them
+  uniformly since the gateway ignores unrecognised query params. **Accept header is mandatory** — the
+  gateway returns `406` without it, so every JSON endpoint sends `Accept: application/json` and the raw
   download sends `Accept: image/png`. `Api\ApiInterface` extends the shared top-level `ApiInterface`.
 - **Model + Transformer** — shared with Atmospheric Models under `ChristianBrown\MetOffice\Coverage\`
   (see the Coverage section); Map Images adds none of its own. Its `Api/` clients depend on
