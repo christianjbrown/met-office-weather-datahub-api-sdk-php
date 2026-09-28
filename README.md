@@ -1,6 +1,6 @@
 # Met Office Weather DataHub API SDK
 
-[![CI](https://github.com/christianjbrown/met-office-weather-datahub-api-sdk-php/actions/workflows/ci.yml/badge.svg)](https://github.com/christianjbrown/met-office-weather-datahub-api-sdk-php/actions/workflows/ci.yml)
+[![CI](https://github.com/christianjbrown/met-office-weather-datahub-api-sdk-php/actions/workflows/ci.yml/badge.svg)](https://github.com/christianjbrown/met-office-weather-datahub-api-sdk-php/actions/workflows/ci.yml) [![Packagist](https://img.shields.io/packagist/v/christianjbrown/met-office-weather-datahub-api-sdk)](https://packagist.org/packages/christianjbrown/met-office-weather-datahub-api-sdk)
 
 A strongly-typed, **read-only** PHP client for the [Met Office Weather DataHub](https://datahub.metoffice.gov.uk/) APIs. It returns plain, typed model objects rather than raw GeoJSON / CoverageJSON arrays. The library is structured to host multiple DataHub APIs side by side; its supported APIs are **Site-Specific** (Global Spot), **Blended Probabilistic Forecast**, **Observation (Land)**, **Atmospheric Models** (Gridded), and **Map Images**.
 
