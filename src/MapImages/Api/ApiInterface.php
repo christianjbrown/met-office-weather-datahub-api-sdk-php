@@ -22,6 +22,11 @@ interface ApiInterface extends BaseApiInterface
     public const string KEY_ORDERS = 'orders';
     public const string KEY_RUNS = 'runs';
     public const string QUERY_KEY_DETAIL = 'detail';
+    public const string QUERY_KEY_INCLUDE_LAND = 'includeLand';
+    public const string QUERY_KEY_LEGEND = 'legend';
     public const string QUERY_KEY_RUNFILTER = 'runfilter';
+    public const string QUERY_KEY_SORT = 'sort';
+    public const string QUERY_VALUE_FALSE = 'false';
+    public const string QUERY_VALUE_TRUE = 'true';
     public const string UNEXPECTED_RESPONSE_SPRINTF = '%s not set or not an array';
 }

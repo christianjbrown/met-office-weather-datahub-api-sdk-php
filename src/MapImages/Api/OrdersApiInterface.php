@@ -12,7 +12,7 @@ interface OrdersApiInterface extends ApiInterface
 {
     public function getOrderFile(string $orderId, string $fileId): OrderFileDetailsInterface;
 
-    public function getOrderFileData(string $orderId, string $fileId): string;
+    public function getOrderFileData(string $orderId, string $fileId, ?bool $includeLand = null, ?bool $legend = null): string;
 
     /**
      * @return array<int, OrderFileInterface>
