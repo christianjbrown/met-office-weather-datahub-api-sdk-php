@@ -20,8 +20,34 @@ The top-level entry point is the umbrella `MetOffice` facade (`src/MetOffice.php
 `mapImages(string $apiKey): MapImages\MapImagesInterface` methods return the
 per-API clients. Each API's own facade (e.g. `SiteSpecific\SiteSpecific`, `BlendedProbForecast\BlendedProbForecast`,
 `ObservationLand\ObservationLand`, `AtmosphericModels\AtmosphericModels`, `MapImages\MapImages`, constructed with a
-`string $apiKey`) owns the DI container for that API. New DataHub APIs are added as new `siteSpecific()`-style
-factory methods returning new per-API facades.
+`string $apiKey` and an **optional, last** `?Host\ApiHostInterface $apiHost = null` defaulting to production) owns
+the DI container for that API. New DataHub APIs are added as new `siteSpecific()`-style factory methods returning
+new per-API facades.
+
+**Composition root and registrars.** No facade builds its `ContainerBuilder` inline. Each facade's constructor is
+a small composition root: it resolves the `ApiHost` (the one passed in, or a new production-default one), builds
+an ordered list of **registrars** for that product, and hands them to the shared
+`Container\RegistrarContainerFactory`, which runs each registrar's `register(ContainerBuilder $container): void`
+against the same container in order. A registrar is anything implementing the single-method
+`Container\ServiceRegistrarInterface`. Two are shared by every facade: `Container\CoreRegistrar` (the `ApiClient`,
+the JSON request sender, and the `ApiKey` credential — the boilerplate every product needs) and
+`Container\RawRequestSenderRegistrar` (the raw, non-JSON sender; only Atmospheric Models and Map Images use it, for
+binary GRIB/PNG downloads). Everything else is a small `final` registrar scoped to one API resource group or one
+cohesive transformer chain within a product, living in that product's own `Container\` sub-namespace (e.g.
+`SiteSpecific\Container\HourlyForecastRegistrar`, `BlendedProbForecast\Container\CoverageTransformerRegistrar`).
+**Adding a new API resource group to an existing product means adding one registrar and listing it in that
+facade's constructor — never editing an existing registrar or the facade's getters.** See "Adding a new DataHub
+API" below for adding an entire new product.
+
+**Injectable API host.** Every product's base URL is a `public const string API_URL...` on its `Api\ApiInterface`,
+defaulting to the real DataHub host (`ApiInterface::API_HOST`). `Host\ApiHost implements Host\ApiHostInterface`
+is a small value object whose `rewrite(string $url): string` replaces that production host prefix with whatever
+host it was constructed with (defaulting to production itself), leaving the path and query untouched — this
+works uniformly across every product because every URL constant shares the same host prefix. Api classes that
+build a request URL from a `self::API_URL...` constant take an injected `ApiHostInterface $apiHost` and call
+`$this->apiHost->rewrite(...)` on it before passing the URL to the request sender; the composition root wires
+the same `ApiHost` instance into every Api service for that facade. See the README "Injectable API host" section
+for how a caller overrides it.
 
 **Radar is intentionally not covered.** It is not a DataHub REST API (no docs/pricing/endpoint on
 `data.hub.api.metoffice.gov.uk`); the radar composites are distributed as HDF5 via AWS Open Data (S3), a
@@ -64,8 +90,11 @@ like the other sibling dependencies.
 
 Always run `composer fix-style` first (php-cs-fixer auto-fixes what it can), then `composer
 check-style` to surface remaining violations that must be fixed by hand, then `composer stan`, then
-`composer test` before finishing. CI (`.github/workflows/ci.yml`) runs the same three gates —
-style → PHPStan → PHPUnit-with-coverage — on push/PR to `main`.
+`composer test` before finishing. CI (`.github/workflows/ci.yml`) runs the same gates — style →
+PHPStan → PHPUnit-with-coverage — on push/PR to `main`, then a final **"Enforce 100% coverage"**
+step runs `./bin/php-coverage-check .phpunit.cache/coverage.txt` (from `code-quality-scripts`)
+against the text coverage report the PHPUnit step just wrote, failing the build if classes,
+methods, lines, branches, or paths are anything less than 100%.
 
 ## Architecture
 
@@ -105,11 +134,11 @@ Everything lives under the `ChristianBrown\MetOffice\` namespace (`src/`), mirro
 ### Site-Specific (`ChristianBrown\MetOffice\SiteSpecific\`)
 
 - **`SiteSpecific\SiteSpecific`** (`src/SiteSpecific/SiteSpecific.php`) — the Site-Specific facade.
-  Constructed with a `string $apiKey`, it builds a Symfony `ContainerBuilder` and registers the
-  `ApiClient`, the JSON request sender, the three step transformers, three `ForecastTimeStepsTransformer`
-  + `ForecastTransformer` chains, and the three API clients (ids are `SERVICE_*` constants on
-  `SiteSpecificInterface`, **`met_office.site_specific.` prefix**). Exposes `getHourlyForecastApi()`,
-  `getThreeHourlyForecastApi()`, `getDailyForecastApi()`.
+  Constructed with a `string $apiKey` and an optional `ApiHostInterface`, it runs `CoreRegistrar` plus one
+  `Container\{Hourly,ThreeHourly,Daily}ForecastRegistrar` per resolution — each wiring that resolution's step
+  transformer, `ForecastTimeStepsTransformer` + `ForecastTransformer` chain, the shared `ForecastApi`, and its
+  thin wrapper (ids are `SERVICE_*` constants on `SiteSpecificInterface`, **`met_office.site_specific.` prefix**).
+  Exposes `getHourlyForecastApi()`, `getThreeHourlyForecastApi()`, `getDailyForecastApi()`.
 - **`SiteSpecific\Api/`** — the shared **`ForecastApi`** (constructed with
   `(JsonApiRequestSenderInterface, ForecastTransformerInterface, ApiKeyInterface)`) holds the request
   logic: `getForecast(string $apiUrl, CoordinatesInterface $coordinates, bool $skipCache = false)` builds
@@ -156,9 +185,14 @@ verified to match the live `parameter_names` union exactly (the source PDF lists
 **documentation only** — parameter names are opaque strings everywhere in `src/`, so no enum, constant or
 lookup encodes them, and the authoritative per-collection list is the live `getParameters()` map.
 
-- **`BlendedProbForecast\BlendedProbForecast`** — the facade (same DI/ContainerBuilder pattern as the other
-  modules, JSON sender only — CoverageJSON is JSON). Exposes `getCapabilitiesApi()`, `getCollectionsApi()`,
-  `getInstancesApi()`, `getLocationsApi()`, `getPositionApi()`.
+- **`BlendedProbForecast\BlendedProbForecast`** — the facade (same composition-root/registrar pattern as the
+  other modules, JSON sender only — CoverageJSON is JSON). Runs `CoreRegistrar` plus nine of its own
+  registrars: three small shared-transformer registrars (`LinksTransformerRegistrar`,
+  `ExtentTransformerRegistrar`, `ParametersTransformerRegistrar`), `CoverageTransformerRegistrar` (the
+  CoverageJSON chain shared by Locations and Position), and one registrar per API client
+  (`CapabilitiesApiRegistrar`, `CollectionsApiRegistrar`, `InstancesApiRegistrar`, `LocationsApiRegistrar`,
+  `PositionApiRegistrar`). Exposes `getCapabilitiesApi()`, `getCollectionsApi()`, `getInstancesApi()`,
+  `getLocationsApi()`, `getPositionApi()`.
 - **`BlendedProbForecast\DataQuery`** (`src/BlendedProbForecast/DataQuery.php`) — a module-level value object
   bundling the three optional data filters (`array<int,string> $parameterNames`, `array<int,string> $percentiles`,
   `?string $datetime`, all defaulted). `toQuery(): array<string,string>` comma-joins the two list filters and
@@ -234,11 +268,12 @@ Recent (past 48h) hourly land surface observations. Base URL `https://data.hub.a
 same `apikey` header.
 
 - **`ObservationLand\ObservationLand`** (`src/ObservationLand/ObservationLand.php`) — the facade.
-  Constructed with a `string $apiKey`, it builds a Symfony `ContainerBuilder` and registers the
-  `ApiClient`, the JSON request sender, the `NearestLocationTransformer` + `NearestLocationsTransformer`
-  and `ObservationTransformer` + `ObservationsTransformer` chains, and the two API clients (ids are
-  `SERVICE_*` constants on `ObservationLandInterface`, **`met_office.observation_land.` prefix**).
-  Exposes `getNearestApi()` and `getObservationApi()`.
+  Constructed with a `string $apiKey` and an optional `ApiHostInterface`, it runs `CoreRegistrar` plus
+  `Container\NearestApiRegistrar` (the `NearestLocationTransformer` + `NearestLocationsTransformer` chain and
+  `NearestApi`) and `Container\ObservationApiRegistrar` (the `ObservationTransformer` +
+  `ObservationsTransformer` chain and `ObservationApi`) (ids are `SERVICE_*` constants on
+  `ObservationLandInterface`, **`met_office.observation_land.` prefix**). Exposes `getNearestApi()` and
+  `getObservationApi()`.
 - **`ObservationLand\Api/`** — `NearestApi` (`GET /nearest`, query is either `geohash` **or** `lat`+`lon`,
   each formatted to ≤2 decimal places) with `getByCoordinates(CoordinatesInterface $coordinates)` and
   `getByGeohash(string $geohash)` returning `NearestLocationInterface[]`; and `ObservationApi`
@@ -286,12 +321,13 @@ files; this library returns typed metadata for the runs/orders/files and returns
 as a `string`** for a download — **no GRIB parsing is performed**. Base URL
 `https://data.hub.api.metoffice.gov.uk/atmospheric-models/1.0.0`, same `apikey` header.
 
-- **`AtmosphericModels\AtmosphericModels`** — the facade. Constructed with a `string $apiKey`, it builds
-  a Symfony `ContainerBuilder` and registers the `ApiClient`, **both** the JSON request sender (JSON
-  endpoints) **and** the raw `ApiRequestSenderInterface` (binary download) — via
-  `ApiClient::getJsonApiRequestSender()` / `getApiRequestSender()` — the full transformer chains, and the
-  two API clients (ids are `SERVICE_*` constants on `AtmosphericModelsInterface`, **`met_office.atmospheric_models.`
-  prefix**). Exposes `getRunsApi()` and `getOrdersApi()`.
+- **`AtmosphericModels\AtmosphericModels`** — the facade. Constructed with a `string $apiKey` and an optional
+  `ApiHostInterface`, it runs `CoreRegistrar` (JSON sender, via `ApiClient::getJsonApiRequestSender()`),
+  `RawRequestSenderRegistrar` (**also** the raw `ApiRequestSenderInterface` for binary downloads, via
+  `ApiClient::getApiRequestSender()`), `Container\TransformersRegistrar` (the full `Coverage\Transformer`
+  chain), and `Container\RunsApiRegistrar` + `Container\OrdersApiRegistrar` (ids are `SERVICE_*` constants
+  on `AtmosphericModelsInterface`, **`met_office.atmospheric_models.` prefix**). Exposes `getRunsApi()` and
+  `getOrdersApi()`.
 - **`AtmosphericModels\Api/`** — `RunsApi` (`GET /runs`, `GET /runs/{modelId}`) with `getRuns()` and
   `getRunsByModel(string $modelId)` returning `RunInterface[]`; and `OrdersApi` with `getOrders()`
   (`GET /orders` → `OrderInterface[]`), `getOrderFiles(string $orderId, ?string $detail = null, ?string $runFilter = null)`
@@ -319,10 +355,11 @@ returns typed metadata for the runs/orders/files and returns the **raw PNG bytes
 download — **no image decoding is performed**. Base URL
 `https://data.hub.api.metoffice.gov.uk/map-images/1.0.0`, same `apikey` header.
 
-- **`MapImages\MapImages`** — the facade. Same wiring as `AtmosphericModels\AtmosphericModels`
-  (registers `ApiClient`, **both** the JSON request sender and the raw `ApiRequestSenderInterface`, the
-  full transformer chains, and the two API clients; `SERVICE_*` ids on `MapImagesInterface`,
-  **`met_office.map_images.` prefix**). Exposes `getRunsApi()` and `getOrdersApi()`.
+- **`MapImages\MapImages`** — the facade. Same composition root as `AtmosphericModels\AtmosphericModels`
+  (`CoreRegistrar`, `RawRequestSenderRegistrar`, its own `Container\TransformersRegistrar`, and its own
+  `Container\RunsApiRegistrar` + `Container\OrdersApiRegistrar` — the registrar classes are per-product
+  even though the transformer classes they wire are shared via `Coverage\`; `SERVICE_*` ids on
+  `MapImagesInterface`, **`met_office.map_images.` prefix**). Exposes `getRunsApi()` and `getOrdersApi()`.
 - **`MapImages\Api/`** — **two differences from Atmospheric Models.** (1) Map Images has **no
   `/runs/{modelId}` endpoint**, so `RunsApi` exposes only `getRuns()` (there is no `getRunsByModel()`
   and no `API_URL_RUNS_BY_MODEL_SPRINTF`). (2) The binary `getOrderFileData()` sends
@@ -339,10 +376,14 @@ download — **no image decoding is performed**. Base URL
 ### Adding a new DataHub API
 
 Each new API gets its own `ChristianBrown\MetOffice\<ApiName>\` sub-namespace containing its `Api/`,
-`Model/`, `Transformer/` (and any API-specific enums/exceptions), plus a `<ApiName>\<ApiName>` facade
-that owns its DI container (service-id prefix `met_office.<api_name>.`) and an `Api\ApiInterface` that
-extends the shared top-level `ApiInterface`. Wire it into the umbrella `MetOffice` facade with a new
-factory method. Anything genuinely shared across APIs stays at the top level.
+`Model/`, `Transformer/`, `Container/` (its own registrars — see "Composition root and registrars" above)
+and any API-specific enums/exceptions, plus a `<ApiName>\<ApiName>` facade whose constructor is the
+composition root: `string $apiKey` and an optional, last `?Host\ApiHostInterface $apiHost = null`, a
+`Container\CoreRegistrar` first in its registrar list, then one registrar per resource group / transformer
+concern, run through `Container\RegistrarContainerFactory`. Its `Api\ApiInterface` extends the shared
+top-level `ApiInterface`, and service ids get a `met_office.<api_name>.` prefix. Wire the facade into the
+umbrella `MetOffice` facade with a new factory method. Anything genuinely shared across APIs stays at the
+top level.
 
 ## Conventions (follow all of these)
 
