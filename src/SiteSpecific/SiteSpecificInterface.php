@@ -23,6 +23,7 @@ interface SiteSpecificInterface
     public const string SERVICE_HOURLY_FORECAST_TIME_STEPS_TRANSFORMER = 'met_office.site_specific.transformer.hourly_forecast_time_steps_transformer';
     public const string SERVICE_HOURLY_FORECAST_TRANSFORMER = 'met_office.site_specific.transformer.hourly_forecast_transformer';
     public const string SERVICE_JSON_API_REQUEST_SENDER = 'met_office.site_specific.json_api_request_sender';
+    public const string SERVICE_PARAMETER_METADATA_TRANSFORMER = 'met_office.site_specific.transformer.parameter_metadata_transformer';
     public const string SERVICE_THREE_HOURLY_FORECAST = 'met_office.site_specific.api.three_hourly_forecast';
     public const string SERVICE_THREE_HOURLY_FORECAST_API = 'met_office.site_specific.api.three_hourly_forecast_api';
     public const string SERVICE_THREE_HOURLY_FORECAST_TIME_STEP_TRANSFORMER = 'met_office.site_specific.transformer.three_hourly_forecast_time_step_transformer';

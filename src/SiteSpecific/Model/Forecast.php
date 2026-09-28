@@ -6,8 +6,16 @@ namespace ChristianBrown\MetOffice\SiteSpecific\Model;
 
 final class Forecast implements ForecastInterface
 {
+    private ?float $elevation = null;
+    private ?string $locationLicence = null;
     private ?string $locationName = null;
     private ?int $modelRunDate = null;
+
+    /**
+     * @var array<array-key, ParameterMetadataInterface>
+     */
+    private array $parameters = [];
+    private ?float $requestPointDistance = null;
 
     /**
      * @var array<int, ForecastTimeStepInterface>
@@ -21,6 +29,16 @@ final class Forecast implements ForecastInterface
         return $this;
     }
 
+    public function getElevation(): ?float
+    {
+        return $this->elevation;
+    }
+
+    public function getLocationLicence(): ?string
+    {
+        return $this->locationLicence;
+    }
+
     public function getLocationName(): ?string
     {
         return $this->locationName;
@@ -32,11 +50,38 @@ final class Forecast implements ForecastInterface
     }
 
     /**
+     * @return array<array-key, ParameterMetadataInterface>
+     */
+    public function getParameters(): array
+    {
+        return $this->parameters;
+    }
+
+    public function getRequestPointDistance(): ?float
+    {
+        return $this->requestPointDistance;
+    }
+
+    /**
      * @return array<int, ForecastTimeStepInterface>
      */
     public function getTimeSteps(): array
     {
         return $this->timeSteps;
+    }
+
+    public function setElevation(?float $value): ForecastInterface
+    {
+        $this->elevation = $value;
+
+        return $this;
+    }
+
+    public function setLocationLicence(?string $value): ForecastInterface
+    {
+        $this->locationLicence = $value;
+
+        return $this;
     }
 
     public function setLocationName(?string $value): ForecastInterface
@@ -49,6 +94,23 @@ final class Forecast implements ForecastInterface
     public function setModelRunDate(?int $value): ForecastInterface
     {
         $this->modelRunDate = $value;
+
+        return $this;
+    }
+
+    /**
+     * @param array<array-key, ParameterMetadataInterface> $value
+     */
+    public function setParameters(array $value): ForecastInterface
+    {
+        $this->parameters = $value;
+
+        return $this;
+    }
+
+    public function setRequestPointDistance(?float $value): ForecastInterface
+    {
+        $this->requestPointDistance = $value;
 
         return $this;
     }

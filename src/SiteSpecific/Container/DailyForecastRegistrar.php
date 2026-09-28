@@ -12,6 +12,7 @@ use ChristianBrown\MetOffice\SiteSpecific\SiteSpecificInterface;
 use ChristianBrown\MetOffice\SiteSpecific\Transformer\DailyForecastTimeStepTransformer;
 use ChristianBrown\MetOffice\SiteSpecific\Transformer\ForecastTimeStepsTransformer;
 use ChristianBrown\MetOffice\SiteSpecific\Transformer\ForecastTransformer;
+use ChristianBrown\MetOffice\SiteSpecific\Transformer\ParameterMetadataTransformer;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 /**
@@ -37,10 +38,12 @@ final class DailyForecastRegistrar implements ServiceRegistrarInterface
                     $container->getDefinition(SiteSpecificInterface::SERVICE_DAILY_FORECAST_TIME_STEP_TRANSFORMER),
                 ]
             );
+        $container->register(SiteSpecificInterface::SERVICE_PARAMETER_METADATA_TRANSFORMER, ParameterMetadataTransformer::class);
         $container->register(SiteSpecificInterface::SERVICE_DAILY_FORECAST_TRANSFORMER, ForecastTransformer::class)
             ->setArguments(
                 [
                     $container->getDefinition(SiteSpecificInterface::SERVICE_DAILY_FORECAST_TIME_STEPS_TRANSFORMER),
+                    $container->getDefinition(SiteSpecificInterface::SERVICE_PARAMETER_METADATA_TRANSFORMER),
                 ]
             );
 

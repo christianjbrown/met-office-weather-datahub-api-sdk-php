@@ -25,8 +25,8 @@ final class ThreeHourlyForecastApi implements ThreeHourlyForecastApiInterface
      * @throws RequestExceptionInterface
      * @throws UnexpectedResponseException
      */
-    public function getForecast(CoordinatesInterface $coordinates, bool $skipCache = false): ForecastInterface
+    public function getForecast(CoordinatesInterface $coordinates, bool $skipCache = false, bool $includeParameterMetadata = false): ForecastInterface
     {
-        return $this->forecastApi->getForecast($this->apiHost->rewrite(self::API_URL), $coordinates, $skipCache);
+        return $this->forecastApi->getForecast($this->apiHost->rewrite(self::API_URL), $coordinates, $skipCache, $includeParameterMetadata);
     }
 }

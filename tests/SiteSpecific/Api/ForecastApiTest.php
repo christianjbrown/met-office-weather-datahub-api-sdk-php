@@ -117,6 +117,125 @@ final class ForecastApiTest extends TestCase
      * @throws RequestExceptionInterface
      * @throws Exception
      */
+    public function testGetForecastCachesSeparatelyPerParameterMetadataFlag(): void
+    {
+        $data = [
+            ForecastApiInterface::KEY_FEATURES => [
+                [
+                    ForecastApiInterface::KEY_PROPERTIES => ['test-properties'],
+                ],
+            ],
+        ];
+
+        $forecast = self::createStub(ForecastInterface::class);
+
+        $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
+        $requestSender->expects(self::exactly(2))
+            ->method('get')
+            ->willReturn($data);
+
+        $forecastTransformer = self::createMock(ForecastTransformerInterface::class);
+        $forecastTransformer->expects(self::exactly(2))
+            ->method('transform')
+            ->with(['test-properties'])
+            ->willReturn($forecast);
+
+        $api = new ForecastApi($requestSender, $forecastTransformer, new ApiKey('test-api-key'));
+
+        self::assertSame($forecast, $api->getForecast(self::TEST_API_URL, new Coordinates(51.5, -0.1)));
+        self::assertSame($forecast, $api->getForecast(self::TEST_API_URL, new Coordinates(51.5, -0.1), false, true));
+    }
+
+    /**
+     * @throws RequestExceptionInterface
+     * @throws Exception
+     */
+    public function testGetForecastIncludesParameterMetadata(): void
+    {
+        $data = [
+            ForecastApiInterface::KEY_FEATURES => [
+                [
+                    ForecastApiInterface::KEY_PROPERTIES => ['test-properties'],
+                ],
+            ],
+        ];
+
+        $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
+        $requestSender->expects(self::once())
+            ->method('get')
+            ->with(
+                self::TEST_API_URL,
+                [
+                    ForecastApiInterface::QUERY_KEY_LATITUDE => '51.5',
+                    ForecastApiInterface::QUERY_KEY_LONGITUDE => '-0.1',
+                    ForecastApiInterface::QUERY_KEY_DATA_SOURCE => ForecastApiInterface::QUERY_VALUE_DATA_SOURCE,
+                    ForecastApiInterface::QUERY_KEY_EXCLUDE_PARAMETER_METADATA => ForecastApiInterface::QUERY_VALUE_FALSE,
+                    ForecastApiInterface::QUERY_KEY_INCLUDE_LOCATION_NAME => ForecastApiInterface::QUERY_VALUE_TRUE,
+                ],
+                [
+                    ApiKeyInterface::HEADER_KEY_API_KEY => 'test-api-key',
+                ]
+            )
+            ->willReturn($data);
+
+        $forecast = self::createStub(ForecastInterface::class);
+
+        $forecastTransformer = self::createMock(ForecastTransformerInterface::class);
+        $forecastTransformer->expects(self::once())
+            ->method('transform')
+            ->with(['test-properties'])
+            ->willReturn($forecast);
+
+        $api = new ForecastApi($requestSender, $forecastTransformer, new ApiKey('test-api-key'));
+        $actual = $api->getForecast(self::TEST_API_URL, new Coordinates(51.5, -0.1), false, true);
+
+        self::assertSame($forecast, $actual);
+    }
+
+    /**
+     * @throws RequestExceptionInterface
+     * @throws Exception
+     */
+    public function testGetForecastMergesGeometryAndTopLevelParameters(): void
+    {
+        $data = [
+            ForecastApiInterface::KEY_FEATURES => [
+                [
+                    ForecastApiInterface::KEY_PROPERTIES => ['test-properties'],
+                    ForecastApiInterface::KEY_GEOMETRY => ['test-geometry'],
+                ],
+            ],
+            ForecastApiInterface::KEY_PARAMETERS => ['test-parameters'],
+        ];
+
+        $requestSender = self::createStub(JsonApiRequestSenderInterface::class);
+        $requestSender->method('get')
+            ->willReturn($data);
+
+        $forecast = self::createStub(ForecastInterface::class);
+
+        $forecastTransformer = self::createMock(ForecastTransformerInterface::class);
+        $forecastTransformer->expects(self::once())
+            ->method('transform')
+            ->with(
+                [
+                    'test-properties',
+                    ForecastApiInterface::KEY_GEOMETRY => ['test-geometry'],
+                    ForecastApiInterface::KEY_PARAMETERS => ['test-parameters'],
+                ]
+            )
+            ->willReturn($forecast);
+
+        $api = new ForecastApi($requestSender, $forecastTransformer, new ApiKey('test-api-key'));
+        $actual = $api->getForecast(self::TEST_API_URL, new Coordinates(51.5, -0.1));
+
+        self::assertSame($forecast, $actual);
+    }
+
+    /**
+     * @throws RequestExceptionInterface
+     * @throws Exception
+     */
     public function testGetForecastSkipsCache(): void
     {
         $data = [
@@ -145,6 +264,103 @@ final class ForecastApiTest extends TestCase
         // First call populates the cache; the second bypasses it and hits the API again.
         self::assertSame($forecast, $api->getForecast(self::TEST_API_URL, new Coordinates(51.5, -0.1)));
         self::assertSame($forecast, $api->getForecast(self::TEST_API_URL, new Coordinates(51.5, -0.1), true));
+    }
+
+    /**
+     * @throws RequestExceptionInterface
+     * @throws Exception
+     */
+    public function testGetForecastSkipsCacheWithParameterMetadata(): void
+    {
+        $data = [
+            ForecastApiInterface::KEY_FEATURES => [
+                [
+                    ForecastApiInterface::KEY_PROPERTIES => ['test-properties'],
+                ],
+            ],
+        ];
+
+        $forecast = self::createStub(ForecastInterface::class);
+
+        $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
+        $requestSender->expects(self::once())
+            ->method('get')
+            ->willReturn($data);
+
+        $forecastTransformer = self::createMock(ForecastTransformerInterface::class);
+        $forecastTransformer->expects(self::once())
+            ->method('transform')
+            ->with(['test-properties'])
+            ->willReturn($forecast);
+
+        $api = new ForecastApi($requestSender, $forecastTransformer, new ApiKey('test-api-key'));
+
+        self::assertSame($forecast, $api->getForecast(self::TEST_API_URL, new Coordinates(51.5, -0.1), true, true));
+    }
+
+    /**
+     * @param mixed[] $feature
+     *
+     * @throws RequestExceptionInterface
+     * @throws Exception
+     */
+    #[TestWith([['test-feature-filler']])]
+    #[TestWith([[ForecastApiInterface::KEY_PROPERTIES => ['test-properties'], ForecastApiInterface::KEY_GEOMETRY => 'not-an-array']])]
+    public function testGetForecastSkipsGeometryWhenAbsentOrWrongType(array $feature): void
+    {
+        $data = [
+            ForecastApiInterface::KEY_FEATURES => [$feature + [ForecastApiInterface::KEY_PROPERTIES => ['test-properties']]],
+        ];
+
+        $requestSender = self::createStub(JsonApiRequestSenderInterface::class);
+        $requestSender->method('get')
+            ->willReturn($data);
+
+        $forecast = self::createStub(ForecastInterface::class);
+
+        $forecastTransformer = self::createMock(ForecastTransformerInterface::class);
+        $forecastTransformer->expects(self::once())
+            ->method('transform')
+            ->with(['test-properties'])
+            ->willReturn($forecast);
+
+        $api = new ForecastApi($requestSender, $forecastTransformer, new ApiKey('test-api-key'));
+        $actual = $api->getForecast(self::TEST_API_URL, new Coordinates(51.5, -0.1));
+
+        self::assertSame($forecast, $actual);
+    }
+
+    /**
+     * @throws RequestExceptionInterface
+     * @throws Exception
+     */
+    public function testGetForecastSkipsParametersWhenWrongType(): void
+    {
+        $data = [
+            ForecastApiInterface::KEY_FEATURES => [
+                [
+                    ForecastApiInterface::KEY_PROPERTIES => ['test-properties'],
+                ],
+            ],
+            ForecastApiInterface::KEY_PARAMETERS => 'not-an-array',
+        ];
+
+        $requestSender = self::createStub(JsonApiRequestSenderInterface::class);
+        $requestSender->method('get')
+            ->willReturn($data);
+
+        $forecast = self::createStub(ForecastInterface::class);
+
+        $forecastTransformer = self::createMock(ForecastTransformerInterface::class);
+        $forecastTransformer->expects(self::once())
+            ->method('transform')
+            ->with(['test-properties'])
+            ->willReturn($forecast);
+
+        $api = new ForecastApi($requestSender, $forecastTransformer, new ApiKey('test-api-key'));
+        $actual = $api->getForecast(self::TEST_API_URL, new Coordinates(51.5, -0.1));
+
+        self::assertSame($forecast, $actual);
     }
 
     /**

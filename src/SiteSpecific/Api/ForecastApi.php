@@ -40,9 +40,9 @@ final class ForecastApi implements ForecastApiInterface
      *
      * @phpstan-impure
      */
-    public function getForecast(string $apiUrl, CoordinatesInterface $coordinates, bool $skipCache = false): ForecastInterface
+    public function getForecast(string $apiUrl, CoordinatesInterface $coordinates, bool $skipCache = false, bool $includeParameterMetadata = false): ForecastInterface
     {
-        $cacheKey = sprintf(self::CACHE_KEY_SPRINTF, $coordinates->getLatitude(), $coordinates->getLongitude());
+        $cacheKey = sprintf(self::CACHE_KEY_SPRINTF, $coordinates->getLatitude(), $coordinates->getLongitude(), (int) $includeParameterMetadata);
         if (!$skipCache) {
             if (isset($this->cache[$cacheKey])) {
                 return $this->cache[$cacheKey];
@@ -54,7 +54,7 @@ final class ForecastApi implements ForecastApiInterface
             self::QUERY_KEY_LATITUDE => (string) $coordinates->getLatitude(),
             self::QUERY_KEY_LONGITUDE => (string) $coordinates->getLongitude(),
             self::QUERY_KEY_DATA_SOURCE => self::QUERY_VALUE_DATA_SOURCE,
-            self::QUERY_KEY_EXCLUDE_PARAMETER_METADATA => self::QUERY_VALUE_TRUE,
+            self::QUERY_KEY_EXCLUDE_PARAMETER_METADATA => $includeParameterMetadata ? self::QUERY_VALUE_FALSE : self::QUERY_VALUE_TRUE,
             self::QUERY_KEY_INCLUDE_LOCATION_NAME => self::QUERY_VALUE_TRUE,
         ];
         $data = $this->requestSender->get($apiUrl, $query, $headers);
@@ -94,7 +94,48 @@ final class ForecastApi implements ForecastApiInterface
         if (!is_array($feature[self::KEY_PROPERTIES])) {
             throw new UnexpectedResponseException(sprintf(self::UNEXPECTED_RESPONSE_SPRINTF, self::KEY_PROPERTIES));
         }
+        $properties = $feature[self::KEY_PROPERTIES];
+        $properties = self::withGeometry($properties, $feature);
+        $properties = self::withParameters($properties, $data);
 
-        return $feature[self::KEY_PROPERTIES];
+        return $properties;
+    }
+
+    /**
+     * @param mixed[] $properties
+     * @param mixed[] $feature
+     *
+     * @return mixed[]
+     */
+    private static function withGeometry(array $properties, array $feature): array
+    {
+        if (!isset($feature[self::KEY_GEOMETRY])) {
+            return $properties;
+        }
+        if (!is_array($feature[self::KEY_GEOMETRY])) {
+            return $properties;
+        }
+        $properties[self::KEY_GEOMETRY] = $feature[self::KEY_GEOMETRY];
+
+        return $properties;
+    }
+
+    /**
+     * @param mixed[] $properties
+     * @param mixed[] $data
+     *
+     * @return mixed[]
+     */
+    private static function withParameters(array $properties, array $data): array
+    {
+        if (!isset($data[self::KEY_PARAMETERS])) {
+            return $properties;
+        }
+        if (!is_array($data[self::KEY_PARAMETERS])) {
+            return $properties;
+        }
+        $properties[self::KEY_PARAMETERS] = $data[self::KEY_PARAMETERS];
+
+        return $properties;
     }
 }
