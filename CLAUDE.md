@@ -105,6 +105,12 @@ step runs `./bin/php-coverage-check .phpunit.cache/coverage.txt` (from `code-qua
 against the text coverage report the PHPUnit step just wrote, failing the build if classes,
 methods, lines, branches, or paths are anything less than 100%.
 
+## Changelog
+
+`CHANGELOG.md` follows Keep a Changelog. A pull request that changes `src/` must add a line under
+`## [Unreleased]`; CI enforces it with `bin/php-changelog-check`. A release renames that section to the
+version and the date, and its text becomes the GitHub release notes.
+
 ## Architecture
 
 Everything lives under the `ChristianBrown\MetOffice\` namespace (`src/`), mirrored 1:1 under
