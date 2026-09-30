@@ -372,6 +372,12 @@ The three-hourly and daily clients follow the same shape with their own time-ste
 
 </details>
 
+## :memo: Changelog
+
+Notable changes in each release are listed in [CHANGELOG.md](CHANGELOG.md).
+
+
+
 ## :page_facing_up: License
 
 Released under the [MIT License](LICENSE).
