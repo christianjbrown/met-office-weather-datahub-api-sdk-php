@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace ChristianBrown\MetOffice\SiteSpecific\Transformer;
 
+use ChristianBrown\MetOffice\SiteSpecific\Model\DailyForecastTimeStepInterface;
+
 interface DailyForecastTimeStepTransformerInterface extends ForecastTimeStepTransformerInterface
 {
     public const string KEY_DAY_LOWER_BOUND_MAX_FEELS_LIKE_TEMP = 'dayLowerBoundMaxFeelsLikeTemp';
@@ -50,4 +52,9 @@ interface DailyForecastTimeStepTransformerInterface extends ForecastTimeStepTran
     public const string KEY_TIME = 'time';
     public const string UNEXPECTED_STRING_SPRINTF = '%s not set or not a string';
     public const string UNEXPECTED_TIMESTAMP_SPRINTF = '%s not a valid timestamp';
+
+    /**
+     * @param mixed[] $data
+     */
+    public function transform(array $data): DailyForecastTimeStepInterface;
 }

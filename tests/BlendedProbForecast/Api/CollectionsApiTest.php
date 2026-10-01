@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ChristianBrown\MetOffice\Tests\BlendedProbForecast\Api;
 
 use ChristianBrown\ApiClient\Exception\Request\RequestExceptionInterface;
-use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
+use ChristianBrown\ApiClient\JsonReadApiRequestSenderInterface;
 use ChristianBrown\MetOffice\ApiKey;
 use ChristianBrown\MetOffice\ApiKeyInterface;
 use ChristianBrown\MetOffice\BlendedProbForecast\Api\CollectionsApi;
@@ -36,7 +36,7 @@ final class CollectionsApiTest extends TestCase
     {
         $data = ['id' => 'improver-percentiles-spot-global'];
 
-        $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createMock(JsonReadApiRequestSenderInterface::class);
         $requestSender->expects(self::once())
             ->method('get')
             ->with(
@@ -74,7 +74,7 @@ final class CollectionsApiTest extends TestCase
         $collectionsData = [['id' => 'improver-percentiles-spot-global']];
         $data = [CollectionsApiInterface::KEY_COLLECTIONS => $collectionsData];
 
-        $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createMock(JsonReadApiRequestSenderInterface::class);
         $requestSender->expects(self::once())
             ->method('get')
             ->with(
@@ -114,7 +114,7 @@ final class CollectionsApiTest extends TestCase
     #[TestWith([[CollectionsApiInterface::KEY_COLLECTIONS => 'not-an-array']])]
     public function testGetCollectionsThrowsOnUnexpectedResponse(array $data): void
     {
-        $requestSender = self::createStub(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createStub(JsonReadApiRequestSenderInterface::class);
         $requestSender->method('get')->willReturn($data);
 
         $collectionsTransformer = self::createMock(CollectionsTransformerInterface::class);

@@ -19,24 +19,23 @@ The top-level entry point is the umbrella `MetOffice` facade (`src/MetOffice.php
 `atmosphericModels(string $apiKey): AtmosphericModels\AtmosphericModelsInterface`, and
 `mapImages(string $apiKey): MapImages\MapImagesInterface` methods return the
 per-API clients. Each API's own facade (e.g. `SiteSpecific\SiteSpecific`, `BlendedProbForecast\BlendedProbForecast`,
-`ObservationLand\ObservationLand`, `AtmosphericModels\AtmosphericModels`, `MapImages\MapImages`, constructed with a
-`string $apiKey` and an **optional, last** `?Host\ApiHostInterface $apiHost = null` defaulting to production) owns
+`ObservationLand\ObservationLand`, `AtmosphericModels\AtmosphericModels`, `MapImages\MapImages`, each takes only the API client interfaces
+it exposes) is built by its own `<Name>Factory` (`create(string $apiKey, Host\ApiHostInterface $apiHost)`), which owns
 the DI container for that API. New DataHub APIs are added as new `siteSpecific()`-style factory methods returning
 new per-API facades.
 
-**Composition root and registrars.** No facade builds its `ContainerBuilder` inline. Each facade's constructor is
-a small composition root: it resolves the `ApiHost` (the one passed in, or a new production-default one), builds
-an ordered list of **registrars** for that product, and hands them to the shared
+**Composition root and registrars.** No facade builds its `ContainerBuilder`. Each product's `<Name>Factory`
+is the composition root: it takes the `ApiHost`, builds an ordered list of **registrars** for that product, and hands them to the shared
 `Container\RegistrarContainerFactory`, which runs each registrar's `register(ContainerBuilder $container): void`
 against the same container in order. A registrar is anything implementing the single-method
-`Container\ServiceRegistrarInterface`. Two are shared by every facade: `Container\CoreRegistrar` (the `ApiClient`,
+`Container\ServiceRegistrarInterface`. Two are shared by every facade: `Container\CoreRegistrar` (the `ApiClient`, built through `ApiClientFactory` from default `ClientOptions`,
 the JSON request sender, and the `ApiKey` credential — the boilerplate every product needs) and
 `Container\RawRequestSenderRegistrar` (the raw, non-JSON sender; only Atmospheric Models and Map Images use it, for
 binary GRIB/PNG downloads). Everything else is a small `final` registrar scoped to one API resource group or one
 cohesive transformer chain within a product, living in that product's own `Container\` sub-namespace (e.g.
 `SiteSpecific\Container\HourlyForecastRegistrar`, `BlendedProbForecast\Container\CoverageTransformerRegistrar`).
 **Adding a new API resource group to an existing product means adding one registrar and listing it in that
-facade's constructor — never editing an existing registrar or the facade's getters.** See "Adding a new DataHub
+product factory — never editing an existing registrar or the facade's getters.** See "Adding a new DataHub
 API" below for adding an entire new product.
 
 **Injectable API host.** Every product's base URL is a `public const string API_URL...` on its `Api\ApiInterface`,
@@ -119,9 +118,11 @@ Everything lives under the `ChristianBrown\MetOffice\` namespace (`src/`), mirro
 
 ### Shared (top level, `ChristianBrown\MetOffice\`)
 
-- **`MetOffice`** (`src/MetOffice.php`) — the umbrella facade. **No constructor arguments.** A plain
-  factory: `siteSpecific(string $apiKey)` returns `new SiteSpecific\SiteSpecific($apiKey)`. No DI
-  container at this level. Each future API gets its own factory method here.
+- **`MetOffice`** (`src/MetOffice.php`) — the umbrella facade. Its constructor takes an `ApiHostInterface` and
+  the five product factory interfaces and builds nothing; `siteSpecific(string $apiKey)` calls
+  `SiteSpecificFactoryInterface::create($apiKey, $host)`. **`MetOfficeFactory`** is its composition root
+  (`create()` for production, `createWithHost()` for another host). Each future API gets its own factory
+  method here.
 - **`ApiInterface`** (`src/ApiInterface.php`) — the shared base interface holding the cross-API
   `API_HOST` constant. Every API's `Api\ApiInterface` extends it.
 - **`Coordinates`** / **`CoordinatesInterface`** (`src/Coordinates.php`) — a shared lat/lon value object
@@ -155,7 +156,7 @@ Everything lives under the `ChristianBrown\MetOffice\` namespace (`src/`), mirro
   thin wrapper (ids are `SERVICE_*` constants on `SiteSpecificInterface`, **`met_office.site_specific.` prefix**).
   Exposes `getHourlyForecastApi()`, `getThreeHourlyForecastApi()`, `getDailyForecastApi()`.
 - **`SiteSpecific\Api/`** — the shared **`ForecastApi`** (constructed with
-  `(JsonApiRequestSenderInterface, ForecastTransformerInterface, ApiKeyInterface)`) holds the request
+  `(JsonReadApiRequestSenderInterface, ForecastTransformerInterface, ApiKeyInterface)`) holds the request
   logic: `getForecast(string $apiUrl, CoordinatesInterface $coordinates, bool $skipCache = false)` builds
   the query + `apikey` header, calls the sender against the passed `$apiUrl`, guards the
   `features`/`properties` shape, delegates `features[0].properties` to the injected `ForecastTransformer`,
@@ -182,11 +183,13 @@ Everything lives under the `ChristianBrown\MetOffice\` namespace (`src/`), mirro
 - **`SiteSpecific\Transformer/`** — `ForecastTransformer` builds a `Forecast`, applies optional
   `location.name`, `location.licence`, `modelRunDate`, `requestPointDistance`, and the geometry-derived
   `elevation`, and delegates `timeSeries` to `ForecastTimeStepsTransformer` (a collection wrapping one
-  `ForecastTimeStepTransformerInterface`). The three step transformers each implement that interface
+  `ForecastTimeStepTransformerInterface`). `DailyForecastTimeStepTransformer` reads the time and then runs injected
+  `Transformer\Field\DailyForecastFieldApplierInterface` appliers (`FloatFieldApplier`, `IntFieldApplier`,
+  `WeatherTypeFieldApplier`), listed by the `Day`, `Atmosphere` and `Night` `...FieldApplierProvider` classes and
+  assembled by `DailyForecastTimeStepTransformerFactory`. The three step transformers each implement that interface
   and narrow their return type to their concrete step interface. These reference the shared
-  `Enums\WeatherType`. `ForecastTransformer` also takes an **optional, nullable, appended**
-  `?ParameterMetadataTransformerInterface` constructor argument (`null` unless a facade wires one in);
-  when present, it flattens the top-level `parameters` (an array of parameter-name-keyed maps) into
+  `Enums\WeatherType`. `ForecastTransformer` also takes a required
+  `ParameterMetadataTransformerInterface`; it flattens the top-level `parameters` (an array of parameter-name-keyed maps) into
   `Forecast::parameters` via `ParameterMetadataTransformer`.
 
 ### Blended Probabilistic Forecast (`ChristianBrown\MetOffice\BlendedProbForecast\`)
@@ -361,7 +364,7 @@ as a `string`** for a download — **no GRIB parsing is performed**. Base URL
   (`GET /orders/{orderId}/latest`, query built only for supplied params, unwraps `orderDetails.files` →
   `OrderFileInterface[]`), `getOrderFile(string $orderId, string $fileId)` (`GET /orders/{orderId}/latest/{fileId}`,
   unwraps `fileDetails` → `OrderFileDetailsInterface`), and `getOrderFileData(string $orderId, string $fileId): string`
-  which uses the **raw `ApiRequestSenderInterface`** with an `Accept: application/x-grib` header,
+  which uses the **raw `ReadApiRequestSenderInterface`** with an `Accept: application/x-grib` header,
   URL-encodes the file id, and returns the raw GRIB body string. Both build the `apikey` header; the
   JSON wrapper-shape guards live in the API classes and the per-item parsing is delegated to the
   transformers. `Api\ApiInterface` extends the shared top-level `ApiInterface` and adds the `API_URL_*`,
@@ -409,12 +412,12 @@ download — **no image decoding is performed**. Base URL
 
 Each new API gets its own `ChristianBrown\MetOffice\<ApiName>\` sub-namespace containing its `Api/`,
 `Model/`, `Transformer/`, `Container/` (its own registrars — see "Composition root and registrars" above)
-and any API-specific enums/exceptions, plus a `<ApiName>\<ApiName>` facade whose constructor is the
-composition root: `string $apiKey` and an optional, last `?Host\ApiHostInterface $apiHost = null`, a
-`Container\CoreRegistrar` first in its registrar list, then one registrar per resource group / transformer
+and any API-specific enums/exceptions, plus a `<ApiName>\<ApiName>` facade whose constructor takes only the API client interfaces, and a
+`<ApiName>Factory` (with `<ApiName>FactoryInterface`) as its composition root: `create(string $apiKey,
+Host\ApiHostInterface $apiHost)`, a `Container\CoreRegistrar` first in its registrar list, then one registrar per resource group / transformer
 concern, run through `Container\RegistrarContainerFactory`. Its `Api\ApiInterface` extends the shared
 top-level `ApiInterface`, and service ids get a `met_office.<api_name>.` prefix. Wire the facade into the
-umbrella `MetOffice` facade with a new factory method. Anything genuinely shared across APIs stays at the
+umbrella `MetOffice` facade through the new factory and a new method. Anything genuinely shared across APIs stays at the
 top level.
 
 ## Conventions (follow all of these)
@@ -452,7 +455,7 @@ top level.
 - **The facade getters must stay PHPStan-safe**: `$this->container->get()` returns `mixed`, so assign
   it to a local `$service` annotated with a `/** @var XInterface $service */` docblock and return that
   — never `return $this->container->get(...)` directly.
-- The HTTP layer takes `ChristianBrown\ApiClient\JsonApiRequestSenderInterface` directly and calls
+- The HTTP layer takes `ChristianBrown\ApiClient\JsonReadApiRequestSenderInterface` directly and calls
   `->get($url, $queryStrings, $headers)`. There is no custom request-sender wrapper.
 
 ## Testing

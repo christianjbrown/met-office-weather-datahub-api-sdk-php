@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ChristianBrown\MetOffice\Tests\BlendedProbForecast\Api;
 
 use ChristianBrown\ApiClient\Exception\Request\RequestExceptionInterface;
-use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
+use ChristianBrown\ApiClient\JsonReadApiRequestSenderInterface;
 use ChristianBrown\MetOffice\ApiKey;
 use ChristianBrown\MetOffice\ApiKeyInterface;
 use ChristianBrown\MetOffice\BlendedProbForecast\Api\PositionApi;
@@ -43,7 +43,7 @@ final class PositionApiTest extends TestCase
     {
         $responseData = ['type' => 'CoverageCollection'];
 
-        $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createMock(JsonReadApiRequestSenderInterface::class);
         $requestSender->expects(self::once())
             ->method('get')
             ->with(

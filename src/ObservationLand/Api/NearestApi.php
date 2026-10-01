@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ChristianBrown\MetOffice\ObservationLand\Api;
 
 use ChristianBrown\ApiClient\Exception\Request\RequestExceptionInterface;
-use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
+use ChristianBrown\ApiClient\JsonReadApiRequestSenderInterface;
 use ChristianBrown\MetOffice\ApiKeyInterface;
 use ChristianBrown\MetOffice\CoordinatesInterface;
 use ChristianBrown\MetOffice\Exception\UnexpectedResponseException;
@@ -20,9 +20,9 @@ final class NearestApi implements NearestApiInterface
     private ApiHostInterface $apiHost;
     private ApiKeyInterface $apiKey;
     private NearestLocationsTransformerInterface $nearestLocationsTransformer;
-    private JsonApiRequestSenderInterface $requestSender;
+    private JsonReadApiRequestSenderInterface $requestSender;
 
-    public function __construct(JsonApiRequestSenderInterface $requestSender, NearestLocationsTransformerInterface $nearestLocationsTransformer, ApiKeyInterface $apiKey, ApiHostInterface $apiHost)
+    public function __construct(JsonReadApiRequestSenderInterface $requestSender, NearestLocationsTransformerInterface $nearestLocationsTransformer, ApiKeyInterface $apiKey, ApiHostInterface $apiHost)
     {
         $this->requestSender = $requestSender;
         $this->nearestLocationsTransformer = $nearestLocationsTransformer;

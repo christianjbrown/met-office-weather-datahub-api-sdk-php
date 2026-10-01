@@ -42,9 +42,9 @@ Fetches recent (past 48 hours) hourly land surface observations. It exposes two 
 
 ```php
 use ChristianBrown\MetOffice\Coordinates;
-use ChristianBrown\MetOffice\MetOffice;
+use ChristianBrown\MetOffice\MetOfficeFactory;
 
-$observationLand = (new MetOffice())->observationLand('your-observation-land-apikey');
+$observationLand = (new MetOfficeFactory())->create()->observationLand('your-observation-land-apikey');
 
 // London: latitude 51.55, longitude -0.18.
 $nearest = $observationLand->getNearestApi()->getByCoordinates(new Coordinates(51.55, -0.18));   // NearestLocationInterface[]
@@ -60,9 +60,9 @@ Retrieves orders for Atmospheric Model ("Gridded") data. Unlike the other APIs �
 - **Orders** (`getOrdersApi()`) — `getOrders(?string $detail = null)` lists the orders configured for your organisation (`OrderInterface[]`), optionally `MINIMAL` or `FULL`; `getOrderFiles(string $orderId, ?string $detail = null, ?string $runFilter = null)` lists the latest available files for an order (`OrderFileInterface[]`); `getOrderFile(string $orderId, string $fileId)` returns the detailed metadata for one file (`OrderFileDetailsInterface`, including its `ParameterDetailInterface[]`); and `getOrderFileData(string $orderId, string $fileId)` downloads the file and returns the **raw GRIB bytes as a `string`** (302 redirects are followed and the file id is URL-encoded for you).
 
 ```php
-use ChristianBrown\MetOffice\MetOffice;
+use ChristianBrown\MetOffice\MetOfficeFactory;
 
-$atmosphericModels = (new MetOffice())->atmosphericModels('your-atmospheric-models-apikey');
+$atmosphericModels = (new MetOfficeFactory())->create()->atmosphericModels('your-atmospheric-models-apikey');
 
 $runs = $atmosphericModels->getRunsApi()->getRuns();                              // RunInterface[]
 
@@ -77,9 +77,9 @@ Retrieves orders for Map Images data. As with Atmospheric Models, the imagery it
 - **Orders** (`getOrdersApi()`) — `getOrders()` lists the orders configured for your organisation (`OrderInterface[]`); `getOrderFiles(string $orderId, ?string $detail = null, ?string $runFilter = null)` lists the latest available files for an order (`OrderFileInterface[]`); `getOrderFile(string $orderId, string $fileId)` returns the detailed metadata for one file (`OrderFileDetailsInterface`, including its `ParameterDetailInterface[]`); and `getOrderFileData(string $orderId, string $fileId, ?bool $includeLand = null, ?bool $legend = null)` downloads the file and returns the **raw PNG bytes as a `string`** (302 redirects are followed and the file id is URL-encoded for you) — `$includeLand` merges in the optional land-cover base layer and `$legend` includes a legend in the image, both API defaults `false`.
 
 ```php
-use ChristianBrown\MetOffice\MetOffice;
+use ChristianBrown\MetOffice\MetOfficeFactory;
 
-$mapImages = (new MetOffice())->mapImages('your-map-images-apikey');
+$mapImages = (new MetOfficeFactory())->create()->mapImages('your-map-images-apikey');
 
 $runs = $mapImages->getRunsApi()->getRuns();                              // RunInterface[]
 
@@ -127,9 +127,9 @@ new DataQuery(
 ```php
 use ChristianBrown\MetOffice\BlendedProbForecast\DataQuery;
 use ChristianBrown\MetOffice\Coordinates;
-use ChristianBrown\MetOffice\MetOffice;
+use ChristianBrown\MetOffice\MetOfficeFactory;
 
-$blended = (new MetOffice())->blendedProbForecast('your-blended-prob-forecast-apikey');
+$blended = (new MetOfficeFactory())->create()->blendedProbForecast('your-blended-prob-forecast-apikey');
 
 $collections = $blended->getCollectionsApi()->getCollections();                        // CollectionInterface[]
 $instances   = $blended->getInstancesApi()->getInstances('uk-spot-percentiles');       // InstanceInterface[]
@@ -215,20 +215,21 @@ First, create a Met Office [Weather DataHub](https://datahub.metoffice.gov.uk/) 
 The `MetOffice` umbrella facade is the entry point for every DataHub API. Call `siteSpecific($apiKey)` to get the Site-Specific client, which builds the three forecast clients (and their transformer chains) for you through a dependency-injection container:
 
 ```php
-use ChristianBrown\MetOffice\MetOffice;
+use ChristianBrown\MetOffice\MetOfficeFactory;
 
-$siteSpecific        = (new MetOffice())->siteSpecific('your-site-specific-apikey');
+$siteSpecific        = (new MetOfficeFactory())->create()->siteSpecific('your-site-specific-apikey');
 $hourlyForecastApi   = $siteSpecific->getHourlyForecastApi();       // HourlyForecastApiInterface
 $threeHourlyForecast = $siteSpecific->getThreeHourlyForecastApi();  // ThreeHourlyForecastApiInterface
 $dailyForecastApi    = $siteSpecific->getDailyForecastApi();        // DailyForecastApiInterface
 ```
 
-You can also construct the Site-Specific facade directly, without going through the umbrella facade:
+You can also build the Site-Specific facade directly, without going through the umbrella facade. Each product has its own factory (`SiteSpecificFactory`, `ObservationLandFactory`, `BlendedProbForecastFactory`, `MapImagesFactory`, `AtmosphericModelsFactory`):
 
 ```php
-use ChristianBrown\MetOffice\SiteSpecific\SiteSpecific;
+use ChristianBrown\MetOffice\Host\ApiHost;
+use ChristianBrown\MetOffice\SiteSpecific\SiteSpecificFactory;
 
-$siteSpecific      = new SiteSpecific('your-site-specific-apikey');
+$siteSpecific      = (new SiteSpecificFactory())->create('your-site-specific-apikey', new ApiHost());
 $hourlyForecastApi = $siteSpecific->getHourlyForecastApi();
 ```
 
@@ -322,13 +323,13 @@ Everything else is a small, `final` registrar scoped to one API resource group o
 
 ### Injectable API host
 
-Every product's base URL is a `public const string API_URL...` on its `Api\ApiInterface`, defaulting to the real DataHub host (`ChristianBrown\MetOffice\ApiInterface::API_HOST`). Each facade's constructor takes an **optional, last** `?ChristianBrown\MetOffice\Host\ApiHostInterface $apiHost = null` parameter; when omitted, it defaults to production, so every existing call site that only passes an API key is unaffected. Pass your own `ApiHost` to point a facade at a different host — a sandbox, a local stub server, a test double — without touching any of the URL constants:
+Every product's base URL is a `public const string API_URL...` on its `Api\ApiInterface`, defaulting to the real DataHub host (`ChristianBrown\MetOffice\ApiInterface::API_HOST`). Each product factory's `create()` takes the `ChristianBrown\MetOffice\Host\ApiHostInterface` to use, and `MetOfficeFactory::create()` uses production. Pass your own `ApiHost` to point a facade at a different host — a sandbox, a local stub server, a test double — without touching any of the URL constants:
 
 ```php
 use ChristianBrown\MetOffice\Host\ApiHost;
-use ChristianBrown\MetOffice\SiteSpecific\SiteSpecific;
+use ChristianBrown\MetOffice\MetOfficeFactory;
 
-$siteSpecific = new SiteSpecific('your-site-specific-apikey', new ApiHost('https://sandbox.example'));
+$siteSpecific = (new MetOfficeFactory())->createWithHost(new ApiHost('https://sandbox.example'))->siteSpecific('your-site-specific-apikey');
 ```
 
 `ApiHost::rewrite(string $url): string` replaces the production host prefix on a URL with the configured one and leaves the path and query untouched, so it works uniformly across every product's URL constants (all of which share the same `data.hub.api.metoffice.gov.uk` prefix). The Met Office DataHub itself does not publish a separate sandbox host at the time of writing — this exists for local/CI stubs and for whenever one is introduced.
@@ -336,10 +337,11 @@ $siteSpecific = new SiteSpecific('your-site-specific-apikey', new ApiHost('https
 <details id="wiring-the-clients">
 <summary><strong>Wiring the clients by hand</strong></summary>
 
-If you don't want the container, you can build the same chain yourself. The HTTP request sender comes from [`christianjbrown/api-client`](https://github.com/christianjbrown/api-client-php); `ApiHost` defaults to production when omitted.
+If you don't want the container, you can build the same chain yourself. The HTTP request sender comes from [`christianjbrown/api-client`](https://github.com/christianjbrown/api-client-php).
 
 ```php
-use ChristianBrown\ApiClient\ApiClient;
+use ChristianBrown\ApiClient\ApiClientFactory;
+use ChristianBrown\ApiClient\ClientOptions;
 use ChristianBrown\MetOffice\ApiKey;
 use ChristianBrown\MetOffice\Host\ApiHost;
 use ChristianBrown\MetOffice\SiteSpecific\Api\ForecastApi;
@@ -347,11 +349,12 @@ use ChristianBrown\MetOffice\SiteSpecific\Api\HourlyForecastApi;
 use ChristianBrown\MetOffice\SiteSpecific\Transformer\ForecastTimeStepsTransformer;
 use ChristianBrown\MetOffice\SiteSpecific\Transformer\ForecastTransformer;
 use ChristianBrown\MetOffice\SiteSpecific\Transformer\HourlyForecastTimeStepTransformer;
+use ChristianBrown\MetOffice\SiteSpecific\Transformer\ParameterMetadataTransformer;
 
 $apiKey = new ApiKey('your-site-specific-apikey');
 
 // Shared JSON request sender (wires Guzzle for you).
-$requestSender = (new ApiClient())->getJsonApiRequestSender();
+$requestSender = (new ApiClientFactory(new ClientOptions()))->create()->getJsonApiRequestSender();
 
 // The resolution-agnostic forecast client, given the hourly transformer chain.
 $forecastApi = new ForecastApi(
@@ -359,7 +362,8 @@ $forecastApi = new ForecastApi(
     new ForecastTransformer(
         new ForecastTimeStepsTransformer(
             new HourlyForecastTimeStepTransformer()
-        )
+        ),
+        new ParameterMetadataTransformer()
     ),
     $apiKey
 );
@@ -368,9 +372,27 @@ $forecastApi = new ForecastApi(
 $hourlyForecastApi = new HourlyForecastApi($forecastApi, new ApiHost());
 ```
 
-The three-hourly and daily clients follow the same shape with their own time-step transformer and wrapper class.
+The three-hourly and daily clients follow the same shape with their own time-step transformer and wrapper class. The daily time-step transformer is assembled by `DailyForecastTimeStepTransformerFactory`, so use `(new DailyForecastTimeStepTransformerFactory())->create()` in place of `new HourlyForecastTimeStepTransformer()`.
 
 </details>
+
+## :arrow_up: Upgrading to 2.0
+
+Facades no longer build their own dependencies. Their constructors take the API clients they expose, and the default wiring lives in factories.
+
+```php
+// Before
+$siteSpecific = new SiteSpecific('your-site-specific-apikey');
+$siteSpecific = new SiteSpecific('your-site-specific-apikey', new ApiHost('https://sandbox.example'));
+$metOffice    = new MetOffice();
+
+// After
+$siteSpecific = (new SiteSpecificFactory())->create('your-site-specific-apikey', new ApiHost());
+$siteSpecific = (new SiteSpecificFactory())->create('your-site-specific-apikey', new ApiHost('https://sandbox.example'));
+$metOffice    = (new MetOfficeFactory())->create();
+```
+
+The same applies to `ObservationLand`, `BlendedProbForecast`, `MapImages` and `AtmosphericModels` (each has a `<Name>Factory`). `MetOffice` itself now takes an `ApiHostInterface` and the five product factories. The package now requires `christianjbrown/api-client` `^3.0`. The API clients type against the read-only `JsonReadApiRequestSenderInterface` and `ReadApiRequestSenderInterface`, so a custom sender only needs a `get()` method. If you build an `ApiClient` yourself, `new ApiClient()` is gone: use `(new ApiClientFactory(new ClientOptions()))->create()`. `ForecastTransformer` requires its `ParameterMetadataTransformerInterface`, and `DailyForecastTimeStepTransformer` takes its field appliers, so build it with `DailyForecastTimeStepTransformerFactory`.
 
 ## :memo: Changelog
 

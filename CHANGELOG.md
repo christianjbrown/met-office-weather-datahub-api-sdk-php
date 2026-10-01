@@ -6,6 +6,34 @@ All notable changes to this package are recorded here. The format follows
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-10-01
+
+### Added
+
+- A factory per product (`SiteSpecificFactory`, `ObservationLandFactory`, `BlendedProbForecastFactory`,
+  `MapImagesFactory`, `AtmosphericModelsFactory`) and `MetOfficeFactory`. They build the default object
+  graph, and each has a matching `...FactoryInterface`.
+- `DailyForecastTimeStepTransformerFactory`, which assembles the daily time step transformer from small
+  field appliers in `SiteSpecific\Transformer\Field`.
+
+### Changed
+
+- Moves to `christianjbrown/api-client` `^3.0` (was `^1.0`). Consumers now get that major.
+- Breaking: the API clients (`ForecastApi`, `NearestApi`, `ObservationApi`, the Blended Probabilistic Forecast
+  clients and the Atmospheric Models and Map Images `RunsApi` and `OrdersApi`) type their constructors against
+  `JsonReadApiRequestSenderInterface` and `ReadApiRequestSenderInterface`, since they only send GET requests.
+  The default wiring builds the `ApiClient` through `ApiClientFactory`.
+- Breaking: the product facades (`SiteSpecific`, `ObservationLand`, `BlendedProbForecast`, `MapImages`,
+  `AtmosphericModels`) no longer take an API key and host. Their constructors take the API client
+  interfaces they expose. Use `(new SiteSpecificFactory())->create($apiKey, new ApiHost())` and the
+  equivalent factory for each product.
+- Breaking: `MetOffice` takes an `ApiHostInterface` and the five product factories. Use
+  `(new MetOfficeFactory())->create()`, or `createWithHost()` to point at another host.
+- Breaking: `DailyForecastTimeStepTransformer` takes its field appliers through the constructor. Use
+  `DailyForecastTimeStepTransformerFactory` to build it.
+- Breaking: `ForecastTransformer` requires its `ParameterMetadataTransformerInterface` argument instead of
+  defaulting to null.
+
 ## [1.1.0] - 2026-09-28
 
 ### Added
@@ -44,6 +72,7 @@ First stable release.
   can be pointed somewhere other than production.
 - A single exception hierarchy, so callers do not depend on the underlying HTTP client.
 
-[Unreleased]: https://github.com/christianjbrown/met-office-weather-datahub-api-sdk-php/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/christianjbrown/met-office-weather-datahub-api-sdk-php/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/christianjbrown/met-office-weather-datahub-api-sdk-php/compare/v1.1.0...v2.0.0
 [1.1.0]: https://github.com/christianjbrown/met-office-weather-datahub-api-sdk-php/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/christianjbrown/met-office-weather-datahub-api-sdk-php/releases/tag/v1.0.0

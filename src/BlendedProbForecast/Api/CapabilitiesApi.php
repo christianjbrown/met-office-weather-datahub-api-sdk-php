@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ChristianBrown\MetOffice\BlendedProbForecast\Api;
 
 use ChristianBrown\ApiClient\Exception\Request\RequestExceptionInterface;
-use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
+use ChristianBrown\ApiClient\JsonReadApiRequestSenderInterface;
 use ChristianBrown\MetOffice\ApiKeyInterface;
 use ChristianBrown\MetOffice\BlendedProbForecast\Model\LandingPageInterface;
 use ChristianBrown\MetOffice\BlendedProbForecast\Transformer\ConformanceTransformerInterface;
@@ -22,9 +22,9 @@ final class CapabilitiesApi implements CapabilitiesApiInterface
     private ApiKeyInterface $apiKey;
     private ConformanceTransformerInterface $conformanceTransformer;
     private LandingPageTransformerInterface $landingPageTransformer;
-    private JsonApiRequestSenderInterface $requestSender;
+    private JsonReadApiRequestSenderInterface $requestSender;
 
-    public function __construct(JsonApiRequestSenderInterface $requestSender, LandingPageTransformerInterface $landingPageTransformer, ConformanceTransformerInterface $conformanceTransformer, ApiKeyInterface $apiKey, ApiHostInterface $apiHost)
+    public function __construct(JsonReadApiRequestSenderInterface $requestSender, LandingPageTransformerInterface $landingPageTransformer, ConformanceTransformerInterface $conformanceTransformer, ApiKeyInterface $apiKey, ApiHostInterface $apiHost)
     {
         $this->requestSender = $requestSender;
         $this->landingPageTransformer = $landingPageTransformer;

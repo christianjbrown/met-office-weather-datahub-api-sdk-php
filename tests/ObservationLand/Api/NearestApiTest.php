@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ChristianBrown\MetOffice\Tests\ObservationLand\Api;
 
 use ChristianBrown\ApiClient\Exception\Request\RequestExceptionInterface;
-use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
+use ChristianBrown\ApiClient\JsonReadApiRequestSenderInterface;
 use ChristianBrown\MetOffice\ApiKey;
 use ChristianBrown\MetOffice\ApiKeyInterface;
 use ChristianBrown\MetOffice\Coordinates;
@@ -33,7 +33,7 @@ final class NearestApiTest extends TestCase
     {
         $data = [['test-location']];
 
-        $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createMock(JsonReadApiRequestSenderInterface::class);
         $requestSender->expects(self::once())
             ->method('get')
             ->with(
@@ -70,7 +70,7 @@ final class NearestApiTest extends TestCase
     {
         $data = [['test-location']];
 
-        $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createMock(JsonReadApiRequestSenderInterface::class);
         $requestSender->expects(self::once())
             ->method('get')
             ->with(
@@ -108,7 +108,7 @@ final class NearestApiTest extends TestCase
     {
         $data = [['test-location']];
 
-        $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createMock(JsonReadApiRequestSenderInterface::class);
         $requestSender->expects(self::once())
             ->method('get')
             ->with(
@@ -144,7 +144,7 @@ final class NearestApiTest extends TestCase
     {
         $data = [['test-location']];
 
-        $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createMock(JsonReadApiRequestSenderInterface::class);
         $requestSender->expects(self::once())
             ->method('get')
             ->with(

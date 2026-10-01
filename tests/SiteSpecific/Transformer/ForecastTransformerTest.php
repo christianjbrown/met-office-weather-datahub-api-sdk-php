@@ -93,7 +93,7 @@ final class ForecastTransformerTest extends TestCase
         $timeStepsTransformer = self::createMock(ForecastTimeStepsTransformerInterface::class);
         $timeStepsTransformer->expects(self::never())->method('transform');
 
-        $transformer = new ForecastTransformer($timeStepsTransformer);
+        $transformer = new ForecastTransformer($timeStepsTransformer, self::createStub(ParameterMetadataTransformerInterface::class));
 
         $actual = $transformer->transform([]);
 
@@ -136,7 +136,7 @@ final class ForecastTransformerTest extends TestCase
     {
         $timeStepsTransformer = self::createStub(ForecastTimeStepsTransformerInterface::class);
 
-        $transformer = new ForecastTransformer($timeStepsTransformer);
+        $transformer = new ForecastTransformer($timeStepsTransformer, self::createStub(ParameterMetadataTransformerInterface::class));
 
         $actual = $transformer->transform([ForecastTransformerInterface::KEY_REQUEST_POINT_DISTANCE => 123.5]);
 
@@ -151,7 +151,7 @@ final class ForecastTransformerTest extends TestCase
     {
         $timeStepsTransformer = self::createStub(ForecastTimeStepsTransformerInterface::class);
 
-        $transformer = new ForecastTransformer($timeStepsTransformer);
+        $transformer = new ForecastTransformer($timeStepsTransformer, self::createStub(ParameterMetadataTransformerInterface::class));
 
         $actual = $transformer->transform($properties);
 
@@ -179,7 +179,7 @@ final class ForecastTransformerTest extends TestCase
     {
         $timeStepsTransformer = self::createStub(ForecastTimeStepsTransformerInterface::class);
 
-        $transformer = new ForecastTransformer($timeStepsTransformer);
+        $transformer = new ForecastTransformer($timeStepsTransformer, self::createStub(ParameterMetadataTransformerInterface::class));
 
         $actual = $transformer->transform($properties);
 
@@ -205,7 +205,7 @@ final class ForecastTransformerTest extends TestCase
     {
         $timeStepsTransformer = self::createStub(ForecastTimeStepsTransformerInterface::class);
 
-        $transformer = new ForecastTransformer($timeStepsTransformer);
+        $transformer = new ForecastTransformer($timeStepsTransformer, self::createStub(ParameterMetadataTransformerInterface::class));
 
         $actual = $transformer->transform($properties);
 
@@ -231,7 +231,7 @@ final class ForecastTransformerTest extends TestCase
     {
         $timeStepsTransformer = self::createStub(ForecastTimeStepsTransformerInterface::class);
 
-        $transformer = new ForecastTransformer($timeStepsTransformer);
+        $transformer = new ForecastTransformer($timeStepsTransformer, self::createStub(ParameterMetadataTransformerInterface::class));
 
         $actual = $transformer->transform($properties);
 
@@ -276,25 +276,6 @@ final class ForecastTransformerTest extends TestCase
         yield 'entryWrongType' => [[ForecastTransformerInterface::KEY_PARAMETERS => [['test-parameter' => 'not-an-array']]]];
     }
 
-    public function testTransformSkipsParametersWithoutTransformer(): void
-    {
-        $timeStepsTransformer = self::createStub(ForecastTimeStepsTransformerInterface::class);
-
-        $transformer = new ForecastTransformer($timeStepsTransformer);
-
-        $actual = $transformer->transform(
-            [
-                ForecastTransformerInterface::KEY_PARAMETERS => [
-                    [
-                        'test-parameter' => ['test-parameter-data'],
-                    ],
-                ],
-            ]
-        );
-
-        self::assertSame([], $actual->getParameters());
-    }
-
     /**
      * @param array<string, mixed> $properties
      */
@@ -303,7 +284,7 @@ final class ForecastTransformerTest extends TestCase
     {
         $timeStepsTransformer = self::createStub(ForecastTimeStepsTransformerInterface::class);
 
-        $transformer = new ForecastTransformer($timeStepsTransformer);
+        $transformer = new ForecastTransformer($timeStepsTransformer, self::createStub(ParameterMetadataTransformerInterface::class));
 
         $actual = $transformer->transform($properties);
 
@@ -328,7 +309,7 @@ final class ForecastTransformerTest extends TestCase
         $timeStepsTransformer = self::createMock(ForecastTimeStepsTransformerInterface::class);
         $timeStepsTransformer->expects(self::never())->method('transform');
 
-        $transformer = new ForecastTransformer($timeStepsTransformer);
+        $transformer = new ForecastTransformer($timeStepsTransformer, self::createStub(ParameterMetadataTransformerInterface::class));
 
         $actual = $transformer->transform($properties);
 

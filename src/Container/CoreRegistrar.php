@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace ChristianBrown\MetOffice\Container;
 
-use ChristianBrown\ApiClient\ApiClient;
+use ChristianBrown\ApiClient\ApiClientFactory;
+use ChristianBrown\ApiClient\ApiClientInterface;
+use ChristianBrown\ApiClient\ClientOptions;
 use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
 use ChristianBrown\MetOffice\ApiKey;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -33,7 +35,15 @@ final class CoreRegistrar implements ServiceRegistrarInterface
 
     public function register(ContainerBuilder $container): void
     {
-        $container->register($this->serviceApiClient, ApiClient::class);
+        $container->register(ClientOptions::class, ClientOptions::class);
+        $container->register(ApiClientFactory::class, ApiClientFactory::class)
+            ->setArguments(
+                [
+                    new Reference(ClientOptions::class),
+                ]
+            );
+        $container->register($this->serviceApiClient, ApiClientInterface::class)
+            ->setFactory([new Reference(ApiClientFactory::class), 'create']);
         $container->register($this->serviceJsonApiRequestSender, JsonApiRequestSenderInterface::class)
             ->setFactory([new Reference($this->serviceApiClient), 'getJsonApiRequestSender']);
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ChristianBrown\MetOffice\Tests\BlendedProbForecast\Api;
 
 use ChristianBrown\ApiClient\Exception\Request\RequestExceptionInterface;
-use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
+use ChristianBrown\ApiClient\JsonReadApiRequestSenderInterface;
 use ChristianBrown\MetOffice\ApiKey;
 use ChristianBrown\MetOffice\ApiKeyInterface;
 use ChristianBrown\MetOffice\BlendedProbForecast\Api\InstancesApi;
@@ -37,7 +37,7 @@ final class InstancesApiTest extends TestCase
     {
         $data = ['id' => 'blended'];
 
-        $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createMock(JsonReadApiRequestSenderInterface::class);
         $requestSender->expects(self::once())
             ->method('get')
             ->with(
@@ -75,7 +75,7 @@ final class InstancesApiTest extends TestCase
         $instancesData = [['id' => 'blended']];
         $data = [InstancesApiInterface::KEY_INSTANCES => $instancesData];
 
-        $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createMock(JsonReadApiRequestSenderInterface::class);
         $requestSender->expects(self::once())
             ->method('get')
             ->with(
@@ -114,7 +114,7 @@ final class InstancesApiTest extends TestCase
     #[TestWith([[InstancesApiInterface::KEY_INSTANCES => 'not-an-array']])]
     public function testGetInstancesThrowsOnUnexpectedResponse(array $data): void
     {
-        $requestSender = self::createStub(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createStub(JsonReadApiRequestSenderInterface::class);
         $requestSender->method('get')->willReturn($data);
 
         $instancesTransformer = self::createMock(InstancesTransformerInterface::class);

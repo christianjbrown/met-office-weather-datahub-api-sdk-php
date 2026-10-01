@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ChristianBrown\MetOffice\BlendedProbForecast\Api;
 
 use ChristianBrown\ApiClient\Exception\Request\RequestExceptionInterface;
-use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
+use ChristianBrown\ApiClient\JsonReadApiRequestSenderInterface;
 use ChristianBrown\MetOffice\ApiKeyInterface;
 use ChristianBrown\MetOffice\BlendedProbForecast\Model\CollectionInterface;
 use ChristianBrown\MetOffice\BlendedProbForecast\Transformer\CollectionsTransformerInterface;
@@ -22,9 +22,9 @@ final class CollectionsApi implements CollectionsApiInterface
     private ApiKeyInterface $apiKey;
     private CollectionsTransformerInterface $collectionsTransformer;
     private CollectionTransformerInterface $collectionTransformer;
-    private JsonApiRequestSenderInterface $requestSender;
+    private JsonReadApiRequestSenderInterface $requestSender;
 
-    public function __construct(JsonApiRequestSenderInterface $requestSender, CollectionsTransformerInterface $collectionsTransformer, CollectionTransformerInterface $collectionTransformer, ApiKeyInterface $apiKey, ApiHostInterface $apiHost)
+    public function __construct(JsonReadApiRequestSenderInterface $requestSender, CollectionsTransformerInterface $collectionsTransformer, CollectionTransformerInterface $collectionTransformer, ApiKeyInterface $apiKey, ApiHostInterface $apiHost)
     {
         $this->requestSender = $requestSender;
         $this->collectionsTransformer = $collectionsTransformer;

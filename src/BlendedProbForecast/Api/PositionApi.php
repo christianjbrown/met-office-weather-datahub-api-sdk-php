@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ChristianBrown\MetOffice\BlendedProbForecast\Api;
 
 use ChristianBrown\ApiClient\Exception\Request\RequestExceptionInterface;
-use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
+use ChristianBrown\ApiClient\JsonReadApiRequestSenderInterface;
 use ChristianBrown\MetOffice\ApiKeyInterface;
 use ChristianBrown\MetOffice\BlendedProbForecast\DataQueryInterface;
 use ChristianBrown\MetOffice\BlendedProbForecast\Model\CoverageCollectionInterface;
@@ -21,9 +21,9 @@ final class PositionApi implements PositionApiInterface
     private ApiHostInterface $apiHost;
     private ApiKeyInterface $apiKey;
     private CoverageCollectionTransformerInterface $coverageCollectionTransformer;
-    private JsonApiRequestSenderInterface $requestSender;
+    private JsonReadApiRequestSenderInterface $requestSender;
 
-    public function __construct(JsonApiRequestSenderInterface $requestSender, CoverageCollectionTransformerInterface $coverageCollectionTransformer, ApiKeyInterface $apiKey, ApiHostInterface $apiHost)
+    public function __construct(JsonReadApiRequestSenderInterface $requestSender, CoverageCollectionTransformerInterface $coverageCollectionTransformer, ApiKeyInterface $apiKey, ApiHostInterface $apiHost)
     {
         $this->requestSender = $requestSender;
         $this->coverageCollectionTransformer = $coverageCollectionTransformer;

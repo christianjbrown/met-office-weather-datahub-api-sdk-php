@@ -4,64 +4,25 @@ declare(strict_types=1);
 
 namespace ChristianBrown\MetOffice\Tests\SiteSpecific;
 
-use ChristianBrown\MetOffice\ApiKey;
-use ChristianBrown\MetOffice\Container\CoreRegistrar;
-use ChristianBrown\MetOffice\Container\RegistrarContainerFactory;
-use ChristianBrown\MetOffice\Host\ApiHost;
-use ChristianBrown\MetOffice\SiteSpecific\Api\DailyForecastApi;
-use ChristianBrown\MetOffice\SiteSpecific\Api\ForecastApi;
-use ChristianBrown\MetOffice\SiteSpecific\Api\HourlyForecastApi;
-use ChristianBrown\MetOffice\SiteSpecific\Api\ThreeHourlyForecastApi;
-use ChristianBrown\MetOffice\SiteSpecific\Container\DailyForecastRegistrar;
-use ChristianBrown\MetOffice\SiteSpecific\Container\HourlyForecastRegistrar;
-use ChristianBrown\MetOffice\SiteSpecific\Container\ThreeHourlyForecastRegistrar;
+use ChristianBrown\MetOffice\SiteSpecific\Api\DailyForecastApiInterface;
+use ChristianBrown\MetOffice\SiteSpecific\Api\HourlyForecastApiInterface;
+use ChristianBrown\MetOffice\SiteSpecific\Api\ThreeHourlyForecastApiInterface;
 use ChristianBrown\MetOffice\SiteSpecific\SiteSpecific;
-use ChristianBrown\MetOffice\SiteSpecific\Transformer\DailyForecastTimeStepTransformer;
-use ChristianBrown\MetOffice\SiteSpecific\Transformer\ForecastTimeStepsTransformer;
-use ChristianBrown\MetOffice\SiteSpecific\Transformer\ForecastTransformer;
-use ChristianBrown\MetOffice\SiteSpecific\Transformer\HourlyForecastTimeStepTransformer;
-use ChristianBrown\MetOffice\SiteSpecific\Transformer\ThreeHourlyForecastTimeStepTransformer;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(SiteSpecific::class)]
-#[UsesClass(ApiHost::class)]
-#[UsesClass(ApiKey::class)]
-#[UsesClass(CoreRegistrar::class)]
-#[UsesClass(RegistrarContainerFactory::class)]
-#[UsesClass(HourlyForecastRegistrar::class)]
-#[UsesClass(ThreeHourlyForecastRegistrar::class)]
-#[UsesClass(DailyForecastRegistrar::class)]
-#[UsesClass(HourlyForecastApi::class)]
-#[UsesClass(ForecastApi::class)]
-#[UsesClass(ThreeHourlyForecastApi::class)]
-#[UsesClass(DailyForecastApi::class)]
-#[UsesClass(ForecastTransformer::class)]
-#[UsesClass(ForecastTimeStepsTransformer::class)]
-#[UsesClass(HourlyForecastTimeStepTransformer::class)]
-#[UsesClass(ThreeHourlyForecastTimeStepTransformer::class)]
-#[UsesClass(DailyForecastTimeStepTransformer::class)]
 final class SiteSpecificTest extends TestCase
 {
-    public function testGetDailyForecastApi(): void
+    public function testReturnsInjectedApis(): void
     {
-        $siteSpecific = new SiteSpecific('key');
+        $dailyForecastApi = self::createStub(DailyForecastApiInterface::class);
+        $hourlyForecastApi = self::createStub(HourlyForecastApiInterface::class);
+        $threeHourlyForecastApi = self::createStub(ThreeHourlyForecastApiInterface::class);
+        $facade = new SiteSpecific($dailyForecastApi, $hourlyForecastApi, $threeHourlyForecastApi);
 
-        self::assertInstanceOf(DailyForecastApi::class, $siteSpecific->getDailyForecastApi());
-    }
-
-    public function testGetHourlyForecastApi(): void
-    {
-        $siteSpecific = new SiteSpecific('key');
-
-        self::assertInstanceOf(HourlyForecastApi::class, $siteSpecific->getHourlyForecastApi());
-    }
-
-    public function testGetThreeHourlyForecastApi(): void
-    {
-        $siteSpecific = new SiteSpecific('key');
-
-        self::assertInstanceOf(ThreeHourlyForecastApi::class, $siteSpecific->getThreeHourlyForecastApi());
+        self::assertSame($dailyForecastApi, $facade->getDailyForecastApi());
+        self::assertSame($hourlyForecastApi, $facade->getHourlyForecastApi());
+        self::assertSame($threeHourlyForecastApi, $facade->getThreeHourlyForecastApi());
     }
 }

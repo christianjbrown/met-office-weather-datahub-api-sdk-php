@@ -8,13 +8,30 @@ use ChristianBrown\MetOffice\Enums\WeatherType;
 use ChristianBrown\MetOffice\Exception\UnexpectedResponseException;
 use ChristianBrown\MetOffice\SiteSpecific\Model\DailyForecastTimeStep;
 use ChristianBrown\MetOffice\SiteSpecific\Transformer\DailyForecastTimeStepTransformer;
+use ChristianBrown\MetOffice\SiteSpecific\Transformer\DailyForecastTimeStepTransformerFactory;
 use ChristianBrown\MetOffice\SiteSpecific\Transformer\DailyForecastTimeStepTransformerInterface;
+use ChristianBrown\MetOffice\SiteSpecific\Transformer\Field\AtmosphereFieldApplierProvider;
+use ChristianBrown\MetOffice\SiteSpecific\Transformer\Field\DailyForecastFieldApplierInterface;
+use ChristianBrown\MetOffice\SiteSpecific\Transformer\Field\DayFieldApplierProvider;
+use ChristianBrown\MetOffice\SiteSpecific\Transformer\Field\FloatFieldApplier;
+use ChristianBrown\MetOffice\SiteSpecific\Transformer\Field\IntFieldApplier;
+use ChristianBrown\MetOffice\SiteSpecific\Transformer\Field\NightFieldApplierProvider;
+use ChristianBrown\MetOffice\SiteSpecific\Transformer\Field\WeatherTypeFieldApplier;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
 
+use function strtotime;
+
 #[CoversClass(DailyForecastTimeStep::class)]
 #[CoversClass(DailyForecastTimeStepTransformer::class)]
+#[CoversClass(DailyForecastTimeStepTransformerFactory::class)]
+#[CoversClass(AtmosphereFieldApplierProvider::class)]
+#[CoversClass(DayFieldApplierProvider::class)]
+#[CoversClass(NightFieldApplierProvider::class)]
+#[CoversClass(FloatFieldApplier::class)]
+#[CoversClass(IntFieldApplier::class)]
+#[CoversClass(WeatherTypeFieldApplier::class)]
 final class DailyForecastTimeStepTransformerTest extends TestCase
 {
     public function testTransform(): void
@@ -64,7 +81,7 @@ final class DailyForecastTimeStepTransformerTest extends TestCase
             DailyForecastTimeStepTransformerInterface::KEY_NIGHT_PROBABILITY_OF_SFERICS => 140,
         ];
 
-        $transformer = new DailyForecastTimeStepTransformer();
+        $transformer = (new DailyForecastTimeStepTransformerFactory())->create();
 
         $actual = $transformer->transform($data);
 
@@ -159,7 +176,7 @@ final class DailyForecastTimeStepTransformerTest extends TestCase
             DailyForecastTimeStepTransformerInterface::KEY_NIGHT_PROBABILITY_OF_SFERICS => 0,
         ];
 
-        $transformer = new DailyForecastTimeStepTransformer();
+        $transformer = (new DailyForecastTimeStepTransformerFactory())->create();
 
         $actual = $transformer->transform($data);
 
@@ -212,7 +229,7 @@ final class DailyForecastTimeStepTransformerTest extends TestCase
             DailyForecastTimeStepTransformerInterface::KEY_TIME => '2026-07-16T12:00Z',
         ];
 
-        $transformer = new DailyForecastTimeStepTransformer();
+        $transformer = (new DailyForecastTimeStepTransformerFactory())->create();
 
         $actual = $transformer->transform($data);
 
@@ -259,6 +276,26 @@ final class DailyForecastTimeStepTransformerTest extends TestCase
         self::assertNull($actual->getNightProbabilityOfSferics());
     }
 
+    public function testTransformRunsASingleApplier(): void
+    {
+        $data = [DailyForecastTimeStepTransformerInterface::KEY_TIME => '2026-07-16T12:00Z'];
+        $applier = $this->createMock(DailyForecastFieldApplierInterface::class);
+        $applier->expects(self::once())->method('apply')->with(self::isInstanceOf(DailyForecastTimeStep::class), $data);
+
+        (new DailyForecastTimeStepTransformer([$applier]))->transform($data);
+    }
+
+    public function testTransformRunsEveryApplier(): void
+    {
+        $data = [DailyForecastTimeStepTransformerInterface::KEY_TIME => '2026-07-16T12:00Z'];
+        $first = $this->createMock(DailyForecastFieldApplierInterface::class);
+        $first->expects(self::once())->method('apply')->with(self::isInstanceOf(DailyForecastTimeStep::class), $data);
+        $second = $this->createMock(DailyForecastFieldApplierInterface::class);
+        $second->expects(self::once())->method('apply')->with(self::isInstanceOf(DailyForecastTimeStep::class), $data);
+
+        (new DailyForecastTimeStepTransformer([$first, $second]))->transform($data);
+    }
+
     public function testTransformSkipsUnknownWeatherCodes(): void
     {
         $data = [
@@ -267,7 +304,7 @@ final class DailyForecastTimeStepTransformerTest extends TestCase
             DailyForecastTimeStepTransformerInterface::KEY_NIGHT_SIGNIFICANT_WEATHER_CODE => 99,
         ];
 
-        $transformer = new DailyForecastTimeStepTransformer();
+        $transformer = (new DailyForecastTimeStepTransformerFactory())->create();
 
         $actual = $transformer->transform($data);
 
@@ -322,7 +359,7 @@ final class DailyForecastTimeStepTransformerTest extends TestCase
             DailyForecastTimeStepTransformerInterface::KEY_NIGHT_PROBABILITY_OF_SFERICS => 'wrong-nightProbabilityOfSferics',
         ];
 
-        $transformer = new DailyForecastTimeStepTransformer();
+        $transformer = (new DailyForecastTimeStepTransformerFactory())->create();
 
         $actual = $transformer->transform($data);
 
@@ -377,10 +414,20 @@ final class DailyForecastTimeStepTransformerTest extends TestCase
     #[TestWith([[DailyForecastTimeStepTransformerInterface::KEY_TIME => 'test-not-a-timestamp'], DailyForecastTimeStepTransformerInterface::UNEXPECTED_TIMESTAMP_SPRINTF, 'test-not-a-timestamp'])]
     public function testTransformUnexpectedData(array $data, string $message, string $field): void
     {
-        $transformer = new DailyForecastTimeStepTransformer();
+        $transformer = (new DailyForecastTimeStepTransformerFactory())->create();
 
         $this->expectException(UnexpectedResponseException::class);
         $this->expectExceptionMessage(sprintf($message, $field));
         $transformer->transform($data);
+    }
+
+    public function testTransformWithoutAppliersReturnsTimeOnly(): void
+    {
+        $transformer = new DailyForecastTimeStepTransformer([]);
+
+        $actual = $transformer->transform([DailyForecastTimeStepTransformerInterface::KEY_TIME => '2026-07-16T12:00Z']);
+
+        self::assertSame(strtotime('2026-07-16T12:00Z'), $actual->getTime());
+        self::assertNull($actual->getMaxUvIndex());
     }
 }
