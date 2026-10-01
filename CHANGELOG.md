@@ -16,6 +16,11 @@ All notable changes to this package are recorded here. The format follows
 
 ### Changed
 
+- Moves to `christianjbrown/api-client` `^3.0` (was `^1.0`). Consumers now get that major.
+- Breaking: the API clients (`ForecastApi`, `NearestApi`, `ObservationApi`, the Blended Probabilistic Forecast
+  clients and the Atmospheric Models and Map Images `RunsApi` and `OrdersApi`) type their constructors against
+  `JsonReadApiRequestSenderInterface` and `ReadApiRequestSenderInterface`, since they only send GET requests.
+  The default wiring builds the `ApiClient` through `ApiClientFactory`.
 - Breaking: the product facades (`SiteSpecific`, `ObservationLand`, `BlendedProbForecast`, `MapImages`,
   `AtmosphericModels`) no longer take an API key and host. Their constructors take the API client
   interfaces they expose. Use `(new SiteSpecificFactory())->create($apiKey, new ApiHost())` and the

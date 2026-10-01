@@ -340,7 +340,8 @@ $siteSpecific = (new MetOfficeFactory())->createWithHost(new ApiHost('https://sa
 If you don't want the container, you can build the same chain yourself. The HTTP request sender comes from [`christianjbrown/api-client`](https://github.com/christianjbrown/api-client-php).
 
 ```php
-use ChristianBrown\ApiClient\ApiClient;
+use ChristianBrown\ApiClient\ApiClientFactory;
+use ChristianBrown\ApiClient\ClientOptions;
 use ChristianBrown\MetOffice\ApiKey;
 use ChristianBrown\MetOffice\Host\ApiHost;
 use ChristianBrown\MetOffice\SiteSpecific\Api\ForecastApi;
@@ -353,7 +354,7 @@ use ChristianBrown\MetOffice\SiteSpecific\Transformer\ParameterMetadataTransform
 $apiKey = new ApiKey('your-site-specific-apikey');
 
 // Shared JSON request sender (wires Guzzle for you).
-$requestSender = (new ApiClient())->getJsonApiRequestSender();
+$requestSender = (new ApiClientFactory(new ClientOptions()))->create()->getJsonApiRequestSender();
 
 // The resolution-agnostic forecast client, given the hourly transformer chain.
 $forecastApi = new ForecastApi(
@@ -391,7 +392,7 @@ $siteSpecific = (new SiteSpecificFactory())->create('your-site-specific-apikey',
 $metOffice    = (new MetOfficeFactory())->create();
 ```
 
-The same applies to `ObservationLand`, `BlendedProbForecast`, `MapImages` and `AtmosphericModels` (each has a `<Name>Factory`). `MetOffice` itself now takes an `ApiHostInterface` and the five product factories. `ForecastTransformer` requires its `ParameterMetadataTransformerInterface`, and `DailyForecastTimeStepTransformer` takes its field appliers, so build it with `DailyForecastTimeStepTransformerFactory`.
+The same applies to `ObservationLand`, `BlendedProbForecast`, `MapImages` and `AtmosphericModels` (each has a `<Name>Factory`). `MetOffice` itself now takes an `ApiHostInterface` and the five product factories. The package now requires `christianjbrown/api-client` `^3.0`. The API clients type against the read-only `JsonReadApiRequestSenderInterface` and `ReadApiRequestSenderInterface`, so a custom sender only needs a `get()` method. If you build an `ApiClient` yourself, `new ApiClient()` is gone: use `(new ApiClientFactory(new ClientOptions()))->create()`. `ForecastTransformer` requires its `ParameterMetadataTransformerInterface`, and `DailyForecastTimeStepTransformer` takes its field appliers, so build it with `DailyForecastTimeStepTransformerFactory`.
 
 ## :memo: Changelog
 

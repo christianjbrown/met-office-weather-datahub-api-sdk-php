@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ChristianBrown\MetOffice\Tests\BlendedProbForecast\Api;
 
 use ChristianBrown\ApiClient\Exception\Request\RequestExceptionInterface;
-use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
+use ChristianBrown\ApiClient\JsonReadApiRequestSenderInterface;
 use ChristianBrown\MetOffice\ApiKey;
 use ChristianBrown\MetOffice\ApiKeyInterface;
 use ChristianBrown\MetOffice\BlendedProbForecast\Api\LocationsApi;
@@ -45,7 +45,7 @@ final class LocationsApiTest extends TestCase
     {
         $responseData = ['type' => 'CoverageCollection'];
 
-        $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createMock(JsonReadApiRequestSenderInterface::class);
         $requestSender->expects(self::once())
             ->method('get')
             ->with(
@@ -104,7 +104,7 @@ final class LocationsApiTest extends TestCase
         $featuresData = [['id' => '00099139']];
         $data = [LocationsApiInterface::KEY_FEATURES => $featuresData];
 
-        $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createMock(JsonReadApiRequestSenderInterface::class);
         $requestSender->expects(self::once())
             ->method('get')
             ->with(
@@ -144,7 +144,7 @@ final class LocationsApiTest extends TestCase
     #[TestWith([[LocationsApiInterface::KEY_FEATURES => 'not-an-array']])]
     public function testGetLocationsThrowsOnUnexpectedResponse(array $data): void
     {
-        $requestSender = self::createStub(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createStub(JsonReadApiRequestSenderInterface::class);
         $requestSender->method('get')->willReturn($data);
 
         $locationsTransformer = self::createMock(LocationsTransformerInterface::class);

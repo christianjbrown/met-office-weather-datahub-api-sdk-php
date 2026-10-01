@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ChristianBrown\MetOffice\Tests\ObservationLand\Api;
 
 use ChristianBrown\ApiClient\Exception\Request\RequestExceptionInterface;
-use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
+use ChristianBrown\ApiClient\JsonReadApiRequestSenderInterface;
 use ChristianBrown\MetOffice\ApiKey;
 use ChristianBrown\MetOffice\ApiKeyInterface;
 use ChristianBrown\MetOffice\Host\ApiHost;
@@ -33,7 +33,7 @@ final class ObservationApiTest extends TestCase
     {
         $data = [['test-observation']];
 
-        $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createMock(JsonReadApiRequestSenderInterface::class);
         $requestSender->expects(self::once())
             ->method('get')
             ->with(
@@ -70,7 +70,7 @@ final class ObservationApiTest extends TestCase
         $observation = self::createStub(ObservationInterface::class);
         $observations = [$observation];
 
-        $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createMock(JsonReadApiRequestSenderInterface::class);
         $requestSender->expects(self::once())
             ->method('get')
             ->willReturn($data);
@@ -103,7 +103,7 @@ final class ObservationApiTest extends TestCase
         $observation = self::createStub(ObservationInterface::class);
         $observations = [$observation];
 
-        $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createMock(JsonReadApiRequestSenderInterface::class);
         $requestSender->expects(self::exactly(2))
             ->method('get')
             ->willReturn($data);

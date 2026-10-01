@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ChristianBrown\MetOffice\SiteSpecific\Api;
 
 use ChristianBrown\ApiClient\Exception\Request\RequestExceptionInterface;
-use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
+use ChristianBrown\ApiClient\JsonReadApiRequestSenderInterface;
 use ChristianBrown\MetOffice\ApiKeyInterface;
 use ChristianBrown\MetOffice\CoordinatesInterface;
 use ChristianBrown\MetOffice\Exception\UnexpectedResponseException;
@@ -25,9 +25,9 @@ final class ForecastApi implements ForecastApiInterface
      */
     private array $cache = [];
     private ForecastTransformerInterface $forecastTransformer;
-    private JsonApiRequestSenderInterface $requestSender;
+    private JsonReadApiRequestSenderInterface $requestSender;
 
-    public function __construct(JsonApiRequestSenderInterface $requestSender, ForecastTransformerInterface $forecastTransformer, ApiKeyInterface $apiKey)
+    public function __construct(JsonReadApiRequestSenderInterface $requestSender, ForecastTransformerInterface $forecastTransformer, ApiKeyInterface $apiKey)
     {
         $this->requestSender = $requestSender;
         $this->forecastTransformer = $forecastTransformer;

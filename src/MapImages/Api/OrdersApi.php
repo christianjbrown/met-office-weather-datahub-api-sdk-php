@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace ChristianBrown\MetOffice\MapImages\Api;
 
-use ChristianBrown\ApiClient\ApiRequestSenderInterface;
 use ChristianBrown\ApiClient\Exception\Request\RequestExceptionInterface;
-use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
+use ChristianBrown\ApiClient\JsonReadApiRequestSenderInterface;
+use ChristianBrown\ApiClient\ReadApiRequestSenderInterface;
 use ChristianBrown\MetOffice\ApiKeyInterface;
 use ChristianBrown\MetOffice\Coverage\Model\OrderFileDetailsInterface;
 use ChristianBrown\MetOffice\Coverage\Model\OrderFileInterface;
@@ -28,10 +28,10 @@ final class OrdersApi implements OrdersApiInterface
     private OrderFileDetailsTransformerInterface $orderFileDetailsTransformer;
     private OrderFilesTransformerInterface $orderFilesTransformer;
     private OrdersTransformerInterface $ordersTransformer;
-    private ApiRequestSenderInterface $rawRequestSender;
-    private JsonApiRequestSenderInterface $requestSender;
+    private ReadApiRequestSenderInterface $rawRequestSender;
+    private JsonReadApiRequestSenderInterface $requestSender;
 
-    public function __construct(JsonApiRequestSenderInterface $requestSender, ApiRequestSenderInterface $rawRequestSender, OrdersTransformerInterface $ordersTransformer, OrderFilesTransformerInterface $orderFilesTransformer, OrderFileDetailsTransformerInterface $orderFileDetailsTransformer, ApiKeyInterface $apiKey, ApiHostInterface $apiHost)
+    public function __construct(JsonReadApiRequestSenderInterface $requestSender, ReadApiRequestSenderInterface $rawRequestSender, OrdersTransformerInterface $ordersTransformer, OrderFilesTransformerInterface $orderFilesTransformer, OrderFileDetailsTransformerInterface $orderFileDetailsTransformer, ApiKeyInterface $apiKey, ApiHostInterface $apiHost)
     {
         $this->requestSender = $requestSender;
         $this->rawRequestSender = $rawRequestSender;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ChristianBrown\MetOffice\MapImages\Api;
 
 use ChristianBrown\ApiClient\Exception\Request\RequestExceptionInterface;
-use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
+use ChristianBrown\ApiClient\JsonReadApiRequestSenderInterface;
 use ChristianBrown\MetOffice\ApiKeyInterface;
 use ChristianBrown\MetOffice\Coverage\Model\RunInterface;
 use ChristianBrown\MetOffice\Coverage\Transformer\RunsTransformerInterface;
@@ -19,10 +19,10 @@ final class RunsApi implements RunsApiInterface
 {
     private ApiHostInterface $apiHost;
     private ApiKeyInterface $apiKey;
-    private JsonApiRequestSenderInterface $requestSender;
+    private JsonReadApiRequestSenderInterface $requestSender;
     private RunsTransformerInterface $runsTransformer;
 
-    public function __construct(JsonApiRequestSenderInterface $requestSender, RunsTransformerInterface $runsTransformer, ApiKeyInterface $apiKey, ApiHostInterface $apiHost)
+    public function __construct(JsonReadApiRequestSenderInterface $requestSender, RunsTransformerInterface $runsTransformer, ApiKeyInterface $apiKey, ApiHostInterface $apiHost)
     {
         $this->requestSender = $requestSender;
         $this->runsTransformer = $runsTransformer;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ChristianBrown\MetOffice\Tests\SiteSpecific\Api;
 
 use ChristianBrown\ApiClient\Exception\Request\RequestExceptionInterface;
-use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
+use ChristianBrown\ApiClient\JsonReadApiRequestSenderInterface;
 use ChristianBrown\MetOffice\ApiKey;
 use ChristianBrown\MetOffice\ApiKeyInterface;
 use ChristianBrown\MetOffice\Coordinates;
@@ -43,7 +43,7 @@ final class ForecastApiTest extends TestCase
             ],
         ];
 
-        $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createMock(JsonReadApiRequestSenderInterface::class);
         $requestSender->expects(self::once())
             ->method('get')
             ->with(
@@ -91,7 +91,7 @@ final class ForecastApiTest extends TestCase
 
         $forecast = self::createStub(ForecastInterface::class);
 
-        $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createMock(JsonReadApiRequestSenderInterface::class);
         $requestSender->expects(self::once())
             ->method('get')
             ->willReturn($data);
@@ -129,7 +129,7 @@ final class ForecastApiTest extends TestCase
 
         $forecast = self::createStub(ForecastInterface::class);
 
-        $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createMock(JsonReadApiRequestSenderInterface::class);
         $requestSender->expects(self::exactly(2))
             ->method('get')
             ->willReturn($data);
@@ -160,7 +160,7 @@ final class ForecastApiTest extends TestCase
             ],
         ];
 
-        $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createMock(JsonReadApiRequestSenderInterface::class);
         $requestSender->expects(self::once())
             ->method('get')
             ->with(
@@ -208,7 +208,7 @@ final class ForecastApiTest extends TestCase
             ForecastApiInterface::KEY_PARAMETERS => ['test-parameters'],
         ];
 
-        $requestSender = self::createStub(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createStub(JsonReadApiRequestSenderInterface::class);
         $requestSender->method('get')
             ->willReturn($data);
 
@@ -248,7 +248,7 @@ final class ForecastApiTest extends TestCase
 
         $forecast = self::createStub(ForecastInterface::class);
 
-        $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createMock(JsonReadApiRequestSenderInterface::class);
         $requestSender->expects(self::exactly(2))
             ->method('get')
             ->willReturn($data);
@@ -282,7 +282,7 @@ final class ForecastApiTest extends TestCase
 
         $forecast = self::createStub(ForecastInterface::class);
 
-        $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createMock(JsonReadApiRequestSenderInterface::class);
         $requestSender->expects(self::once())
             ->method('get')
             ->willReturn($data);
@@ -312,7 +312,7 @@ final class ForecastApiTest extends TestCase
             ForecastApiInterface::KEY_FEATURES => [$feature + [ForecastApiInterface::KEY_PROPERTIES => ['test-properties']]],
         ];
 
-        $requestSender = self::createStub(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createStub(JsonReadApiRequestSenderInterface::class);
         $requestSender->method('get')
             ->willReturn($data);
 
@@ -345,7 +345,7 @@ final class ForecastApiTest extends TestCase
             ForecastApiInterface::KEY_PARAMETERS => 'not-an-array',
         ];
 
-        $requestSender = self::createStub(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createStub(JsonReadApiRequestSenderInterface::class);
         $requestSender->method('get')
             ->willReturn($data);
 
@@ -383,7 +383,7 @@ final class ForecastApiTest extends TestCase
     #[TestWith([[ForecastApiInterface::KEY_FEATURES => [[ForecastApiInterface::KEY_PROPERTIES => 'not-an-array']]], ForecastApiInterface::KEY_PROPERTIES, true])]
     public function testGetForecastUnexpectedResponse(array $data, string $field, bool $skipCache): void
     {
-        $requestSender = self::createStub(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createStub(JsonReadApiRequestSenderInterface::class);
         $requestSender->method('get')
             ->willReturn($data);
 

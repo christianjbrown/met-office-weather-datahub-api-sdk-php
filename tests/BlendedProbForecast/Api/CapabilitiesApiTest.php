@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ChristianBrown\MetOffice\Tests\BlendedProbForecast\Api;
 
 use ChristianBrown\ApiClient\Exception\Request\RequestExceptionInterface;
-use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
+use ChristianBrown\ApiClient\JsonReadApiRequestSenderInterface;
 use ChristianBrown\MetOffice\ApiKey;
 use ChristianBrown\MetOffice\ApiKeyInterface;
 use ChristianBrown\MetOffice\BlendedProbForecast\Api\CapabilitiesApi;
@@ -37,7 +37,7 @@ final class CapabilitiesApiTest extends TestCase
         $conformsToData = ['http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core'];
         $data = [CapabilitiesApiInterface::KEY_CONFORMS_TO => $conformsToData];
 
-        $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createMock(JsonReadApiRequestSenderInterface::class);
         $requestSender->expects(self::once())
             ->method('get')
             ->with(
@@ -76,7 +76,7 @@ final class CapabilitiesApiTest extends TestCase
     #[TestWith([[CapabilitiesApiInterface::KEY_CONFORMS_TO => 'not-an-array']])]
     public function testGetConformanceThrowsOnUnexpectedResponse(array $data): void
     {
-        $requestSender = self::createStub(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createStub(JsonReadApiRequestSenderInterface::class);
         $requestSender->method('get')->willReturn($data);
 
         $landingPageTransformer = self::createStub(LandingPageTransformerInterface::class);
@@ -100,7 +100,7 @@ final class CapabilitiesApiTest extends TestCase
     {
         $data = ['title' => 'Met Office Site Specific Blended Probabilistic Forecast'];
 
-        $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createMock(JsonReadApiRequestSenderInterface::class);
         $requestSender->expects(self::once())
             ->method('get')
             ->with(

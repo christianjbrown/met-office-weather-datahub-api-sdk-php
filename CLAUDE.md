@@ -28,7 +28,7 @@ new per-API facades.
 is the composition root: it takes the `ApiHost`, builds an ordered list of **registrars** for that product, and hands them to the shared
 `Container\RegistrarContainerFactory`, which runs each registrar's `register(ContainerBuilder $container): void`
 against the same container in order. A registrar is anything implementing the single-method
-`Container\ServiceRegistrarInterface`. Two are shared by every facade: `Container\CoreRegistrar` (the `ApiClient`,
+`Container\ServiceRegistrarInterface`. Two are shared by every facade: `Container\CoreRegistrar` (the `ApiClient`, built through `ApiClientFactory` from default `ClientOptions`,
 the JSON request sender, and the `ApiKey` credential — the boilerplate every product needs) and
 `Container\RawRequestSenderRegistrar` (the raw, non-JSON sender; only Atmospheric Models and Map Images use it, for
 binary GRIB/PNG downloads). Everything else is a small `final` registrar scoped to one API resource group or one
@@ -156,7 +156,7 @@ Everything lives under the `ChristianBrown\MetOffice\` namespace (`src/`), mirro
   thin wrapper (ids are `SERVICE_*` constants on `SiteSpecificInterface`, **`met_office.site_specific.` prefix**).
   Exposes `getHourlyForecastApi()`, `getThreeHourlyForecastApi()`, `getDailyForecastApi()`.
 - **`SiteSpecific\Api/`** — the shared **`ForecastApi`** (constructed with
-  `(JsonApiRequestSenderInterface, ForecastTransformerInterface, ApiKeyInterface)`) holds the request
+  `(JsonReadApiRequestSenderInterface, ForecastTransformerInterface, ApiKeyInterface)`) holds the request
   logic: `getForecast(string $apiUrl, CoordinatesInterface $coordinates, bool $skipCache = false)` builds
   the query + `apikey` header, calls the sender against the passed `$apiUrl`, guards the
   `features`/`properties` shape, delegates `features[0].properties` to the injected `ForecastTransformer`,
@@ -364,7 +364,7 @@ as a `string`** for a download — **no GRIB parsing is performed**. Base URL
   (`GET /orders/{orderId}/latest`, query built only for supplied params, unwraps `orderDetails.files` →
   `OrderFileInterface[]`), `getOrderFile(string $orderId, string $fileId)` (`GET /orders/{orderId}/latest/{fileId}`,
   unwraps `fileDetails` → `OrderFileDetailsInterface`), and `getOrderFileData(string $orderId, string $fileId): string`
-  which uses the **raw `ApiRequestSenderInterface`** with an `Accept: application/x-grib` header,
+  which uses the **raw `ReadApiRequestSenderInterface`** with an `Accept: application/x-grib` header,
   URL-encodes the file id, and returns the raw GRIB body string. Both build the `apikey` header; the
   JSON wrapper-shape guards live in the API classes and the per-item parsing is delegated to the
   transformers. `Api\ApiInterface` extends the shared top-level `ApiInterface` and adds the `API_URL_*`,
@@ -455,7 +455,7 @@ top level.
 - **The facade getters must stay PHPStan-safe**: `$this->container->get()` returns `mixed`, so assign
   it to a local `$service` annotated with a `/** @var XInterface $service */` docblock and return that
   — never `return $this->container->get(...)` directly.
-- The HTTP layer takes `ChristianBrown\ApiClient\JsonApiRequestSenderInterface` directly and calls
+- The HTTP layer takes `ChristianBrown\ApiClient\JsonReadApiRequestSenderInterface` directly and calls
   `->get($url, $queryStrings, $headers)`. There is no custom request-sender wrapper.
 
 ## Testing

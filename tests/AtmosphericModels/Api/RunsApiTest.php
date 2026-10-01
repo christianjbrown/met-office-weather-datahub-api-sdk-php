@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ChristianBrown\MetOffice\Tests\AtmosphericModels\Api;
 
 use ChristianBrown\ApiClient\Exception\Request\RequestExceptionInterface;
-use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
+use ChristianBrown\ApiClient\JsonReadApiRequestSenderInterface;
 use ChristianBrown\MetOffice\ApiKey;
 use ChristianBrown\MetOffice\ApiKeyInterface;
 use ChristianBrown\MetOffice\AtmosphericModels\Api\RunsApi;
@@ -36,7 +36,7 @@ final class RunsApiTest extends TestCase
         $runsData = [['test-run']];
         $data = [RunsApiInterface::KEY_RUNS => $runsData];
 
-        $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createMock(JsonReadApiRequestSenderInterface::class);
         $requestSender->expects(self::once())
             ->method('get')
             ->with(
@@ -72,7 +72,7 @@ final class RunsApiTest extends TestCase
         $runsData = [['test-run']];
         $data = [RunsApiInterface::KEY_RUNS => $runsData];
 
-        $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createMock(JsonReadApiRequestSenderInterface::class);
         $requestSender->expects(self::once())
             ->method('get')
             ->with(
@@ -108,7 +108,7 @@ final class RunsApiTest extends TestCase
         $runsData = [['test-run']];
         $data = [RunsApiInterface::KEY_RUNS => $runsData];
 
-        $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createMock(JsonReadApiRequestSenderInterface::class);
         $requestSender->expects(self::once())
             ->method('get')
             ->with(
@@ -145,7 +145,7 @@ final class RunsApiTest extends TestCase
     #[TestWith([[RunsApiInterface::KEY_RUNS => 'not-an-array']])]
     public function testGetRunsThrowsOnUnexpectedResponse(array $data): void
     {
-        $requestSender = self::createStub(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createStub(JsonReadApiRequestSenderInterface::class);
         $requestSender->method('get')->willReturn($data);
 
         $transformer = self::createMock(RunsTransformerInterface::class);
@@ -168,7 +168,7 @@ final class RunsApiTest extends TestCase
         $runsData = [['test-run']];
         $data = [RunsApiInterface::KEY_RUNS => $runsData];
 
-        $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createMock(JsonReadApiRequestSenderInterface::class);
         $requestSender->expects(self::once())
             ->method('get')
             ->with(

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace ChristianBrown\MetOffice\Tests\AtmosphericModels\Api;
 
-use ChristianBrown\ApiClient\ApiRequestSenderInterface;
 use ChristianBrown\ApiClient\Exception\Request\RequestExceptionInterface;
-use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
+use ChristianBrown\ApiClient\JsonReadApiRequestSenderInterface;
+use ChristianBrown\ApiClient\ReadApiRequestSenderInterface;
 use ChristianBrown\MetOffice\ApiKey;
 use ChristianBrown\MetOffice\ApiKeyInterface;
 use ChristianBrown\MetOffice\AtmosphericModels\Api\OrdersApi;
@@ -43,7 +43,7 @@ final class OrdersApiTest extends TestCase
         $fileDetailsData = ['test-file-details'];
         $data = [OrdersApiInterface::KEY_FILE_DETAILS => $fileDetailsData];
 
-        $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createMock(JsonReadApiRequestSenderInterface::class);
         $requestSender->expects(self::once())
             ->method('get')
             ->with(
@@ -66,7 +66,7 @@ final class OrdersApiTest extends TestCase
 
         $api = new OrdersApi(
             $requestSender,
-            self::createStub(ApiRequestSenderInterface::class),
+            self::createStub(ReadApiRequestSenderInterface::class),
             self::createStub(OrdersTransformerInterface::class),
             self::createStub(OrderFilesTransformerInterface::class),
             $orderFileDetailsTransformer,
@@ -85,7 +85,7 @@ final class OrdersApiTest extends TestCase
     {
         $grib = "GRIB\x00\x01binary-bytes";
 
-        $rawRequestSender = self::createMock(ApiRequestSenderInterface::class);
+        $rawRequestSender = self::createMock(ReadApiRequestSenderInterface::class);
         $rawRequestSender->expects(self::once())
             ->method('get')
             ->with(
@@ -99,7 +99,7 @@ final class OrdersApiTest extends TestCase
             ->willReturn($grib);
 
         $api = new OrdersApi(
-            self::createStub(JsonApiRequestSenderInterface::class),
+            self::createStub(JsonReadApiRequestSenderInterface::class),
             $rawRequestSender,
             self::createStub(OrdersTransformerInterface::class),
             self::createStub(OrderFilesTransformerInterface::class),
@@ -127,7 +127,7 @@ final class OrdersApiTest extends TestCase
             ],
         ];
 
-        $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createMock(JsonReadApiRequestSenderInterface::class);
         $requestSender->expects(self::once())
             ->method('get')
             ->with(
@@ -151,7 +151,7 @@ final class OrdersApiTest extends TestCase
 
         $api = new OrdersApi(
             $requestSender,
-            self::createStub(ApiRequestSenderInterface::class),
+            self::createStub(ReadApiRequestSenderInterface::class),
             self::createStub(OrdersTransformerInterface::class),
             $orderFilesTransformer,
             self::createStub(OrderFileDetailsTransformerInterface::class),
@@ -192,7 +192,7 @@ final class OrdersApiTest extends TestCase
     #[TestWith([[OrdersApiInterface::KEY_ORDER_DETAILS => [OrdersApiInterface::KEY_FILES => 'not-an-array']], OrdersApiInterface::KEY_FILES])]
     public function testGetOrderFilesThrowsOnUnexpectedResponse(array $data, string $key): void
     {
-        $requestSender = self::createStub(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createStub(JsonReadApiRequestSenderInterface::class);
         $requestSender->method('get')->willReturn($data);
 
         $orderFilesTransformer = self::createMock(OrderFilesTransformerInterface::class);
@@ -200,7 +200,7 @@ final class OrdersApiTest extends TestCase
 
         $api = new OrdersApi(
             $requestSender,
-            self::createStub(ApiRequestSenderInterface::class),
+            self::createStub(ReadApiRequestSenderInterface::class),
             self::createStub(OrdersTransformerInterface::class),
             $orderFilesTransformer,
             self::createStub(OrderFileDetailsTransformerInterface::class),
@@ -224,7 +224,7 @@ final class OrdersApiTest extends TestCase
     #[TestWith([[OrdersApiInterface::KEY_FILE_DETAILS => 'not-an-array']])]
     public function testGetOrderFileThrowsOnUnexpectedResponse(array $data): void
     {
-        $requestSender = self::createStub(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createStub(JsonReadApiRequestSenderInterface::class);
         $requestSender->method('get')->willReturn($data);
 
         $orderFileDetailsTransformer = self::createMock(OrderFileDetailsTransformerInterface::class);
@@ -232,7 +232,7 @@ final class OrdersApiTest extends TestCase
 
         $api = new OrdersApi(
             $requestSender,
-            self::createStub(ApiRequestSenderInterface::class),
+            self::createStub(ReadApiRequestSenderInterface::class),
             self::createStub(OrdersTransformerInterface::class),
             self::createStub(OrderFilesTransformerInterface::class),
             $orderFileDetailsTransformer,
@@ -255,7 +255,7 @@ final class OrdersApiTest extends TestCase
         $ordersData = [['test-order']];
         $data = [OrdersApiInterface::KEY_ORDERS => $ordersData];
 
-        $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createMock(JsonReadApiRequestSenderInterface::class);
         $requestSender->expects(self::once())
             ->method('get')
             ->with(
@@ -279,7 +279,7 @@ final class OrdersApiTest extends TestCase
 
         $api = new OrdersApi(
             $requestSender,
-            self::createStub(ApiRequestSenderInterface::class),
+            self::createStub(ReadApiRequestSenderInterface::class),
             $ordersTransformer,
             self::createStub(OrderFilesTransformerInterface::class),
             self::createStub(OrderFileDetailsTransformerInterface::class),
@@ -300,7 +300,7 @@ final class OrdersApiTest extends TestCase
     #[TestWith([[OrdersApiInterface::KEY_ORDERS => 'not-an-array']])]
     public function testGetOrdersThrowsOnUnexpectedResponse(array $data): void
     {
-        $requestSender = self::createStub(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createStub(JsonReadApiRequestSenderInterface::class);
         $requestSender->method('get')->willReturn($data);
 
         $ordersTransformer = self::createMock(OrdersTransformerInterface::class);
@@ -308,7 +308,7 @@ final class OrdersApiTest extends TestCase
 
         $api = new OrdersApi(
             $requestSender,
-            self::createStub(ApiRequestSenderInterface::class),
+            self::createStub(ReadApiRequestSenderInterface::class),
             $ordersTransformer,
             self::createStub(OrderFilesTransformerInterface::class),
             self::createStub(OrderFileDetailsTransformerInterface::class),
@@ -331,7 +331,7 @@ final class OrdersApiTest extends TestCase
         $ordersData = [['test-order']];
         $data = [OrdersApiInterface::KEY_ORDERS => $ordersData];
 
-        $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
+        $requestSender = self::createMock(JsonReadApiRequestSenderInterface::class);
         $requestSender->expects(self::once())
             ->method('get')
             ->with(
@@ -355,7 +355,7 @@ final class OrdersApiTest extends TestCase
 
         $api = new OrdersApi(
             $requestSender,
-            self::createStub(ApiRequestSenderInterface::class),
+            self::createStub(ReadApiRequestSenderInterface::class),
             $ordersTransformer,
             self::createStub(OrderFilesTransformerInterface::class),
             self::createStub(OrderFileDetailsTransformerInterface::class),
