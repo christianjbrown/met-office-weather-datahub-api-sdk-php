@@ -21,9 +21,9 @@ use function strtotime;
 final class ForecastTransformer implements ForecastTransformerInterface
 {
     private ForecastTimeStepsTransformerInterface $forecastTimeStepsTransformer;
-    private ?ParameterMetadataTransformerInterface $parameterMetadataTransformer;
+    private ParameterMetadataTransformerInterface $parameterMetadataTransformer;
 
-    public function __construct(ForecastTimeStepsTransformerInterface $forecastTimeStepsTransformer, ?ParameterMetadataTransformerInterface $parameterMetadataTransformer = null)
+    public function __construct(ForecastTimeStepsTransformerInterface $forecastTimeStepsTransformer, ParameterMetadataTransformerInterface $parameterMetadataTransformer)
     {
         $this->forecastTimeStepsTransformer = $forecastTimeStepsTransformer;
         $this->parameterMetadataTransformer = $parameterMetadataTransformer;
@@ -141,9 +141,6 @@ final class ForecastTransformer implements ForecastTransformerInterface
      */
     private function applyParameters(Forecast $forecast, array $data): void
     {
-        if (null === $this->parameterMetadataTransformer) {
-            return;
-        }
         if (!isset($data[self::KEY_PARAMETERS])) {
             return;
         }
