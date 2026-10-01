@@ -6,6 +6,8 @@ All notable changes to this package are recorded here. The format follows
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-10-01
+
 ### Added
 
 - A factory per product (`SiteSpecificFactory`, `ObservationLandFactory`, `BlendedProbForecastFactory`,
@@ -70,6 +72,7 @@ First stable release.
   can be pointed somewhere other than production.
 - A single exception hierarchy, so callers do not depend on the underlying HTTP client.
 
-[Unreleased]: https://github.com/christianjbrown/met-office-weather-datahub-api-sdk-php/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/christianjbrown/met-office-weather-datahub-api-sdk-php/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/christianjbrown/met-office-weather-datahub-api-sdk-php/compare/v1.1.0...v2.0.0
 [1.1.0]: https://github.com/christianjbrown/met-office-weather-datahub-api-sdk-php/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/christianjbrown/met-office-weather-datahub-api-sdk-php/releases/tag/v1.0.0
