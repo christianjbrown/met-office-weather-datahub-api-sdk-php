@@ -6,6 +6,27 @@ All notable changes to this package are recorded here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- A factory per product (`SiteSpecificFactory`, `ObservationLandFactory`, `BlendedProbForecastFactory`,
+  `MapImagesFactory`, `AtmosphericModelsFactory`) and `MetOfficeFactory`. They build the default object
+  graph, and each has a matching `...FactoryInterface`.
+- `DailyForecastTimeStepTransformerFactory`, which assembles the daily time step transformer from small
+  field appliers in `SiteSpecific\Transformer\Field`.
+
+### Changed
+
+- Breaking: the product facades (`SiteSpecific`, `ObservationLand`, `BlendedProbForecast`, `MapImages`,
+  `AtmosphericModels`) no longer take an API key and host. Their constructors take the API client
+  interfaces they expose. Use `(new SiteSpecificFactory())->create($apiKey, new ApiHost())` and the
+  equivalent factory for each product.
+- Breaking: `MetOffice` takes an `ApiHostInterface` and the five product factories. Use
+  `(new MetOfficeFactory())->create()`, or `createWithHost()` to point at another host.
+- Breaking: `DailyForecastTimeStepTransformer` takes its field appliers through the constructor. Use
+  `DailyForecastTimeStepTransformerFactory` to build it.
+- Breaking: `ForecastTransformer` requires its `ParameterMetadataTransformerInterface` argument instead of
+  defaulting to null.
+
 ## [1.1.0] - 2026-09-28
 
 ### Added
